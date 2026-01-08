@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/car-garage/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/car-garage/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/car-garage",
+  "projects": {
+    "api": {
+      "type": "application",
+      "root": "apps/api",
+      "entryFile": "main",
+      "sourceRoot": "apps/api/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api/tsconfig.app.json"
+      }
+    },
+    "car-garage": {
+      "type": "application",
+      "root": "apps/car-garage",
+      "entryFile": "main",
+      "sourceRoot": "apps/car-garage/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/car-garage/tsconfig.app.json"
+      }
+    }
+  }
+}
