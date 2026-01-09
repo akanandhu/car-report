@@ -21,6 +21,19 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "paths": {}
+    "paths": {
+      "shared/shared": [
+        "libs/shared/src"
+      ],
+      "shared/shared/*": [
+        "libs/shared/src/*"
+      ],
+      "shared/shared/database/prisma": [
+        "libs/shared/database/prisma/src"
+      ],
+      "shared/shared/database/prisma/*": [
+        "libs/shared/database/prisma/src/*"
+      ]
+    }
   }
 }

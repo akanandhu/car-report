@@ -27,6 +27,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/car-garage/tsconfig.app.json"
       }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
+    },
+    "shared/database/prisma": {
+      "type": "library",
+      "root": "libs/shared/database/prisma",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/database/prisma/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/database/prisma/tsconfig.lib.json"
+      }
     }
   }
 }
