@@ -80,11 +80,10 @@ export class ${pascalModuleName}UtilsService {}
     );
 
     // 4. Create interface/{moduleName}.interface.ts
-    const interfaceContent = `export interface ${pascalModuleName}Interface {
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
-}
+    const interfaceContent = `
+import { BaseModel } from "shared/shared/common/interface/base-model.interface";
+
+export interface ${pascalModuleName}Interface extends BaseModel {}
 `;
     writeFile(
         path.join(sharedModulePath, 'interface', `${moduleName}.interface.ts`),
