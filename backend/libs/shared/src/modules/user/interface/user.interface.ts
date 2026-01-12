@@ -1,5 +1,3 @@
-export interface UserInterface {
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
-}
+import { BaseModel } from "@shared/common/interface/base-model.interface";
+
+export interface UserInterface extends BaseModel { }

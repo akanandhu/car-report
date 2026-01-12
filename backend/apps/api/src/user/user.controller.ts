@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { SharedUserService } from 'shared/shared/modules/user/user.service';
+import { SharedUserService } from '@shared/modules/user/user.service';
 
 @Controller('users')
 export class UserController {
