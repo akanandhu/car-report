@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: car-report-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: carsreport
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - car-report-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: car-report-api
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/carsreport
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - car-report-network
+
+networks:
+  car-report-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+
