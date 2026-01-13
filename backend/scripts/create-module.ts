@@ -105,31 +105,16 @@ export interface ${pascalModuleName}Interface extends BaseModel {}
 
     // 5. Create repository/{moduleName}.repository.ts
     const repositoryContent = `import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@shared/database/prisma/prisma.service';
-import { ${pascalModuleName}Interface } from '../interface/${moduleName}.interface';
+import { ${pascalModuleName} } from '@prisma/client';
+import { BaseRepository } from '@shared/common/repository/base.repository';
+import { PrismaService } from 'libs/shared/database/prisma/prisma.service';
 
 @Injectable()
-export class ${pascalModuleName}Repository {
-  constructor(private readonly prisma: PrismaService) {}
+export class ${pascalModuleName}Repository extends BaseRepository<${pascalModuleName}> {
+  protected readonly modelName = '${camelModuleName}';
 
-  async create(data: Partial<${pascalModuleName}Interface>): Promise<${pascalModuleName}Interface> {
-    return this.prisma.${camelModuleName}.create({ data }) as Promise<${pascalModuleName}Interface>;
-  }
-
-  async findById(id: string): Promise<${pascalModuleName}Interface | null> {
-    return this.prisma.${camelModuleName}.findUnique({ where: { id } }) as Promise<${pascalModuleName}Interface | null>;
-  }
-
-  async findAll(): Promise<${pascalModuleName}Interface[]> {
-    return this.prisma.${camelModuleName}.findMany() as Promise<${pascalModuleName}Interface[]>;
-  }
-
-  async update(id: string, data: Partial<${pascalModuleName}Interface>): Promise<${pascalModuleName}Interface> {
-    return this.prisma.${camelModuleName}.update({ where: { id }, data }) as Promise<${pascalModuleName}Interface>;
-  }
-
-  async delete(id: string): Promise<${pascalModuleName}Interface> {
-    return this.prisma.${camelModuleName}.delete({ where: { id } }) as Promise<${pascalModuleName}Interface>;
+  constructor(prisma: PrismaService) {
+    super(prisma);
   }
 }
 `;
@@ -225,18 +210,50 @@ function updateApiModule(moduleName: string, basePath: string): void {
     writeFile(apiModulePath, content);
 }
 
+// Generate Prisma schema file
+function generatePrismaSchema(moduleName: string, basePath: string): void {
+    const pascalModuleName = toPascalCase(moduleName);
+    const camelModuleName = toCamelCase(moduleName);
+    const schemaPath = path.join(basePath, 'prisma', 'schema');
+
+    ensureDir(schemaPath);
+
+    // Table name should be plural form (e.g., users, vehicles)
+    const tableName = moduleName.endsWith('s') ? moduleName : `${moduleName}s`;
+
+    const schemaContent = `model ${pascalModuleName} {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Add your fields here
+
+  // Relations
+
+  @@map("${tableName}")
+}
+`;
+
+    writeFile(path.join(schemaPath, `${tableName}.prisma`), schemaContent);
+}
+
 // Main function
 function main(): void {
     const args = process.argv.slice(2);
 
     if (args.length === 0) {
         console.error('❌ Error: Module name is required');
-        console.log('Usage: pnpm create:module <module-name>');
+        console.log('Usage: pnpm create:module <module-name> [-m|--model]');
         console.log('Example: pnpm create:module user');
+        console.log('Example with schema: pnpm create:module vehicle -m');
+        console.log('\nOptions:');
+        console.log('  -m, --model    Generate Prisma schema file in prisma/schema/');
         process.exit(1);
     }
 
     const moduleName = args[0].toLowerCase();
+    const shouldGenerateSchema = args.includes('-m') || args.includes('--model');
     const basePath = path.join(__dirname, '..');
 
     console.log(`\n🚀 Creating module: ${moduleName}\n`);
@@ -254,6 +271,12 @@ function main(): void {
         console.log('\n📝 Updating api.module.ts...');
         updateApiModule(moduleName, basePath);
 
+        // Generate Prisma schema if -m flag is provided
+        if (shouldGenerateSchema) {
+            console.log('\n📝 Generating Prisma schema file...');
+            generatePrismaSchema(moduleName, basePath);
+        }
+
         console.log('\n✅ Module created successfully!\n');
         console.log('Created files:');
         console.log(`  - libs/shared/src/modules/${moduleName}/${moduleName}.service.ts`);
@@ -264,7 +287,14 @@ function main(): void {
         console.log(`  - apps/api/src/${moduleName}/${moduleName}.controller.ts`);
         console.log(`  - apps/api/src/${moduleName}/${moduleName}.module.ts`);
         console.log(`  - apps/api/src/${moduleName}/dto/${moduleName}.dto.ts`);
-        console.log(`  - Updated: apps/api/src/api.module.ts\n`);
+        console.log(`  - Updated: apps/api/src/api.module.ts`);
+
+        if (shouldGenerateSchema) {
+            const tableName = moduleName.endsWith('s') ? moduleName : `${moduleName}s`;
+            console.log(`  - prisma/schema/${tableName}.prisma`);
+        }
+
+        console.log('\n');
     } catch (error) {
         console.error('❌ Error creating module:', error);
         process.exit(1);

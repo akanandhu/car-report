@@ -2,7 +2,7 @@ model User {
   id       String  @id @default(uuid())
   name     String
   clientId String? @map("client_id")
-  password String
+  password? String
   mobile   String
   email    String  @unique
 
@@ -11,6 +11,8 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @updatedAt @map("deleted_at")
+
 
   client User?  @relation("UserClient", fields: [clientId], references: [id])
   users  User[] @relation("UserClient")
