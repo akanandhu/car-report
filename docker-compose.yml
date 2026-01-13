@@ -31,10 +31,12 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3000"
-    environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/carsreport
-      NODE_ENV: production
-      PORT: 3000
+    # environment:
+    #   DATABASE_URL: postgresql://postgres:password@postgres:5432/carsreport
+    #   NODE_ENV: production
+    #   PORT: 3000
+    env_file:
+      - ./backend/.env.docker
     depends_on:
       postgres:
         condition: service_healthy
