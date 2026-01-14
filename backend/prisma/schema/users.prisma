@@ -16,6 +16,7 @@ model User {
 
   client User?  @relation("UserClient", fields: [clientId], references: [id])
   users  User[] @relation("UserClient")
+  userroles Userrole[]
 
   @@map("users")
 }
