@@ -1,289 +1,266 @@
-# Implementation Summary
+# User API Implementation Summary
 
-## Completed Tasks
+## ✅ Completed Tasks
 
-### 1. ✅ Separate Prisma Schema Files
+### 1. Common Response DTOs
+**File**: `apps/api/src/common/dto/response.dto.ts`
 
-**Location:** `prisma/schema/`
+Created comprehensive response DTOs including:
+- ✅ `ResponseDto<T>` - Standard response wrapper
+- ✅ `PaginationQueryDto` - Query DTO for pagination with validation
+  - `page` (optional, default: 1, min: 1)
+  - `limit` (optional, default: 10, min: 1, max: 100)
+  - `search` (optional, string)
+- ✅ `PaginationMetaDto` - Pagination metadata
+  - `currentPage`, `perPage`, `total`, `totalPages`
+  - `hasPreviousPage`, `hasNextPage`
+- ✅ `PaginatedResponseDto<T>` - Paginated response wrapper
+  - `data`, `pagination`, `message`, `statusCode`
 
-Created a modular Prisma schema system where each model is defined in its own TypeScript file:
+All DTOs include Swagger decorators (`@ApiProperty`, `@ApiPropertyOptional`)
 
-- **`prisma/schema/users.prisma.ts`** - Contains the User model schema
-- **`prisma/schema/index.ts`** - Aggregates all schema files and generates the final schema
-- **`scripts/generate-schema.ts`** - Script to combine all schemas into `schema.prisma`
+### 2. User DTOs with Swagger Documentation
+**File**: `apps/api/src/user/dto/user.dto.ts`
 
-**Usage:**
-```bash
-# Generate the final schema.prisma from all modular files
-pnpm generate:schema
+Created comprehensive User DTOs:
+- ✅ `RegisterUserDto` - For user registration
+  - Fields: `name`, `email`, `mobile`, `password`, `clientId` (optional)
+  - Full validation with class-validator decorators
+  - Password regex validation (uppercase, lowercase, number, special char)
+  - Mobile number regex validation
+- ✅ `UpdateUserDto` - For updating user information
+  - All fields optional
+  - Same validation as RegisterUserDto
+- ✅ `ChangePasswordDto` - For password changes
+  - Fields: `currentPassword`, `newPassword`, `confirmPassword`
+  - Password strength validation
+- ✅ `UserResponseDto` - For API responses (excludes password)
+  - All user fields with proper Swagger documentation
 
-# Generate and create Prisma Client
-pnpm prisma:generate
+### 3. User Service Implementation
+**File**: `libs/shared/src/modules/user/user.service.ts`
 
-# Generate schema and run migrations
-pnpm prisma:migrate
-```
+Implemented comprehensive service methods:
+- ✅ `register(data)` - Create new user with password hashing (bcrypt)
+  - Email uniqueness check
+  - Password hashing with salt round 10
+  - Returns user without password
+- ✅ `update(userId, data)` - Update user information
+  - User existence check
+  - Email uniqueness validation
+  - Returns updated user without password
+- ✅ `changePassword(userId, currentPassword, newPassword, confirmPassword)` - Change password
+  - Current password verification
+  - Password match validation
+  - Returns success message
+- ✅ `findById(userId)` - Get user by ID
+  - Returns user without password
+  - Throws NotFoundException if not found
+- ✅ `list(params)` - List users with pagination
+  - Supports search by name, email, mobile
+  - Excludes soft-deleted users
+  - Returns data + pagination metadata
+  - Case-insensitive search
 
-**Benefits:**
-- Better organization for large projects with many models
-- Easier to manage and maintain individual models
-- Version control friendly (smaller, focused files)
-- Reduces merge conflicts
+### 4. User Controller with Swagger
+**File**: `apps/api/src/user/user.controller.ts`
 
----
+Implemented all endpoints with full Swagger documentation:
+- ✅ `POST /users/register` - Register new user
+- ✅ `PUT /users/:id` - Update user information
+- ✅ `PUT /users/:id/change-password` - Change password
+- ✅ `GET /users/:id` - Get user by ID
+- ✅ `GET /users` - List users with pagination
 
-### 2. ✅ Environment Variables from .env.docker
+Each endpoint includes:
+- `@ApiOperation` - Summary and description
+- `@ApiResponse` - Multiple response scenarios
+- `@ApiParam` - Path parameter documentation
+- Proper response types using DTOs
 
-**Location:** `libs/shared/src/config/env.config.ts`
+### 5. Swagger Configuration
+**File**: `apps/api/src/main.ts`
 
-Created a centralized configuration system that prioritizes `.env.docker` for environment variables:
+Configured comprehensive Swagger setup:
+- ✅ Swagger UI at `/api/docs`
+- ✅ API title, description, version
+- ✅ Tags for organizing endpoints
+- ✅ Bearer auth configuration
+- ✅ Swagger options (persist auth, sort tags/operations)
+- ✅ Global ValidationPipe for request validation
+- ✅ CORS enabled
+- ✅ Console logs for server URL and Swagger docs URL
 
-**Updated files:**
-- `.env.docker` - Now includes backend API configuration
-- `libs/shared/src/config/env.config.ts` - Configuration loader
-- `libs/shared/src/config/index.ts` - Config module exports
+### 6. Dependencies Installed
+- ✅ `@nestjs/swagger` - Swagger/OpenAPI support
+- ✅ `swagger-ui-express` - Swagger UI rendering
+- ✅ `class-transformer` - Request transformation
+- ✅ `bcrypt` - Password hashing
+- ✅ `@types/bcrypt` - TypeScript types
 
-**Environment variables in .env.docker:**
-```bash
-# Database Configuration
-DATABASE_URL="postgresql://postgres:password@localhost:5434/carsreport"
+### 7. User Interface Updated
+**File**: `libs/shared/src/modules/user/interface/user.interface.ts`
 
-# Backend API Configuration
-BACKEND_PORT=3000
-BACKEND_API_URL="http://localhost:3000"
-NODE_ENV="development"
-```
+- ✅ Added all required fields to match Prisma schema
 
-**Usage in code:**
+### 8. Module Configuration
+**File**: `libs/shared/src/modules/user/user.module.ts`
+
+- ✅ Imported PrismaModule
+- ✅ Configured providers and exports
+
+### 9. Documentation
+**File**: `USER_API_DOCS.md`
+
+Created comprehensive API documentation including:
+- ✅ All endpoint details
+- ✅ Request/response examples
+- ✅ Validation rules
+- ✅ Error responses
+- ✅ cURL examples
+- ✅ Implementation details
+- ✅ Password security info
+- ✅ Soft delete behavior
+- ✅ Search functionality
+- ✅ Pagination details
+
+## 📋 Features Implemented
+
+### Authentication & Security
+- ✅ Password hashing with bcrypt (salt round: 10)
+- ✅ Passwords excluded from all responses
+- ✅ Strong password validation (min 8 chars, uppercase, lowercase, number, special char)
+- ✅ Email uniqueness validation
+- ✅ Current password verification for password changes
+
+### Pagination
+- ✅ Configurable page and limit
+- ✅ Default values (page: 1, limit: 10)
+- ✅ Maximum limit of 100
+- ✅ Complete metadata (total, pages, navigation)
+- ✅ Query validation with class-validator
+
+### Search
+- ✅ Search by name (case-insensitive)
+- ✅ Search by email (case-insensitive)
+- ✅ Search by mobile
+- ✅ OR-based search across fields
+
+### Soft Delete Support
+- ✅ List endpoint excludes soft-deleted users
+- ✅ Uses `deletedAt IS NULL` filter
+
+### Validation
+- ✅ Global ValidationPipe with transform
+- ✅ Whitelist to strip unknown properties
+- ✅ ForbidNonWhitelisted to reject extra fields
+- ✅ Type transformation for query parameters
+- ✅ Detailed validation messages
+
+### API Documentation
+- ✅ Swagger UI with interactive testing
+- ✅ Complete request/response schemas
+- ✅ Examples for all DTOs
+- ✅ Error response documentation
+- ✅ Organized by tags
+- ✅ Alphabetically sorted
+
+## 🎯 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/users/register` | Register a new user |
+| PUT | `/users/:id` | Update user information |
+| PUT | `/users/:id/change-password` | Change user password |
+| GET | `/users/:id` | Get user by ID |
+| GET | `/users` | List users with pagination |
+
+## 🔗 Access Points
+
+- **API Base URL**: `http://localhost:3000`
+- **Swagger Documentation**: `http://localhost:3000/api/docs`
+
+## 📦 Response Structure
+
+### Single Item Response
 ```typescript
-import { config } from '@shared/config';
-
-const dbUrl = config.database.url;
-const port = config.backend.port;
-const apiUrl = config.backend.apiUrl;
-const env = config.environment;
-```
-
----
-
-### 3. ✅ Enhanced create:module Script
-
-**Location:** `scripts/create-module.ts`
-
-Updated the module creation script to include:
-
-#### New Features:
-1. **Repository pattern** - Automatically creates repository with CRUD methods
-2. **Prisma schema generation** - Creates modular schema file
-3. **Repository injection** - Injects repository into both service and controller
-4. **Interface updates** - Creates TypeScript interfaces
-5. **Proper naming** - Uses camelCase for variables, PascalCase for types
-
-#### Generated Structure:
-```
-pnpm create:module [module-name]
-```
-
-**Creates:**
-```
-libs/shared/src/modules/{module-name}/
-├── {module-name}.module.ts             # Module with providers
-├── {module-name}.service.ts            # Service with repository injection
-├── interface/
-│   └── {module-name}.interface.ts      # TypeScript interface
-├── service/
-│   └── {module-name}.utils.service.ts  # Utility service
-└── repository/
-    └── {module-name}.repository.ts     # Repository with CRUD (NEW)
-
-apps/api/src/{module-name}/
-├── {module-name}.module.ts             # API module
-├── {module-name}.controller.ts         # Controller with repository (UPDATED)
-└── dto/
-    └── {module-name}.dto.ts            # DTOs
-
-prisma/schema/
-└── {module-name}s.prisma.ts            # Modular schema (NEW)
-```
-
-**Repository Features:**
-All repositories include these base methods:
-- `create(data)` - Create a new record
-- `findById(id)` - Find by ID
-- `findAll()` - Get all records
-- `update(id, data)` - Update a record
-- `delete(id)` - Delete a record
-
-**Example:**
-```bash
-# Create a user module
-pnpm create:module user
-
-# This will create all files and:
-# 1. Add repository to shared module
-# 2. Inject repository in service and controller  
-# 3. Create Prisma schema file
-# 4. Update schema index
-# 5. Register module in api.module.ts
-```
-
----
-
-## Package.json Scripts
-
-Added new scripts:
-
-```json
 {
-  "generate:schema": "ts-node scripts/generate-schema.ts",
-  "prisma:generate": "pnpm generate:schema && prisma generate",
-  "prisma:migrate": "pnpm generate:schema && prisma migrate dev"
+  data: UserResponseDto,
+  message: string,
+  statusCode: number
 }
 ```
 
----
-
-## File Changes Summary
-
-### Created Files:
-1. `prisma/schema/users.prisma.ts` - User schema definition
-2. `prisma/schema/index.ts` - Schema aggregator
-3. `scripts/generate-schema.ts` - Schema generator script
-4. `libs/shared/src/config/env.config.ts` - Environment config
-5. `libs/shared/src/config/index.ts` - Config exports
-6. `MODULE_GUIDE.md` - Comprehensive usage guide
-
-### Modified Files:
-1. `scripts/create-module.ts` - Added repository and schema generation
-2. `.env.docker` - Added backend API environment variables
-3. `package.json` - Added schema generation scripts
-
----
-
-## How to Use
-
-### Creating a New Module:
-
-```bash
-# Create a new module (e.g., "vehicle")
-pnpm create:module vehicle
-
-# Update the generated Prisma schema
-# Edit: prisma/schema/vehicles.prisma.ts
-
-# Update the interface to match your schema
-# Edit: libs/shared/src/modules/vehicle/interface/vehicle.interface.ts
-
-# Run migrations
-pnpm prisma:migrate
-
-# Start implementing business logic in:
-# - Service: libs/shared/src/modules/vehicle/vehicle.service.ts
-# - Controller: apps/api/src/vehicle/vehicle.controller.ts
-# - Add custom repository methods as needed
-```
-
-### Working with Schemas:
-
-```bash
-# After editing any .prisma.ts file in prisma/schema/
-pnpm generate:schema
-
-# Generate Prisma Client
-pnpm prisma:generate
-
-# Create and apply migration
-pnpm prisma:migrate
-```
-
----
-
-## Best Practices
-
-1. **Always use `pnpm prisma:migrate`** instead of `prisma migrate dev` directly
-2. **Keep schema files modular** - one file per model or related group
-3. **Use the repository pattern** for all database operations
-4. **Update interfaces** when you modify Prisma schemas
-5. **Add environment variables** to `.env.docker` for production
-6. **Extend repository methods** as needed for specific business logic
-
----
-
-## Architecture Benefits
-
-### Repository Pattern:
-- **Separation of concerns** - Database logic separate from business logic
-- **Testability** - Easy to mock repositories for testing
-- **Reusability** - Shared repository methods across controllers
-- **Type safety** - Full TypeScript support with interfaces
-
-### Modular Schemas:
-- **Maintainability** - Easier to find and update specific models
-- **Team collaboration** - Reduced merge conflicts
-- **Code organization** - Logical grouping of related models
-- **Scalability** - Easy to add new models
-
-### Centralized Config:
-- **Environment flexibility** - Easy switching between .env and .env.docker
-- **Type safety** - Typed configuration object
-- **Single source of truth** - All config in one place
-
----
-
-## Next Steps
-
-1. Review the generated documentation in `MODULE_GUIDE.md`
-2. Try creating a module: `pnpm create:module [your-module-name]`
-3. Customize the generated repository and service as needed
-4. Add your business logic to the service and controller
-5. Test the endpoints
-
----
-
-## Support & Documentation
-
-- **Full Guide:** See `MODULE_GUIDE.md` for detailed documentation
-- **Existing Module:** Check `libs/shared/src/modules/user/` for a complete example
-- **Schema Location:** `prisma/schema/` for all modular schemas
-- **Config Usage:** Import from `@shared/config` to use environment variables
-
----
-
-## Example: Creating a Vehicle Module
-
-```bash
-# 1. Create the module
-pnpm create:module vehicle
-
-# 2. Update the schema
-# Edit: prisma/schema/vehicles.prisma.ts
-export const vehicleSchema = `
-model Vehicle {
-  id String @id @default(uuid())
-  make String
-  model String
-  year Int
-  licensePlate String @unique @map("license_plate")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("vehicles")
+### Paginated Response
+```typescript
+{
+  data: UserResponseDto[],
+  pagination: {
+    currentPage: number,
+    perPage: number,
+    total: number,
+    totalPages: number,
+    hasPreviousPage: boolean,
+    hasNextPage: boolean
+  },
+  message: string,
+  statusCode: number
 }
-`;
-
-# 3. Update the interface
-# Edit: libs/shared/src/modules/vehicle/interface/vehicle.interface.ts
-export interface VehicleInterface extends BaseModel {
-  make: string;
-  model: string;
-  year: number;
-  licensePlate: string;
-}
-
-# 4. Run migration
-pnpm prisma:migrate
-
-# 5. Your module is ready to use!
 ```
 
-All files are created, database is migrated, and you can start implementing your business logic!
+## 🚀 Next Steps
+
+To start using the API:
+
+1. **Start the development server**:
+```bash
+pnpm run start:dev
+```
+
+2. **Access Swagger documentation**:
+   Navigate to `http://localhost:3000/api/docs`
+
+3. **Test the endpoints** using Swagger UI or any HTTP client
+
+4. **Run database migrations** (if not already done):
+```bash
+pnpm run pmg
+```
+
+## 💡 Usage Examples
+
+### Register a User
+```bash
+curl -X POST http://localhost:3000/users/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "mobile": "+1234567890",
+    "password": "Password@123"
+  }'
+```
+
+### List Users with Pagination
+```bash
+curl "http://localhost:3000/users?page=1&limit=10&search=john"
+```
+
+### Update User
+```bash
+curl -X PUT http://localhost:3000/users/{userId} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Updated"
+  }'
+```
+
+## ✨ Key Technologies
+
+- **NestJS** - Progressive Node.js framework
+- **Prisma** - Next-generation ORM
+- **Swagger/OpenAPI** - API documentation
+- **class-validator** - Decorator-based validation
+- **class-transformer** - Object transformation
+- **bcrypt** - Password hashing
+- **TypeScript** - Type safety
