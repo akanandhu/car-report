@@ -11,7 +11,7 @@ model User {
   name     String
   clientId String? @map("client_id")
   password String?
-  mobile   String
+  mobile   String  @unique
   email    String  @unique
 
   mobileVerifiedAt DateTime? @map("mobile_verified_at")
@@ -23,7 +23,7 @@ model User {
 
   client User?  @relation("UserClient", fields: [clientId], references: [id])
   users  User[] @relation("UserClient")
-  userroles Userrole[]
+  userRoles UserRole[]
 
   @@map("users")
 }
@@ -36,12 +36,12 @@ model Role {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  userroles Userrole[]
+  userRoles UserRole[]
 
   @@map("roles")
 }
 
-model Userrole {
+model UserRole {
   id        String    @id @default(uuid())
   userId    String
   roleId    String
@@ -52,7 +52,7 @@ model Userrole {
   user User @relation(fields: [userId], references: [id])
   role Role @relation(fields: [roleId], references: [id])
 
-  @@map("userroles")
+  @@map("user_roles")
 }
 
 model Vehicle {
