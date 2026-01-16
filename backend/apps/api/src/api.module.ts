@@ -5,9 +5,10 @@ import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { BranchModule } from './branch/branch.module';
 import { AuthModule } from './auth/auth.module';
+import { RefreshtokenModule } from './refreshtoken/refreshtoken.module';
 
 @Module({
-  imports: [UserModule, RoleModule, BranchModule, AuthModule],
+  imports: [UserModule, RoleModule, BranchModule, AuthModule, RefreshtokenModule],
   controllers: [ApiController],
   providers: [ApiService],
 })
