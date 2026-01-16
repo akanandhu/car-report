@@ -20,7 +20,9 @@
     "test:e2e": "jest --config ./apps/car-garage/test/jest-e2e.json",
     "pmg": "prisma migrate dev && prisma generate",
     "dev:api": "pnpm start:api:dev",
-    "create:module": "ts-node scripts/create-module.ts"
+    "create:module": "ts-node scripts/create-module.ts",
+    "seed": "pnpm exec ts-node -r tsconfig-paths/register libs/shared/database/seeder/seeder.ts",
+    "make:seeder": "pnpm exec ts-node -r tsconfig-paths/register scripts/make-seeder.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -24,6 +24,7 @@ model User {
   client User?  @relation("UserClient", fields: [clientId], references: [id])
   users  User[] @relation("UserClient")
   userRoles UserRole[]
+  branches Branch[]
 
   @@map("users")
 }
@@ -62,5 +63,20 @@ model Vehicle {
   deletedAt DateTime? @map("deleted_at")
 
   @@map("vehicles")
+}
+
+model Branch {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  ownerId    String?   @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+
+// relation
+owner User? @relation(fields: [ownerId], references: [id])
+  @@map("branches")
 }
 

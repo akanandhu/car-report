@@ -33,7 +33,7 @@ export interface DeleteOptions {
 export abstract class BaseRepository<T extends BaseModel> {
   protected abstract readonly modelName: string;
 
-  constructor(protected readonly prisma: PrismaService) {}
+  constructor(protected readonly prisma: PrismaService) { }
 
   /**
    * Get the Prisma model dynamically
@@ -99,6 +99,15 @@ export abstract class BaseRepository<T extends BaseModel> {
       where: whereClause,
       ...restOptions,
     });
+  }
+
+  /**
+   * Find first record (alias for findOne)
+   */
+  async findFirst(
+    options: FindOneOptions & { includeSoftDeleted?: boolean },
+  ): Promise<T | null> {
+    return this.findOne(options);
   }
 
   /**

@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SharedUserroleService } from './userrole.service';
 import { UserroleUtilsService } from './service/userrole.utils.service';
-import { UserroleRepository } from './repository/userrole.repository';
+import { PrismaModule } from '@shared/database/prisma/prisma.module';
+import { REPOSITORY_PROVIDERS } from '@shared/common/providers/repository.providers';
 
 @Module({
-  providers: [SharedUserroleService, UserroleUtilsService, UserroleRepository],
+  imports: [PrismaModule],
+  providers: [SharedUserroleService, UserroleUtilsService, ...REPOSITORY_PROVIDERS],
   exports: [SharedUserroleService],
 })
-export class SharedUserroleModule {}
+export class SharedUserroleModule { }

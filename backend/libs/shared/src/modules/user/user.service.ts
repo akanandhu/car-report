@@ -8,6 +8,8 @@
 import { UserUtilsService } from './service/user.utils.service';
 import { UserRepository } from './repository/user.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
+import { SharedUserroleService } from '../userrole/userrole.service';
+import { SharedBranchService } from '../branch/branch.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -17,24 +19,36 @@ export class SharedUserService {
   constructor(
     private readonly userUtilsService: UserUtilsService,
     private readonly prisma: PrismaService,
+    private readonly userroleService: SharedUserroleService,
+    private readonly branchService: SharedBranchService,
   ) {
     this.userRepository = new UserRepository(prisma);
   }
 
   /**
    * Register a new user
+   * Automatically assigns 'client' role and creates a default branch
    */
   async register(data: {
     name: string;
     email: string;
     mobile: string;
     password: string;
-    clientId?: string;
+    roleIdentifier?: string; // Optional: defaults to 'client'
   }) {
     // Check if email already exists
     const existingUser = await this.userRepository.findOne({
       where: { email: data.email },
     });
+
+    // Check if mobile already exists
+    const existingMobile = await this.userRepository.findOne({
+      where: { mobile: data.mobile },
+    });
+
+    if (existingMobile) {
+      throw new ConflictException('Mobile already exists');
+    }
 
     if (existingUser) {
       throw new ConflictException('Email already exists');
@@ -49,10 +63,28 @@ export class SharedUserService {
       email: data.email,
       mobile: data.mobile,
       password: hashedPassword,
-      clientId: data.clientId ?? null,
       mobileVerifiedAt: null,
       emailVerifiedAt: null,
     } as any);
+
+    // Assign role to user (defaults to 'client')
+    const roleIdentifier = data.roleIdentifier || 'client';
+    try {
+      await this.userroleService.assignRoleToUser(user.id, roleIdentifier);
+    } catch (error) {
+      // If role assignment fails, rollback user creation
+      await this.userRepository.hardDeleteById(user.id);
+      throw error;
+    }
+
+    // Create default branch for user
+    try {
+      await this.branchService.createDefaultBranch(user.id);
+    } catch (error) {
+      console.error('Failed to create default branch:', error);
+      // Don't rollback user creation if branch creation fails
+      // This is a non-critical failure
+    }
 
     // Remove password from response
     const { password, ...userWithoutPassword } = user;

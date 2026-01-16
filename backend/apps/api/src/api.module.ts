@@ -4,9 +4,10 @@ import { ApiService } from './api.service';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
 import { BranchModule } from './branch/branch.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [UserModule, RoleModule, BranchModule],
+  imports: [UserModule, RoleModule, BranchModule, AuthModule],
   controllers: [ApiController],
   providers: [ApiService],
 })
