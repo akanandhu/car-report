@@ -94,7 +94,7 @@ export class ${pascalModuleName}UtilsService {}
 
     // 4. Create interface/{moduleName}.interface.ts
     const interfaceContent = `
-import { BaseModel } from "shared/shared/common/interface/base-model.interface";
+import { BaseModel } from "@shared/common/interface/base-model.interface";
 
 export interface ${pascalModuleName}Interface extends BaseModel {}
 `;
@@ -107,7 +107,7 @@ export interface ${pascalModuleName}Interface extends BaseModel {}
     const repositoryContent = `import { Injectable } from '@nestjs/common';
 import { ${pascalModuleName} } from '@prisma/client';
 import { BaseRepository } from '@shared/common/repository/base.repository';
-import { PrismaService } from 'libs/shared/database/prisma/prisma.service';
+import { PrismaService } from '@shared/database/prisma/prisma.service';
 
 @Injectable()
 export class ${pascalModuleName}Repository extends BaseRepository<${pascalModuleName}> {
@@ -136,8 +136,8 @@ function generateApiModule(moduleName: string, basePath: string): void {
 
     // 1. Create {moduleName}.controller.ts
     const controllerContent = `import { Controller } from '@nestjs/common';
-import { Shared${pascalModuleName}Service } from 'shared/shared/modules/${moduleName}/${moduleName}.service';
-import { ${pascalModuleName}Repository } from 'shared/shared/modules/${moduleName}/repository/${moduleName}.repository';
+import { Shared${pascalModuleName}Service } from '@shared/modules/${moduleName}/${moduleName}.service';
+import { ${pascalModuleName}Repository } from '@shared/modules/${moduleName}/repository/${moduleName}.repository';
 
 @Controller('${moduleName}s')
 export class ${pascalModuleName}Controller {
@@ -152,7 +152,7 @@ export class ${pascalModuleName}Controller {
     // 2. Create {moduleName}.module.ts
     const moduleContent = `import { Module } from '@nestjs/common';
 import { ${pascalModuleName}Controller } from './${moduleName}.controller';
-import { Shared${pascalModuleName}Module } from 'shared/shared/modules/${moduleName}/${moduleName}.module';
+import { Shared${pascalModuleName}Module } from '@shared/modules/${moduleName}/${moduleName}.module';
 
 @Module({
   imports: [Shared${pascalModuleName}Module],

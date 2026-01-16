@@ -28,6 +28,9 @@
       "@shared/*": [
         "libs/shared/src/*"
       ],
+      "@shared/database/prisma/*": [
+        "libs/shared/database/prisma/*"
+      ],
       "shared/shared": [
         "libs/shared/src"
       ],

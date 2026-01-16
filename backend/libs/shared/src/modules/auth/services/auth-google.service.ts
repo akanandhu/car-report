@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { AppConfigService } from '@shared/shared/config';
+﻿import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { AppConfigService } from '@shared/config';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 
 export interface GoogleUserProfile {

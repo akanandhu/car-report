@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AppConfigModule } from '@shared/shared/config';
+import { AppConfigModule } from '@shared/config';
 import { UserOnboardingModule } from '../user-onboarding/user-onboarding.module';
 import { UserProfileModule } from '../user-profile/user-profile.module';
 import { AuthService } from './auth.service';
@@ -13,7 +13,7 @@ import {
   RoleRepository,
   UserRepository,
   UserRoleRepository,
-} from '@shared/shared/repositories';
+} from '@shared/repositories';
 import { AuthGoogleService } from './services/auth-google.service';
 import { AppleAuthService } from './services/apple-auth.service';
 import { AppleEmailManagerService } from './services/apple-email-manager.service';
@@ -28,10 +28,10 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { PrismaService } from '@shared/shared/database/prisma/prisma.service';
+import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { UserProfileRepository } from '@shared/shared/repositories/user-profile.repository';
-import { NotificationService } from '@shared/shared/common/notifications/engagespot/engagespot.service';
+import { UserProfileRepository } from '@shared/repositories/user-profile.repository';
+import { NotificationService } from '@shared/common/notifications/engagespot/engagespot.service';
 // import { CaslModule } from '../casl/casl.module';
 
 @Module({

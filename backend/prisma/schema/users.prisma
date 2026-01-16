@@ -2,7 +2,7 @@ model User {
   id       String  @id @default(uuid())
   name     String
   clientId String? @map("client_id")
-  password? String
+  password String?
   mobile   String
   email    String  @unique
 

@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { SharedUserService } from './user.service';
 import { UserUtilsService } from './service/user.utils.service';
-import { PrismaModule } from 'libs/shared/database/prisma/prisma.module';
+import { PrismaModule } from '@shared/database/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

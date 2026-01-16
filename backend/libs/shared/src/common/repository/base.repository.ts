@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { BaseModel } from '../interface';
-import { PrismaService } from 'libs/shared/database/prisma/prisma.service';
+import { PrismaService } from '@shared/database/prisma/prisma.service';
 
 export interface FindManyOptions {
   where?: any;

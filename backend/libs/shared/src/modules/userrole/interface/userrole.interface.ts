@@ -1,4 +1,4 @@
-
-import { BaseModel } from "shared/shared/common/interface/base-model.interface";
+﻿
+import { BaseModel } from "@shared/common/interface/base-model.interface";
 
 export interface UserroleInterface extends BaseModel {}

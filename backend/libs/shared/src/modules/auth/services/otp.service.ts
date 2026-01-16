@@ -1,12 +1,12 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { NotificationService } from '@shared/shared/common/notifications/engagespot/engagespot.service';
-import { AppConfigService } from '@shared/shared/config';
-import { UserRepository } from '@shared/shared/repositories';
-// import { UserRoleRepository } from '@shared/shared/repositories/role.repository';
+import { NotificationService } from '@shared/common/notifications/engagespot/engagespot.service';
+import { AppConfigService } from '@shared/config';
+import { UserRepository } from '@shared/repositories';
+// import { UserRoleRepository } from '@shared/repositories/role.repository';
 import * as speakeasy from 'speakeasy';
 
 @Injectable()

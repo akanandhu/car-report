@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+﻿import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { AppConfigService } from '@shared/shared/config';
+import { AppConfigService } from '@shared/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ApiConsumer } from '../interfaces';
 

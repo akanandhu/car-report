@@ -1,19 +1,19 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AppConfigService } from '@shared/shared/config';
+import { AppConfigService } from '@shared/config';
 import {
   PermissionRepository,
   RefreshTokenRepository,
   // RoleRepository,
   UserRepository,
-} from '@shared/shared/repositories';
-import { Role } from '@shared/shared/repositories/models/role.model';
-import { UserProfile } from '@shared/shared/repositories/models/userProfile.model';
-import { UserProfileRepository } from '@shared/shared/repositories/user-profile.repository';
+} from '@shared/repositories';
+import { Role } from '@shared/repositories/models/role.model';
+import { UserProfile } from '@shared/repositories/models/userProfile.model';
+import { UserProfileRepository } from '@shared/repositories/user-profile.repository';
 import { AuthTokensWithProfileDto } from 'apps/api/src/v1/auth/dto';
 
 @Injectable()

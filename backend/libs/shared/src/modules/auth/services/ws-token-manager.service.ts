@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+﻿import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { AppConfigService } from '@shared/shared/config';
+import { AppConfigService } from '@shared/config';
 import { Socket } from 'socket.io';
 
 interface TokenInfo {

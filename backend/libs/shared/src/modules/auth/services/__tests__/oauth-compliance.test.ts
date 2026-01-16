@@ -1,13 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
+﻿import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { UserRegistrationService } from '../user-registration.service';
-import { AuthCredentialRepository } from '@shared/shared/repositories/auth-credential.repository';
-import { UserRepository } from '@shared/shared/repositories/user.repository';
+import { AuthCredentialRepository } from '@shared/repositories/auth-credential.repository';
+import { UserRepository } from '@shared/repositories/user.repository';
 import { AuthRoleService } from '../../auth-role.service';
 import {
   AuthProvider,
   AuthRole,
-} from '@shared/shared/common/constants/constants';
+} from '@shared/common/constants/constants';
 import { OAuthUserData } from '../oauth.service';
 
 describe('OAuth Compliance Tests', () => {

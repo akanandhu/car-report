@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   ConflictException,
   NotFoundException,
@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { UserUtilsService } from './service/user.utils.service';
 import { UserRepository } from './repository/user.repository';
-import { PrismaService } from 'libs/shared/database/prisma/prisma.service';
+import { PrismaService } from '@shared/database/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

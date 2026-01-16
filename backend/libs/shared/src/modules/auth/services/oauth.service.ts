@@ -1,7 +1,7 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+﻿import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGoogleService } from './auth-google.service';
 import { AppleAuthService } from './apple-auth.service';
-import { AuthProvider } from '@shared/shared/common/constants/constants';
+import { AuthProvider } from '@shared/common/constants/constants';
 
 export interface OAuthUserData {
   sub?: string;

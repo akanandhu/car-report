@@ -1,9 +1,9 @@
-import {
+﻿import {
   HttpException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AppConfigService } from '@shared/shared/config';
+import { AppConfigService } from '@shared/config';
 import SignInWithAppleResponse from 'apple-signin-auth';
 
 export interface AppleUserProfile {

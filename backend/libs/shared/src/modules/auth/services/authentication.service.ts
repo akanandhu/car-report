@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -15,13 +15,13 @@ import {
   UserRoleRepository,
   AuthCredentialRepository,
   RefreshTokenRepository,
-} from '@shared/shared/repositories';
-import { UserProfileRepository } from '@shared/shared/repositories/user-profile.repository';
+} from '@shared/repositories';
+import { UserProfileRepository } from '@shared/repositories/user-profile.repository';
 import { AuthRoleService } from '../auth-role.service';
 import {
   AuthProvider,
   AuthRole,
-} from '@shared/shared/common/constants/constants';
+} from '@shared/common/constants/constants';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()

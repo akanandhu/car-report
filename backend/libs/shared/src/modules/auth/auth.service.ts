@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { User } from '../../repositories/models/user.model';
 import { AuthTokensWithProfileDto } from 'apps/api/src/v1/auth/dto/auth-tokens-with-profile.dto';
 import { OtpService } from './services/otp.service';
@@ -7,7 +7,7 @@ import { UserRegistrationService } from './services/user-registration.service';
 import {
   AuthProvider,
   AuthRole,
-} from '@shared/shared/common/constants/constants';
+} from '@shared/common/constants/constants';
 
 @Injectable()
 export class AuthService {

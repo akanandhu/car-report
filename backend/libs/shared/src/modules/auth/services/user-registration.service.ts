@@ -1,17 +1,17 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+﻿import { Injectable, BadRequestException } from '@nestjs/common';
 import { AuthRoleService } from '../auth-role.service';
 import { OAuthUserData } from './oauth.service';
 import {
   AuthCredentialRepository,
   RoleRepository,
   UserRepository,
-} from '@shared/shared/repositories';
+} from '@shared/repositories';
 import {
   AuthProvider,
   AuthRole,
-} from '@shared/shared/common/constants/constants';
-import { User } from '@shared/shared/repositories/models/user.model';
-import { OnboardingStep } from '@shared/shared/repositories/models/userOnboard.model';
+} from '@shared/common/constants/constants';
+import { User } from '@shared/repositories/models/user.model';
+import { OnboardingStep } from '@shared/repositories/models/userOnboard.model';
 import { UserOnboardingService } from '../../user-onboarding/user-onboarding.service';
 import * as bcrypt from 'bcrypt';
 

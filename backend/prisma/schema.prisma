@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String  @id @default(uuid())
+  name     String
+  clientId String? @map("client_id")
+  password String?
+  mobile   String
+  email    String  @unique
+
+  mobileVerifiedAt DateTime? @map("mobile_verified_at")
+  emailVerifiedAt  DateTime? @map("email_verified_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  client User?  @relation("UserClient", fields: [clientId], references: [id])
+  users  User[] @relation("UserClient")
+  userroles Userrole[]
+
+  @@map("users")
+}
+
+model Role {
+  id        String    @id @default(uuid())
+  name      String
+  identifier String 
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  userroles Userrole[]
+
+  @@map("roles")
+}
+
+model Userrole {
+  id        String    @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@map("userroles")
+}
+
+model Vehicle {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("vehicles")
+}
+

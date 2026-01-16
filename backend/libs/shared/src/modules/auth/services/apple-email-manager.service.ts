@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AuthCredentialRepository } from '@shared/shared/repositories/auth-credential.repository';
-import { UserRepository } from '@shared/shared/repositories/user.repository';
-import { AuthProvider } from '@shared/shared/common/constants/constants';
+﻿import { Injectable, Logger } from '@nestjs/common';
+import { AuthCredentialRepository } from '@shared/repositories/auth-credential.repository';
+import { UserRepository } from '@shared/repositories/user.repository';
+import { AuthProvider } from '@shared/common/constants/constants';
 
 @Injectable()
 export class AppleEmailManagerService {
