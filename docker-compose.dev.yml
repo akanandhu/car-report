@@ -22,6 +22,36 @@ services:
       timeout: 5s
       retries: 5
 
+  # Backend API (Development Mode)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: car-report-api-dev
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/carsreport
+      NODE_ENV: development
+      PORT: 3000
+    volumes:
+      # Mount source code for hot reload
+      - ./backend/apps:/app/apps
+      - ./backend/libs:/app/libs
+      - ./backend/prisma:/app/prisma
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - ./backend/nest-cli.json:/app/nest-cli.json
+      - ./backend/prisma.config.ts:/app/prisma.config.ts
+      # Prevent node_modules and dist from being overwritten
+      - /app/node_modules
+      - /app/dist
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - car-report-network
+
 networks:
   car-report-network:
     driver: bridge
