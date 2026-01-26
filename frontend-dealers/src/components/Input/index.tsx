@@ -16,7 +16,7 @@ const Input = ({
     error
       ? "border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-200"
       : "border-gray-300 focus:border-slate-700 focus:ring-2 focus:ring-slate-200"
-  } ${disabled ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-white"} ${className}`;
+  } ${disabled ? "bg-gray-100 cursor-not-allowed opacity-60" : "bg-white text-black"} ${className}`;
 
   return (
     <div className={containerClasses}>

@@ -35,14 +35,15 @@ const PhoneLoginForm = ({ onBack }: PhoneLoginFormPropsI) => {
         variant="contained"
         fullWidth
         disabled={isLoading}
-        endAdornment={<ChevronRight className="w-5 h-5" />}
         className="py-4 text-base"
       >
-        {isLoading ? "Sending OTP..." : "Login"}
+        <div className="flex items-center justify-center font-semibold">
+          {isLoading ? "Sending OTP..." : "Login"}
+          <ChevronRight className="w-5 h-5 ml-2" />
+        </div>
       </Button>
     </form>
   );
 };
 
 export default PhoneLoginForm;
-

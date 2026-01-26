@@ -20,9 +20,9 @@ const ChevronRight = ({
       viewBox="0 0 24 24"
       fill="none"
       stroke={color || "currentColor"}
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={
         className ||
         "lucide lucide-chevron-right w-5 h-5 text-gray-400 group-hover:text-slate-400"

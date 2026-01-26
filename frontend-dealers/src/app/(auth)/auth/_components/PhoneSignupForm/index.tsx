@@ -7,8 +7,6 @@ import ChevronLeft from "@/public/assets/svg/ChevronLeft";
 import { PhoneSignupFormPropsI } from "./types";
 import usePhoneSignupForm from "./useHook";
 
-
-
 const PhoneSignupForm = ({ onBack }: PhoneSignupFormPropsI) => {
   const {
     register,
