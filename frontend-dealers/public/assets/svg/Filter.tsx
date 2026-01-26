@@ -1,4 +1,4 @@
-const Logout = ({
+const Filter = ({
   className,
   width,
   height,
@@ -19,17 +19,12 @@ const Logout = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={className || "w-6 h-6"}
       {...props}
     >
-      <path
-        d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-        fill="#334155"
-      ></path>
-      <polyline points="16 17 21 12 16 7"></polyline>
-      <line x1="21" x2="9" y1="12" y2="12"></line>
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>   
     </svg>
   );
 };
 
-export default Logout;
+export default Filter;

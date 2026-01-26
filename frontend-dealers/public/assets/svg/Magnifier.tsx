@@ -1,4 +1,4 @@
-const Logout = ({
+const Magnifier = ({
   className,
   width,
   height,
@@ -19,17 +19,13 @@ const Logout = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={className || "w-6 h-6"}
       {...props}
     >
-      <path
-        d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-        fill="#334155"
-      ></path>
-      <polyline points="16 17 21 12 16 7"></polyline>
-      <line x1="21" x2="9" y1="12" y2="12"></line>
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>      
     </svg>
   );
 };
 
-export default Logout;
+export default Magnifier;

@@ -4,7 +4,7 @@ import Logout from "@/public/assets/svg/Logout";
 
 const Navbar = () => {
   return (
-    <div className="flex justify-between px-32 w-full sticky top-0 z-50 bg-white border-b border-slate-200">
+    <div className="flex justify-between md:px-32 px-2 w-full sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="w-full mx-auto px-3 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900">CarAsses</h1>

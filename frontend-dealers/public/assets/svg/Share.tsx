@@ -1,4 +1,4 @@
-const Logout = ({
+const Share = ({
   className,
   width,
   height,
@@ -19,17 +19,16 @@ const Logout = ({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={className}
+      className={className || "w-6 h-6"}
       {...props}
     >
-      <path
-        d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-        fill="#334155"
-      ></path>
-      <polyline points="16 17 21 12 16 7"></polyline>
-      <line x1="21" x2="9" y1="12" y2="12"></line>
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line>
+      <line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line>    
     </svg>
   );
 };
 
-export default Logout;
+export default Share;
