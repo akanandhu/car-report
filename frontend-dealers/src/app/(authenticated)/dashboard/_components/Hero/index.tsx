@@ -7,7 +7,7 @@ import React from "react";
 
 const Hero = () => {
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-border">
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="px-4 py-4 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-slate-900">Car Evaluations</h1>

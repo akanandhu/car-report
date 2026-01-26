@@ -2,6 +2,7 @@ import Navbar from '@/src/components/Navbar'
 import React from 'react'
 import Hero from './_components/Hero'
 import Evaluations from './_components/Evaluations'
+import Footer from './_components/Footer'
 
 const page = () => {
   return (
@@ -9,6 +10,7 @@ const page = () => {
       <Navbar/>
       <Hero/>  
       <Evaluations/>
+      <Footer/>
     </div>
   )
 }
