@@ -44,7 +44,7 @@ const Button = ({
       {startAdornment && (
         <span className="flex items-center">{startAdornment}</span>
       )}
-      <span className="flex-1 flex items-center justify-center">
+      <span className="flex-1">
         {children}
       </span>
       {endAdornment && (

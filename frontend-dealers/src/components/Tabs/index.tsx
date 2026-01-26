@@ -1,4 +1,3 @@
-import React from "react";
 import { TabsPropsI } from "./types";
 
 const Tabs = <T extends string = string>({
@@ -8,15 +7,16 @@ const Tabs = <T extends string = string>({
   className = "",
 }: TabsPropsI<T>) => {
   return (
-    <div className={`flex gap-2 bg-slate-100 p-1.5 rounded-xl ${className}`}>
+    <div className={`flex gap-1 bg-white rounded-2xl shadow-md p-1.5 border border-gray-200 ${className}`}>
       {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
         return (
           <button
-            className={
-              activeTab === tab.id
-                ? "bg-white rounded-lg px-3 py-1.5"
-                : "px-3 py-1.5"
-            }
+            className={`flex-1 py-3 px-4 rounded-2xl font-semibold transition-all duration-200 text-base ${
+              isActive
+                ? "bg-slate-700 text-white shadow-lg"
+                : "bg-transparent text-gray-700 hover:text-gray-900"
+            }`}
             onClick={() => onTabChange(tab.id)}
             key={tab.id}
           >
