@@ -1,53 +1,18 @@
 "use client";
-import { useState, FormEvent } from "react";
 import Input from "@/src/components/Input";
 import Checkbox from "@/src/components/Checkbox";
 import Button from "@/src/components/Button";
 import ChevronRight from "@/public/assets/svg/ChevronRight";
 import { EmailSignupFormPropsI } from "./types";
 import ChevronLeft from "@/public/assets/svg/ChevronLeft";
+import useEmailSignupForm from "./useHook";
 
 const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
-  const [formData, setFormData] = useState({
-    fullName: "",
-    company: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Your form submission logic here
-    console.log("Email Signup:", formData);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const isFormValid =
-    formData.fullName &&
-    formData.email &&
-    formData.password &&
-    formData.confirmPassword &&
-    termsAccepted;
+  const { register, handleSubmit, errors, isLoading, onSubmit } =
+    useEmailSignupForm();
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <button
         type="button"
         onClick={onBack}
@@ -60,73 +25,65 @@ const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
       <Input
         label="Full Name"
         type="text"
-        name="fullName"
         placeholder="Raj Kumar"
-        value={formData.fullName}
-        onChange={handleChange}
-        required
+        {...register("fullName")}
+        error={errors.fullName?.message}
         disabled={isLoading}
       />
 
       <Input
         label="Company/Dealership (Optional)"
         type="text"
-        name="company"
         placeholder="Premium Auto Assessments"
-        value={formData.company}
-        onChange={handleChange}
+        {...register("company")}
+        error={errors.company?.message}
         disabled={isLoading}
       />
 
       <Input
         label="Email Address"
         type="email"
-        name="email"
         placeholder="you@example.com"
-        value={formData.email}
-        onChange={handleChange}
-        required
+        {...register("email")}
+        error={errors.email?.message}
         disabled={isLoading}
       />
 
       <Input
         label="Password"
         type="password"
-        name="password"
         placeholder="••••••••"
-        value={formData.password}
-        onChange={handleChange}
+        {...register("password")}
+        error={errors.password?.message}
         helperText="At least 8 characters"
-        required
         disabled={isLoading}
       />
 
       <Input
         label="Confirm Password"
         type="password"
-        name="confirmPassword"
         placeholder="••••••••"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        required
+        {...register("confirmPassword")}
+        error={errors.confirmPassword?.message}
         disabled={isLoading}
       />
 
       <Checkbox
         id="terms"
         label="I agree to the Terms of Service and Privacy Policy"
-        checked={termsAccepted}
-        onChange={(e) => setTermsAccepted(e.target.checked)}
-        required
+        {...register("terms")}
         disabled={isLoading}
         containerClassName="pt-2"
       />
+      {errors.terms && (
+        <p className="text-sm text-red-600 -mt-3">{errors.terms.message}</p>
+      )}
 
       <Button
         type="submit"
         variant="contained"
         fullWidth
-        disabled={!isFormValid || isLoading}
+        disabled={isLoading}
         endAdornment={<ChevronRight className="w-5 h-5" />}
         className="py-4 text-base"
       >
@@ -137,4 +94,3 @@ const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
 };
 
 export default EmailSignupForm;
-

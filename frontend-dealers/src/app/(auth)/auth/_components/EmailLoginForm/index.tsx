@@ -1,41 +1,17 @@
 "use client";
-import { useState, FormEvent } from "react";
 import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
 import ChevronRight from "@/public/assets/svg/ChevronRight";
 import ChevronLeft from "@/public/assets/svg/ChevronLeft";
 import { EmailLoginFormPropsI } from "./types";
+import useEmailLoginForm from "./useHook";
 
 const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    console.log("Email Login:", formData);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const isFormValid = formData.email && formData.password;
+  const { errors, handleSubmit, isLoading, onSubmit, register } =
+    useEmailLoginForm();
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <button
         type="button"
         onClick={onBack}
@@ -48,22 +24,18 @@ const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
       <Input
         label="Email Address"
         type="email"
-        name="email"
         placeholder="you@example.com"
-        value={formData.email}
-        onChange={handleChange}
-        required
+        {...register("email")}
+        error={errors.email?.message}
         disabled={isLoading}
       />
 
       <Input
         label="Password"
         type="password"
-        name="password"
         placeholder="••••••••"
-        value={formData.password}
-        onChange={handleChange}
-        required
+        {...register("password")}
+        error={errors.password?.message}
         disabled={isLoading}
       />
 
@@ -71,7 +43,7 @@ const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
         type="submit"
         variant="contained"
         fullWidth
-        disabled={!isFormValid || isLoading}
+        disabled={isLoading}
         endAdornment={<ChevronRight className="w-5 h-5" />}
         className="py-4 text-base"
       >
@@ -82,4 +54,3 @@ const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
 };
 
 export default EmailLoginForm;
-

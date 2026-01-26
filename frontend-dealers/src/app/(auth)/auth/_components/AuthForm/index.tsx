@@ -41,14 +41,14 @@ const AuthForm = () => {
   };
 
   return (
-    <div>
+    <div className="w-full max-w-md mx-auto">
       <Tabs
         className="flex w-full mb-6"
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={onTabChange}
       />
-      <div className="bg-white rounded-3xl shadow-xl px-8 py-8 space-y-6 border border-gray-100">
+      <div className="bg-white rounded-3xl shadow-xl px-8 py-8 space-y-6 border border-gray-100 w-full">
         {renderContent()}
       </div>
     </div>

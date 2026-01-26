@@ -1,40 +1,17 @@
 "use client";
-import { useState, FormEvent } from "react";
 import Input from "@/src/components/Input";
 import Button from "@/src/components/Button";
 import ChevronRight from "@/public/assets/svg/ChevronRight";
 import ChevronLeft from "@/public/assets/svg/ChevronLeft";
 import { PhoneLoginFormPropsI } from "./types";
+import usePhoneLoginForm from "./useHook";
 
 const PhoneLoginForm = ({ onBack }: PhoneLoginFormPropsI) => {
-  const [formData, setFormData] = useState({
-    phoneNumber: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    console.log("Phone Login:", formData);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-  };
-
-  const isFormValid = formData.phoneNumber;
+  const { register, handleSubmit, errors, isLoading, onSubmit } =
+    usePhoneLoginForm();
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <button
         type="button"
         onClick={onBack}
@@ -47,11 +24,9 @@ const PhoneLoginForm = ({ onBack }: PhoneLoginFormPropsI) => {
       <Input
         label="Phone Number"
         type="tel"
-        name="phoneNumber"
         placeholder="+91 98765 43210"
-        value={formData.phoneNumber}
-        onChange={handleChange}
-        required
+        {...register("phoneNumber")}
+        error={errors.phoneNumber?.message}
         disabled={isLoading}
       />
 
@@ -59,7 +34,7 @@ const PhoneLoginForm = ({ onBack }: PhoneLoginFormPropsI) => {
         type="submit"
         variant="contained"
         fullWidth
-        disabled={!isFormValid || isLoading}
+        disabled={isLoading}
         endAdornment={<ChevronRight className="w-5 h-5" />}
         className="py-4 text-base"
       >
