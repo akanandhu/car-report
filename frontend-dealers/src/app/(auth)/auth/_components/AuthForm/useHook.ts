@@ -1,6 +1,6 @@
 'use client'
 import { useState } from "react";
-import { AuthI } from "./types";
+import { AuthI, AuthView } from "./types";
 
 const tabs: AuthI[] = [
   {
@@ -15,15 +15,33 @@ const tabs: AuthI[] = [
 
 const useAuthForm = () => {
   const [activeTab, setActiveTab] = useState<AuthI["id"]>("login");
+  const [currentView, setCurrentView] = useState<AuthView>("method-selection");
 
   const onTabChange = (tab: AuthI["id"]) => {
     setActiveTab(tab);
+    setCurrentView("method-selection");
+  };
+
+  const showEmailForm = () => {
+    setCurrentView(activeTab === "login" ? "email-login" : "email-signup");
+  };
+
+  const showPhoneForm = () => {
+    setCurrentView(activeTab === "login" ? "phone-login" : "phone-signup");
+  };
+
+  const backToMethodSelection = () => {
+    setCurrentView("method-selection");
   };
 
   return {
     activeTab,
     tabs,
-    onTabChange
+    currentView,
+    onTabChange,
+    showEmailForm,
+    showPhoneForm,
+    backToMethodSelection,
   };
 };
 

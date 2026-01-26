@@ -1,6 +1,6 @@
 import { ReactNode, ButtonHTMLAttributes } from "react";
 
-export type ButtonVariant = "outlined" | "filled";
+export type ButtonVariant = "outlined" | "filled" | "contained";
 export type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {

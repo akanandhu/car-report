@@ -21,6 +21,8 @@ const Button = ({
       "border-2 border-gray-300 bg-transparent text-gray-900 hover:border-slate-400 hover:bg-slate-50 focus:ring-slate-400",
     filled:
       "border-2 border-slate-700 bg-slate-700 text-white hover:bg-slate-800 hover:border-slate-800 focus:ring-slate-500",
+    contained:
+      "bg-slate-700 text-white hover:bg-slate-800 hover:shadow-lg focus:ring-slate-500 font-bold disabled:opacity-60",
   };
 
   const sizeStyles = {
