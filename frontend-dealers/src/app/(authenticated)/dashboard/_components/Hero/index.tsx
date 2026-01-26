@@ -3,6 +3,7 @@ import Magnifier from "@/public/assets/svg/Magnifier";
 import Plus from "@/public/assets/svg/Plus";
 import Button from "@/src/components/Button";
 import Input from "@/src/components/Input";
+import Link from "next/link";
 import React from "react";
 
 const Hero = () => {
@@ -11,13 +12,15 @@ const Hero = () => {
       <div className="px-4 py-4 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-slate-900">Car Evaluations</h1>
+          <Link href="/evaluation">
           <Button
             variant="filled"
             size="sm"
             startAdornment={<Plus className="w-4 h-4" />}
-          >
+            >
             Create
           </Button>
+            </Link>
         </div>
         <div className="flex">
           <div className="w-full relative mr-2">
