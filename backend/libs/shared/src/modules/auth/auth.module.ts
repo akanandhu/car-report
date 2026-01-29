@@ -10,6 +10,7 @@ import { REPOSITORY_PROVIDERS } from '@shared/common/providers/repository.provid
 import { SharedUserModule } from '../user/user.module';
 import { SharedUserroleModule } from '../userrole/userrole.module';
 import { SharedBranchModule } from '../branch/branch.module';
+import { SharedRefreshtokenModule } from '../refreshtoken/refreshtoken.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SharedBranchModule } from '../branch/branch.module';
     SharedUserModule,
     SharedUserroleModule,
     SharedBranchModule,
+    SharedRefreshtokenModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',

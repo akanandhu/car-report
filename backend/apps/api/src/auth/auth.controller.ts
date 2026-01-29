@@ -20,7 +20,7 @@ import {
   VerifyOtpDto,
 } from './dto/auth.dto';
 import { AuthResponseDto, AuthTokensDto } from './dto/auth-response.dto';
-import { Request } from 'express';
+import type { Request } from 'express';
 
 @ApiTags('Authentication')
 @Controller('auth')

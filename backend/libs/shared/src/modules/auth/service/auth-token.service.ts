@@ -33,7 +33,7 @@ export class SharedAuthTokenService {
 
         // Get user roles
         const userRoles = await this.userroleService.getUserRoles(userId);
-        const roles = userRoles.map((ur) => ur.role.identifier);
+        const roles = userRoles.map((ur: any) => ur.role.identifier);
 
         const payload: TokenPayload = {
             userId: user.id,

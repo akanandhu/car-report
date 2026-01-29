@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import {
   Body,
   Controller,
@@ -12,7 +12,7 @@ import {
   Get,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
-import { AuthService } from '@shared/shared';
+import { AuthService } from '@shared/modules/tempAuth/auth.service';
 import {
   PhoneSignupDto,
   PhoneVerificationDto,
@@ -26,16 +26,16 @@ import {
   VerifyForgotPasswordOtpDto,
   ResetPasswordDto,
 } from './dto';
-import { AuthRole } from '@shared/shared/common/constants/constants';
-import { JwtAuthGuard } from '@shared/shared/modules/auth/guards/jwt-auth.guard';
-import { UserService } from '@shared/shared/modules/user/user.service';
+import { AuthRole } from '@shared/common/constants/constants';
+import { JwtAuthGuard } from '@shared/modules/tempAuth/guards/jwt-auth.guard';
+import { SharedUserService } from '@shared/modules/user/user.service';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    private readonly userService: SharedUserService,
   ) {}
 
   @Get('me')

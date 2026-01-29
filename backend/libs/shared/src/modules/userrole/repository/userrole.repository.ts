@@ -5,7 +5,7 @@ import { PrismaService } from '@shared/database/prisma/prisma.service';
 
 @Injectable()
 export class UserroleRepository extends BaseRepository<UserRole> {
-  protected readonly modelName = 'userrole';
+  protected readonly modelName = 'userRole';
 
   constructor(prisma: PrismaService) {
     super(prisma);
