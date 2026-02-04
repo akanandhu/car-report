@@ -30,6 +30,8 @@ model User {
   userRoles UserRole[]
   branches Branch[]
   refreshTokens RefreshToken[]
+  createdVehicles Vehicle[] @relation("VehicleCreator")
+  modifiedVehicles Vehicle[] @relation("VehicleModifier")
 
   @@map("users")
 }
@@ -62,10 +64,20 @@ model UserRole {
 }
 
 model Vehicle {
-  id        String    @id @default(uuid())
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id             String    @id @default(uuid())
+  name           String
+  vehicleNumber  String    @map("vehicle_number")
+  status         String
+  model          String
+  createdBy      String?   @map("created_by")
+  lastModifiedBy String?   @map("last_modified_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  // Relations
+  creator  User? @relation("VehicleCreator", fields: [createdBy], references: [id])
+  modifier User? @relation("VehicleModifier", fields: [lastModifiedBy], references: [id])
 
   @@map("vehicles")
 }
