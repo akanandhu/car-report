@@ -188,8 +188,44 @@ export class SharedVehicleService {
     }
 
     // Soft delete the vehicle
+    // Soft delete the vehicle
     await this.vehicleRepository.softDeleteById(vehicleId);
 
     return { message: 'Vehicle deleted successfully' };
+  }
+
+  /**
+   * Find vehicle by ID with documents
+   */
+  async findByIdWithDocuments(vehicleId: string) {
+    const vehicle = await this.vehicleRepository.findById(vehicleId, {
+      include: {
+        vehicleDocuments: {
+          include: {
+            documentGroup: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        modifier: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!vehicle) {
+      throw new NotFoundException('Vehicle not found');
+    }
+
+    return vehicle;
   }
 }

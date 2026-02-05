@@ -78,6 +78,7 @@ model Vehicle {
   // Relations
   creator  User? @relation("VehicleCreator", fields: [createdBy], references: [id])
   modifier User? @relation("VehicleModifier", fields: [lastModifiedBy], references: [id])
+  vehicleDocuments VehicleDocument[]
 
   @@map("vehicles")
 }
@@ -97,6 +98,7 @@ owner User? @relation(fields: [ownerId], references: [id])
   @@map("branches")
 }
 
+
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -110,4 +112,50 @@ model RefreshToken {
 
   @@map("refresh_tokens")
 }
+
+model DocumentGroup {
+  id          String  @id @default(uuid())
+  name        String
+  identifier  String  
+  description String?
+  type        String?
+  parentId    String? @map("parent_id")
+  groupName   String? @map("group_name")
+  order       Int?
+  isEnabled   Boolean @default(true) @map("is_enabled")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  parent           DocumentGroup?    @relation("DocumentGroupParent", fields: [parentId], references: [id])
+  children         DocumentGroup[]   @relation("DocumentGroupParent")
+  vehicleDocuments VehicleDocument[]
+
+  @@map("document_groups")
+}
+
+enum VehicleDocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model VehicleDocument {
+  id              String   @id @default(uuid())
+  documentGroupId String   @map("document_group_id")
+  vehicleId       String   @map("vehicle_id")
+  documentSpec    Json?    @map("document_spec")
+  status          VehicleDocumentStatus 
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
+  vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
+
+  @@map("vehicle_documents")
+}
+
 

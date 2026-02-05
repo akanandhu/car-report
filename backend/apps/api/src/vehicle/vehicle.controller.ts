@@ -135,6 +135,37 @@ export class VehicleController {
   }
 
   /**
+   * Get vehicle by ID with documents
+   */
+  @Get(':id/with-documents')
+  @ApiOperation({
+    summary: 'Get vehicle by ID with documents',
+    description: 'Retrieve a single vehicle by its unique identifier along with its documents',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Vehicle ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Vehicle retrieved successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Vehicle not found',
+  })
+  async findWithDocuments(@Param('id') id: string) {
+    const vehicle = await this.sharedVehicleService.findByIdWithDocuments(id);
+
+    return {
+      data: vehicle,
+      message: 'Vehicle retrieved successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  /**
    * List vehicles with pagination
    */
   @Get()
