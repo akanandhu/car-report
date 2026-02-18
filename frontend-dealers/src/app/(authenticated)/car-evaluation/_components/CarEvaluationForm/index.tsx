@@ -11,6 +11,7 @@ import CarSpecsSection from "../CarSpecsSection";
 import DocumentsSection from "../DocumentsSection";
 import ExteriorSection from "../ExteriorSection";
 import Draft from "@/public/assets/svg/Draft";
+import Engine from "../Engine";
 
 const CarEvaluationForm = () => {
   const {
@@ -44,6 +45,8 @@ const CarEvaluationForm = () => {
         return <DocumentsSection {...sectionProps} />;
       case "exterior":
         return <ExteriorSection {...sectionProps} />;
+      case "engine":
+        return <Engine {...sectionProps} />;  
       default:
         return null;
     }

@@ -1,4 +1,4 @@
-export type SectionId = "seller" | "registration" | "specs" | "documents" | "exterior";
+export type SectionId = "seller" | "registration" | "specs" | "documents" | "exterior" | "engine";
 
 export interface SectionI {
   id: SectionId;
@@ -34,6 +34,21 @@ export interface CarEvaluationFormDataI {
   paintCondition?: string;
   tyreCondition?: string;
   images?: File[];
+  
+  engineSound?: string;
+  engineCondition?: string;
+  sump?: string;
+  clutchOperations?: string;
+  gearbox?: string;
+  engineOil?: string;
+  turboCharger?: string;
+  engineMount?: string;
+  battery?: string;
+  radiator?: string;
+  startingMotor?: string;
+  coolant?: string;
+  blowbyBackCompression?: string;
+  silencer?: string;
 }
 
 export interface SectionComponentPropsI {
