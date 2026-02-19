@@ -9,6 +9,7 @@ import { RefreshtokenModule } from './refreshtoken/refreshtoken.module';
 import { VehicleModule } from './vehicle/vehicle.module';
 import { DocumentGroupModule } from './document-group/document-group.module';
 import { VehicleDocumentModule } from './vehicle-document/vehicle-document.module';
+import { FormFieldModule } from './form-field/form-field.module';
 
 
 @Module({
@@ -19,7 +20,8 @@ import { VehicleDocumentModule } from './vehicle-document/vehicle-document.modul
     RefreshtokenModule,
     VehicleModule,
     DocumentGroupModule,
-    VehicleDocumentModule],
+    VehicleDocumentModule,
+    FormFieldModule],
   controllers: [ApiController],
   providers: [ApiService],
 })

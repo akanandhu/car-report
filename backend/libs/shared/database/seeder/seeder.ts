@@ -1,10 +1,14 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { RoleSeeder } from './role.seeder';
 import { UserSeeder } from './user.seeder';
-import { DocumentGroupSeeder } from './document-group.seeder';
+import { FormConfigSeeder } from './form-config.seeder';
 
-
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
     console.log('🌱 Starting database seeding...\n');
@@ -20,10 +24,10 @@ async function main() {
         await UserSeeder.seed(prisma);
         console.log('✅ Super admin user seeded successfully\n');
 
-        // Seed document groups
-        console.log('📂 Seeding document groups...');
-        await DocumentGroupSeeder.seed(prisma);
-        console.log('✅ Document groups seeded successfully\n');
+        // Seed form configuration (types, steps, fields)
+        console.log('📋 Seeding form configuration...');
+        await FormConfigSeeder.seed(prisma);
+        console.log('✅ Form configuration seeded successfully\n');
 
         console.log('🎉 All seeders completed successfully!');
     } catch (error) {

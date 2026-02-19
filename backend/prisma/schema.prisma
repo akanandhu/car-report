@@ -32,6 +32,7 @@ model User {
   refreshTokens RefreshToken[]
   createdVehicles Vehicle[] @relation("VehicleCreator")
   modifiedVehicles Vehicle[] @relation("VehicleModifier")
+  submittedVehicleDocuments VehicleDocument[] @relation("VehicleDocumentSubmitter")
 
   @@map("users")
 }
@@ -131,11 +132,14 @@ model DocumentGroup {
   parent           DocumentGroup?    @relation("DocumentGroupParent", fields: [parentId], references: [id])
   children         DocumentGroup[]   @relation("DocumentGroupParent")
   vehicleDocuments VehicleDocument[]
+  formFields       FormField[]
 
   @@map("document_groups")
 }
 
 enum VehicleDocumentStatus {
+  DRAFT
+  SUBMITTED
   PENDING
   APPROVED
   REJECTED
@@ -147,15 +151,43 @@ model VehicleDocument {
   documentGroupId String   @map("document_group_id")
   vehicleId       String   @map("vehicle_id")
   documentSpec    Json?    @map("document_spec")
-  status          VehicleDocumentStatus 
+  status          VehicleDocumentStatus @default(DRAFT)
+  submittedBy     String?  @map("submitted_by")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
   documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
   vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
+  submitter     User?         @relation("VehicleDocumentSubmitter", fields: [submittedBy], references: [id])
 
   @@map("vehicle_documents")
+}
+
+model FormField {
+  id              String   @id @default(uuid())
+  documentGroupId String   @map("document_group_id")
+  type            String   // textfield, select, radio, checkbox, upload, textarea, number, date, email, phone
+  label           String
+  fieldKey        String   @map("field_key")
+  placeholder     String?
+  defaultValue    String?  @map("default_value")
+  isRequired      Boolean  @default(false) @map("is_required")
+  order           Int      @default(0)
+  validation      Json?    // { minLength, maxLength, pattern, patternMessage, min, max, allowedFileTypes, maxFileSize }
+  options         Json?    // [{ label, value }] for select/radio/checkbox
+  endpoint        String?  // URL for paginated options
+  conditions      Json?    // { dependsOn, operator, value, action } or { logic, action, rules: [...] }
+  isEnabled       Boolean  @default(true) @map("is_enabled")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  // Relations
+  documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
+
+  @@unique([documentGroupId, fieldKey])
+  @@map("form_fields")
 }
 
 

@@ -13,11 +13,12 @@ export class DocumentGroupController {
     @ApiResponse({ status: 201, type: DocumentGroupResponseDto })
     async create(@Body() dto: CreateDocumentGroupDto) {
         return this.service.repository.create({
-            ...dto,
-            description: dto.description ?? null,
-            type: dto.type ?? null,
-            parentId: dto.parentId ?? null,
-            groupName: dto.groupName ?? null,
+            name: dto.name,
+            identifier: dto.identifier,
+            description: dto.description || null,
+            type: dto.type || null,
+            parentId: dto.parentId || null,
+            groupName: dto.groupName || null,
             order: dto.order ?? null,
             isEnabled: dto.isEnabled ?? true,
         });
