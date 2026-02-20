@@ -39,7 +39,8 @@ export class SharedVehicleService {
       vehicleNumber: data.vehicleNumber,
       status: data.status,
       model: data.model,
-      createdBy: data.createdBy,
+      createdBy: data.createdBy ?? null,
+      lastModifiedBy: null,
     });
 
     return vehicle;
