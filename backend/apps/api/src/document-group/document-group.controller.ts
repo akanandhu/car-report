@@ -12,7 +12,15 @@ export class DocumentGroupController {
     @ApiOperation({ summary: 'Create a new document group' })
     @ApiResponse({ status: 201, type: DocumentGroupResponseDto })
     async create(@Body() dto: CreateDocumentGroupDto) {
-        return this.service.repository.create(dto);
+        return this.service.repository.create({
+            ...dto,
+            description: dto.description ?? null,
+            type: dto.type ?? null,
+            parentId: dto.parentId ?? null,
+            groupName: dto.groupName ?? null,
+            order: dto.order ?? null,
+            isEnabled: dto.isEnabled ?? true,
+        });
     }
 
     @Get()
@@ -33,7 +41,18 @@ export class DocumentGroupController {
     @ApiOperation({ summary: 'Update a document group' })
     @ApiResponse({ status: 200, type: DocumentGroupResponseDto })
     async update(@Param('id') id: string, @Body() dto: UpdateDocumentGroupDto) {
-        return this.service.repository.update({ where: { id }, data: dto });
+        return this.service.repository.update({
+            where: { id },
+            data: {
+                ...dto,
+                description: dto.description === undefined ? undefined : (dto.description ?? null),
+                type: dto.type === undefined ? undefined : (dto.type ?? null),
+                parentId: dto.parentId === undefined ? undefined : (dto.parentId ?? null),
+                groupName: dto.groupName === undefined ? undefined : (dto.groupName ?? null),
+                order: dto.order === undefined ? undefined : (dto.order ?? null),
+                isEnabled: dto.isEnabled,
+            }
+        });
     }
 
     @Delete(':id')

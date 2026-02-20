@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { RoleSeeder } from './role.seeder';
 import { UserSeeder } from './user.seeder';
+import { DocumentGroupSeeder } from './document-group.seeder';
 
 
 const prisma = new PrismaClient();
@@ -18,6 +19,11 @@ async function main() {
         console.log('👤 Seeding super admin user...');
         await UserSeeder.seed(prisma);
         console.log('✅ Super admin user seeded successfully\n');
+
+        // Seed document groups
+        console.log('📂 Seeding document groups...');
+        await DocumentGroupSeeder.seed(prisma);
+        console.log('✅ Document groups seeded successfully\n');
 
         console.log('🎉 All seeders completed successfully!');
     } catch (error) {

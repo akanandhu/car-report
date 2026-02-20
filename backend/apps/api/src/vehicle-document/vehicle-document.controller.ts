@@ -22,10 +22,16 @@ export class VehicleDocumentController {
         if (existing) {
             return this.service.repository.update({
                 where: { id: existing.id },
-                data: dto, // Updates all fields from dto
+                data: {
+                    ...dto,
+                    documentSpec: dto.documentSpec ?? null,
+                },
             });
         } else {
-            return this.service.repository.create(dto);
+            return this.service.repository.create({
+                ...dto,
+                documentSpec: dto.documentSpec ?? null,
+            });
         }
     }
 

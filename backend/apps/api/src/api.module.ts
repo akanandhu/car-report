@@ -10,17 +10,16 @@ import { VehicleModule } from './vehicle/vehicle.module';
 import { DocumentGroupModule } from './document-group/document-group.module';
 import { VehicleDocumentModule } from './vehicle-document/vehicle-document.module';
 
+
 @Module({
-  imports: [
-    UserModule,
+  imports: [UserModule,
     RoleModule,
     BranchModule,
     AuthModule,
     RefreshtokenModule,
     VehicleModule,
     DocumentGroupModule,
-    VehicleDocumentModule,
-  ],
+    VehicleDocumentModule],
   controllers: [ApiController],
   providers: [ApiService],
 })
