@@ -14,6 +14,7 @@ export const featuresSchema = z.object({
   absEbd: z.array(z.string()).optional(),
   gloveBox: z.array(z.string()).optional(),
   interiorModifications: z.string().optional(),
+  featuresOtherDetails: z.record(z.string()).optional(),
 });
 
 export type FeaturesFormData = z.infer<typeof featuresSchema>;

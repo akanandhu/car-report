@@ -18,6 +18,7 @@ const getDefaultValues = (data: CarEvaluationFormDataI): FeaturesFormData => ({
   absEbd: data.absEbd ?? [],
   gloveBox: data.gloveBox ?? [],
   interiorModifications: data.interiorModifications ?? "",
+  featuresOtherDetails: data.featuresOtherDetails ?? {},
 });
 
 const useFeaturesForm = ({ data }: { data: CarEvaluationFormDataI }) => {

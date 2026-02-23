@@ -1,21 +1,68 @@
-export default function UploadFileIcon() {
+export default function UploadFileIcon({
+  className = "w-16 h-16",
+}: {
+  className?: string;
+}) {
   return (
     <svg
+      viewBox="0 0 120 100"
       xmlns="http://www.w3.org/2000/svg"
-      width="40"
-      height="40"
-      viewBox="0 0 24 24"
-      fill="none"
+      className={className}
     >
-      <path
-        fill="#9CA3AF"
-        d="M12 3c.3 0 .6.1.8.3l4 4a1 1 0 0 1-1.4 1.4L13 6.4V14a1 1 0 1 1-2 0V6.4L8.6 8.7A1 1 0 0 1 7.2 7.3l4-4C11.4 3.1 11.7 3 12 3z"
+      <defs>
+        {/* Slate Gradient */}
+        <linearGradient id="slateGradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#475569" /> {/* lighter shade */}
+          <stop offset="100%" stopColor="#1e293b" /> {/* darker shade */}
+        </linearGradient>
+
+        {/* Soft Shadow */}
+        <filter
+          id="softShadowSlate"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
+          <feDropShadow
+            dx="0"
+            dy="4"
+            stdDeviation="6"
+            floodColor="#334155"
+            floodOpacity="0.35"
+          />
+        </filter>
+      </defs>
+
+      {/* Back Card */}
+      <rect
+        x="25"
+        y="15"
+        rx="18"
+        ry="18"
+        width="70"
+        height="55"
+        fill="#334155"
+        opacity="0.5"
       />
-      <path
-        fill="#9CA3AF"
-        d="M4 14c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v5c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-5z"
+
+      {/* Front Card */}
+      <rect
+        x="35"
+        y="30"
+        rx="18"
+        ry="18"
+        width="70"
+        height="55"
+        fill="url(#slateGradient)"
+        filter="url(#softShadowSlate)"
       />
-      <circle cx="8" cy="17" r="1.2" fill="#6B7280" />
+
+      {/* Mountain Shape */}
+      <path d="M50 70 L65 52 L80 70 Z" fill="#f1f5f9" opacity="0.9" />
+
+      {/* Sun Circle */}
+      <circle cx="85" cy="48" r="6" fill="#e2e8f0" />
     </svg>
   );
 }

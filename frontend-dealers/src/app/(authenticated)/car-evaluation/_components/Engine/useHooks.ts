@@ -25,6 +25,7 @@ const getDefaultValues = (data: CarEvaluationFormDataI): EngineFormData => ({
   engineComments: data.engineComments ?? "",
   engineMount: data.engineMount ?? [],
   sump: data.sump ?? [],
+  engineOtherDetails: data.engineOtherDetails ?? {},
 });
 
 const useEngineForm = ({

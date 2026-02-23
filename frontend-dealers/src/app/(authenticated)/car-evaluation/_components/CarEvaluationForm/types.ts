@@ -99,6 +99,7 @@ export interface CarEvaluationFormDataI {
   clutchSystem?: string[];
   transmissionAutomatic?: string[];
   vehicleHorn?: string[];
+  testDriveOtherDetails?: Record<string, string>;
 
   keylessEntry?: string[];
   stereoImage?: string[];
@@ -113,6 +114,10 @@ export interface CarEvaluationFormDataI {
   absEbd?: string[];
   gloveBox?: string[];
   interiorModifications?: string;
+  featuresOtherDetails?: Record<string, string>;
+
+  engineOtherDetails?: Record<string, string>;
+  interiorElectricalOtherDetails?: Record<string, string>;
 }
 
 export interface SectionComponentPropsI {

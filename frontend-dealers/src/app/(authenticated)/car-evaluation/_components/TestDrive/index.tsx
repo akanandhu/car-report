@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import Accordion from "@/src/components/Accordion";
+import Input from "@/src/components/Input";
 import { SectionComponentPropsI } from "../CarEvaluationForm/types";
 import useTestDriveForm from "./useHooks";
 import { TestDriveFormData } from "./types";
@@ -10,12 +11,35 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
   const { setValue, watch } = useTestDriveForm({ data });
 
   const GOOD_VALUES = useMemo(() => new Set(["Good", "Working"]), []);
+  const OTHER_OPTION = "Other";
 
   const getMultiValue = (name: keyof TestDriveFormData) =>
     (watch(name) as string[]) ?? [];
 
   const getSingleValue = (name: keyof TestDriveFormData) =>
     (watch(name) as string) ?? "";
+
+  const getOtherDetails = () =>
+    (watch("testDriveOtherDetails") as Record<string, string>) ?? {};
+
+  const getOtherValue = (name: keyof TestDriveFormData) =>
+    getOtherDetails()[String(name)] ?? "";
+
+  const setOtherValue = (name: keyof TestDriveFormData, value: string) => {
+    const current = getOtherDetails();
+    const next = { ...current, [String(name)]: value };
+    setValue("testDriveOtherDetails", next, { shouldValidate: true });
+    onChange({ testDriveOtherDetails: next });
+  };
+
+  const clearOtherValue = (name: keyof TestDriveFormData) => {
+    const current = getOtherDetails();
+    if (!current[String(name)]) return;
+    const next = { ...current };
+    delete next[String(name)];
+    setValue("testDriveOtherDetails", next, { shouldValidate: true });
+    onChange({ testDriveOtherDetails: next });
+  };
 
   const handleToggleMulti = (
     name: keyof TestDriveFormData,
@@ -38,6 +62,10 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
 
     setValue(name, next, { shouldValidate: true });
     onChange({ [name]: next } as Partial<SectionComponentPropsI["data"]>);
+
+    if (!next.includes(OTHER_OPTION)) {
+      clearOtherValue(name);
+    }
   };
 
   const handleToggleSingle = (name: keyof TestDriveFormData, option: string) => {
@@ -46,6 +74,10 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
 
     setValue(name, next, { shouldValidate: true });
     onChange({ [name]: next } as Partial<SectionComponentPropsI["data"]>);
+
+    if (next !== OTHER_OPTION) {
+      clearOtherValue(name);
+    }
   };
 
   const getBadge = (selected: string[]) => {
@@ -105,6 +137,15 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
             );
           })}
         </div>
+        {options.includes(OTHER_OPTION) && selected.includes(OTHER_OPTION) && (
+          <Input
+            label="Other Details"
+            type="text"
+            placeholder="Enter other details"
+            value={getOtherValue(name)}
+            onChange={(e) => setOtherValue(name, e.target.value)}
+          />
+        )}
       </div>
     );
   };
@@ -116,26 +157,37 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
     const selected = getSingleValue(name);
 
     return (
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => {
-          const active = selected === option;
-          return (
-            <button
-              key={option}
-              onClick={() => handleToggleSingle(name, option)}
-              className={`px-3 py-1 rounded-full text-sm border transition
-                ${
-                  active
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-700"
-                }
-                hover:bg-blue-100
-              `}
-            >
-              {option}
-            </button>
-          );
-        })}
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {options.map((option) => {
+            const active = selected === option;
+            return (
+              <button
+                key={option}
+                onClick={() => handleToggleSingle(name, option)}
+                className={`px-3 py-1 rounded-full text-sm border transition
+                  ${
+                    active
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-700"
+                  }
+                  hover:bg-blue-100
+                `}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+        {options.includes(OTHER_OPTION) && selected === OTHER_OPTION && (
+          <Input
+            label="Other Details"
+            type="text"
+            placeholder="Enter other details"
+            value={getOtherValue(name)}
+            onChange={(e) => setOtherValue(name, e.target.value)}
+          />
+        )}
       </div>
     );
   };
@@ -143,11 +195,7 @@ const TestDrive = ({ data, onChange }: SectionComponentPropsI) => {
   const accordionItems = [
     {
       title: "Steering System *",
-      badge: getBadge(
-        getSingleValue("steeringSystem")
-          ? [getSingleValue("steeringSystem")]
-          : [],
-      ),
+      badge: null,
       children: renderSingleOptions("steeringSystem", [
         "Electric",
         "Hydraulic",

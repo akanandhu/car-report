@@ -23,6 +23,7 @@ export const engineSchema = z.object({
   engineComments: z.string().min(1, "Engine comments is required"),
   engineMount: z.array(z.string()).min(1, "Engine mount is required"),
   sump: z.array(z.string()).min(1, "Sump is required"),
+  engineOtherDetails: z.record(z.string()).optional(),
 });
 
 export type EngineFormData = z.infer<typeof engineSchema>;

@@ -25,6 +25,7 @@ const getDefaultValues = (
   carElectrical: data.carElectrical ?? [],
   secondKey: data.secondKey ?? "",
   platform: data.platform ?? [],
+  interiorElectricalOtherDetails: data.interiorElectricalOtherDetails ?? {},
 });
 
 const useInteriorElectricalForm = ({

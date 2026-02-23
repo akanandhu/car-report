@@ -16,6 +16,7 @@ const getDefaultValues = (data: CarEvaluationFormDataI): TestDriveFormData => ({
   clutchSystem: data.clutchSystem ?? [],
   transmissionAutomatic: data.transmissionAutomatic ?? [],
   vehicleHorn: data.vehicleHorn ?? [],
+  testDriveOtherDetails: data.testDriveOtherDetails ?? {},
 });
 
 const useTestDriveForm = ({ data }: { data: CarEvaluationFormDataI }) => {
