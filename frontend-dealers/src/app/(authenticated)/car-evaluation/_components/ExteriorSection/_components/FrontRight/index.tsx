@@ -4,8 +4,9 @@ import React from "react";
 import useFrontRightConditions from "./useHook";
 import { PARTS } from "./helpers";
 import Input from "@/src/components/Input";
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-const FrontRight = () => {
+const FrontRight = ({ data, onChange }: SectionComponentPropsI) => {
 
     const {
     selectedConditions,
@@ -13,8 +14,9 @@ const FrontRight = () => {
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
-  } = useFrontRightConditions();
+    isGood,
+    otherText,
+  } = useFrontRightConditions({ data, onChange });
 
     const accordionItems = PARTS.map((part) => {
     return ({
@@ -69,7 +71,7 @@ const FrontRight = () => {
         {selectedConditions(part.name).includes("Other") && (
           <Input
             placeholder="Enter observation..."
-            value={""}
+            value={otherText(part.name)}
             name={part.name}
             onChange={(e) => updateOtherText(part.name, e.target.value)}
             className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"

@@ -1,21 +1,25 @@
 import Accordion from '@/src/components/Accordion'
 import ImageUpload from '@/src/components/ImageUpload'
-import React, { useState } from 'react'
+import React from 'react'
 import useFrontLeft from './useHook';
 import { PARTS } from './helper';
 import Input from '@/src/components/Input';
 import RadioButton from '@/src/components/Radio';
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-const FrontLeft = () => {
+const FrontLeft = ({ data, onChange }: SectionComponentPropsI) => {
     const {
     selectedConditions,
     isMajor,
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
-  } = useFrontLeft();
-  const [value, setValue] = useState("");
+    isGood,
+    otherText,
+    missingParts,
+    fullBodyRepaint,
+    updateSimpleValue,
+  } = useFrontLeft({ data, onChange });
     const accordionItems = PARTS.map((part) => {
     return ({
     title: part.name,
@@ -69,7 +73,7 @@ const FrontLeft = () => {
         {selectedConditions(part.name).includes("Other") && (
           <Input
             placeholder="Enter observation..."
-            value={""}
+            value={otherText(part.name)}
             name={part.name}
             onChange={(e) => updateOtherText(part.name, e.target.value)}
             className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
@@ -104,9 +108,9 @@ const FrontLeft = () => {
           <Input
             placeholder="Wiper Blades, Missing Emblems, etc..."
             label="Missing Parts"
-            value={""}
+            value={missingParts}
             name="ob"
-            // onChange={(e) => updateOtherText(part.name, e.target.value)}
+            onChange={(e) => updateSimpleValue("missingParts", e.target.value)}
             className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
             />
             </div>
@@ -119,8 +123,8 @@ const FrontLeft = () => {
         name="spareWheel" // ✅ Same name makes it exclusive
         label="Yes"
         value="yes"
-        checked={value === "yes"}
-        onChange={() => setValue("yes")}
+        checked={fullBodyRepaint === "yes"}
+        onChange={() => updateSimpleValue("fullBodyRepaint", "yes")}
       />
 
       {/* NO */}
@@ -129,8 +133,8 @@ const FrontLeft = () => {
         name="spareWheel"
         label="No"
         value="no"
-        checked={value === "no"}
-        onChange={() => setValue("no")}
+        checked={fullBodyRepaint === "no"}
+        onChange={() => updateSimpleValue("fullBodyRepaint", "no")}
       />
     </div>
         </div>

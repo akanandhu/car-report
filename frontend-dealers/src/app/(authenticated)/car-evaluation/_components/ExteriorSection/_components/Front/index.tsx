@@ -4,16 +4,18 @@ import Input from '@/src/components/Input';
 import ImageUpload from '@/src/components/ImageUpload';
 import Accordion from '@/src/components/Accordion';
 import useFrontConditions from './useHook';
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-const Front = () => {
+const Front = ({ data, onChange }: SectionComponentPropsI) => {
     const {
     selectedConditions,
     isMajor,
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
-  } = useFrontConditions();
+    isGood,
+    otherText,
+  } = useFrontConditions({ data, onChange });
   const accordionItems = PARTS.map((part) => {
     return ({
     title: part.name,
@@ -67,7 +69,7 @@ const Front = () => {
         {selectedConditions(part.name).includes("Other") && (
           <Input
             placeholder="Enter observation..."
-            value={""}
+            value={otherText(part.name)}
             name={part.name}
             onChange={(e) => updateOtherText(part.name, e.target.value)}
             className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"

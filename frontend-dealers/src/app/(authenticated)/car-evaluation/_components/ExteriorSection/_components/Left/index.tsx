@@ -4,18 +4,19 @@ import React from 'react'
 import useLeft from './useHook';
 import { PARTS } from './helper';
 import Input from '@/src/components/Input';
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-const Left = () => {
+const Left = ({ data, onChange }: SectionComponentPropsI) => {
     const {
     selectedConditions,
     isMajor,
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
-  } = useLeft();
+    isGood,
+    otherText,
+  } = useLeft({ data, onChange });
      const accordionItems = PARTS.map((part) => {
-    console.log("Is good ", isGood(part.name));
     return {
       title: part.name,
       badge:
@@ -74,7 +75,7 @@ const Left = () => {
           {selectedConditions(part.name).includes("Other") && (
             <Input
               placeholder="Enter observation..."
-              value={""}
+              value={otherText(part.name)}
               name={part.name}
               onChange={(e) => updateOtherText(part.name, e.target.value)}
               className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"

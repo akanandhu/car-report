@@ -10,7 +10,8 @@ export default function ConditionSelect({
   value,
   onChange,
   isMulti = true,
-  placeholder = "Select condition"
+  placeholder = "Select condition",
+  exclusiveValue = "Good",
 }: ConditionSelectProps) {
   const [open, setOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
@@ -18,7 +19,7 @@ export default function ConditionSelect({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const isGoodSelected = value.includes("Good");
+  const isExclusiveSelected = value.includes(exclusiveValue);
 
   // âœ… Close dropdown when clicking outside
   useEffect(() => {
@@ -86,8 +87,10 @@ export default function ConditionSelect({
     if (!isMulti) return false;
 
     return (
-      (isGoodSelected && optionValue !== "Good") ||
-      (!isGoodSelected && value.length > 0 && optionValue === "Good")
+      (isExclusiveSelected && optionValue !== exclusiveValue) ||
+      (!isExclusiveSelected &&
+        value.length > 0 &&
+        optionValue === exclusiveValue)
     );
   };
 
@@ -113,7 +116,7 @@ export default function ConditionSelect({
       {open && (
         <div
           ref={dropdownRef}
-          className={`absolute w-full bg-white border rounded-xl shadow-lg z-50 max-h-60 overflow-auto
+          className={`absolute w-full bg-white border rounded-xl shadow-lg z-50 max-h-60 overflow-auto 
           ${dropUp ? "mb-2 bottom-full" : "top-full mt-2"}`}
         >
           {options.map((opt) => {

@@ -8,8 +8,6 @@ const SellerSection = ({ data, onChange }: SectionComponentPropsI) => {
     onChange({ [name]: value });
   };
 
-  console.log("SellerSection data:", data);
-
   return (
     <div className="space-y-5">
       <div>

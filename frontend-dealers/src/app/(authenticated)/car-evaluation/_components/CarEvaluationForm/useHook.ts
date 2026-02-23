@@ -10,6 +10,9 @@ const SECTIONS: SectionI[] = [
   { id: "documents", label: "Documents" },
   { id: "exterior", label: "Exterior" },
   { id: "engine", label: "Engine" },
+  { id: "interiorElectrical", label: "Interior & Electrical" },
+  { id: "testDrive", label: "Test Drive" },
+  { id: "features", label: "Features" },
 ];
 
 const useCarEvaluationForm = () => {

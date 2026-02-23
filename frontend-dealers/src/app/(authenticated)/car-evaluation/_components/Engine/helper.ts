@@ -124,12 +124,18 @@ export const engineSoundOptions = [
 
 
   // Turbo Charger Options: [Working, Leakage, Not Working, Noisy, Other]
-    export const turboChargerOptions = [
+  export const turboChargerOptions = [
     { label: "Working", value: "Working" },
     { label: "Leakage", value: "Leakage" },
     { label: "Not Working", value: "Not Working" },
     { label: "Noisy", value: "Noisy" },
     { label: "Other", value: "Other" },
+  ];
+
+  // Gearbox Leakage* Options: [Yes, No]
+  export const gearboxLeakageOptions = [
+    { label: "Yes", value: "Yes" },
+    { label: "No", value: "No" },
   ];
 
   // Engine Mount Options: [Good, Jerking, Damaged, Other]

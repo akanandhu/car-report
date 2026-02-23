@@ -7,9 +7,11 @@ import Left from "./_components/Left";
 import Rare from "./_components/Rare";
 import RareRight from "./_components/RareRight";
 
-const ExteriorSection = ({ data, onChange }: SectionComponentPropsI) => {
+const ExteriorSection = ({ data }: SectionComponentPropsI) => {
   
-
+  const onChange = (sectionData: Partial<SectionComponentPropsI["data"]>) => {
+    data = { ...data, ...sectionData };
+  };
   return (
     <div className="space-y-5">
       <div>
@@ -20,12 +22,12 @@ const ExteriorSection = ({ data, onChange }: SectionComponentPropsI) => {
           Assess the exterior condition of the vehicle
         </p>
       </div>
-      <Front/>
-      <FrontRight/>
-      <RareRight/>
-      <Rare/>
-      <Left/>
-      <FrontLeft/>
+      <Front data={data} onChange={onChange} />
+      <FrontRight data={data} onChange={onChange} />
+      <RareRight data={data} onChange={onChange} />
+      <Rare data={data} onChange={onChange} />
+      <Left data={data} onChange={onChange} />
+      <FrontLeft data={data} onChange={onChange} />
     </div>
   );
 };

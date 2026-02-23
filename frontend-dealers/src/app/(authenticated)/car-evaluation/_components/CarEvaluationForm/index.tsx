@@ -12,6 +12,9 @@ import DocumentsSection from "../DocumentsSection";
 import ExteriorSection from "../ExteriorSection";
 import Draft from "@/public/assets/svg/Draft";
 import Engine from "../Engine";
+import InteriorElectrical from "../InteriorElectrical";
+import TestDrive from "../TestDrive";
+import Features from "../Features";
 
 const CarEvaluationForm = () => {
   const {
@@ -45,6 +48,12 @@ const CarEvaluationForm = () => {
         return <DocumentsSection {...sectionProps} />;
       case "exterior":
         return <ExteriorSection {...sectionProps} />;
+      case "interiorElectrical":
+        return <InteriorElectrical {...sectionProps} />;
+      case "testDrive":
+        return <TestDrive {...sectionProps} />;
+      case "features":
+        return <Features {...sectionProps} />;
       case "engine":
         return <Engine {...sectionProps} />;  
       default:

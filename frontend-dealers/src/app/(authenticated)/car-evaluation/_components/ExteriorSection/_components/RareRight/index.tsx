@@ -4,8 +4,9 @@ import React from "react";
 import useRareRight from "./useHook";
 import Input from "@/src/components/Input";
 import { PARTS } from "./helper";
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-const RareRight = () => {
+const RareRight = ({ data, onChange }: SectionComponentPropsI) => {
   const {
     selectedConditions,
     isMajor,
@@ -13,9 +14,9 @@ const RareRight = () => {
     updateOtherText,
     handleFile,
     isGood,
-  } = useRareRight();
+    otherText,
+  } = useRareRight({ data, onChange });
   const accordionItems = PARTS.map((part) => {
-    console.log("Is good ", isGood(part.name));
     return {
       title: part.name,
       badge:
@@ -74,7 +75,7 @@ const RareRight = () => {
           {selectedConditions(part.name).includes("Other") && (
             <Input
               placeholder="Enter observation..."
-              value={""}
+              value={otherText(part.name)}
               name={part.name}
               onChange={(e) => updateOtherText(part.name, e.target.value)}
               className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"

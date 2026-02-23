@@ -1,7 +1,29 @@
-import React, { useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Condition } from "./types";
+import { CarEvaluationFormDataI } from "../../../CarEvaluationForm/types";
 
-const useFrontConditions = () => {
+type ExteriorFormData = {
+  exteriorConditions: Record<
+    string,
+    {
+      selected: Condition[];
+      otherText?: string;
+    }
+  >;
+};
+
+const getDefaultValues = (data: CarEvaluationFormDataI): ExteriorFormData => ({
+  exteriorConditions: data.exteriorConditions ?? {},
+});
+
+const useFrontConditions = ({
+  data,
+  onChange,
+}: {
+  data: CarEvaluationFormDataI;
+  onChange: (newData: Partial<CarEvaluationFormDataI>) => void;
+}) => {
   const MAJOR_ISSUES: Condition[] = [
     "Damaged",
     "Replaced",
@@ -20,87 +42,71 @@ const useFrontConditions = () => {
     "Working"
   ]
 
-  const [formData, setFormData] = useState<
-    Record<
-      string,
-      {
-        selected: Condition[];
-        otherText?: string;
-      }
-    >
-  >({});
-  const [clicked, setClicked] = useState(false);
+  const {
+    reset,
+    setValue,
+    watch,
+  } = useForm<ExteriorFormData>({
+    defaultValues: getDefaultValues(data),
+  });
+
+  useEffect(() => {
+    reset(getDefaultValues(data));
+  }, [data, reset]);
+
+  const exteriorConditions = watch("exteriorConditions") ?? {};
+
   const updateOtherText = (part: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
+    const next = {
+      ...exteriorConditions,
       [part]: {
-        ...prev[part],
+        ...exteriorConditions[part],
         otherText: value,
       },
-    }));
+    };
+    setValue("exteriorConditions", next, { shouldValidate: true });
+    onChange({ exteriorConditions: next });
   };
   const toggleCondition = (part: string, condition: Condition) => {
-    console.log("Part", part, "Condition ", condition);
-    setFormData((prev) => {
-      const existing = prev[part]?.selected || [];
+    const existing = exteriorConditions[part]?.selected || [];
 
-      // Not Available overrides everything
-      if (condition === "Not Available") {
-        return {
-          ...prev,
-          [part]: { selected: ["Not Available"] },
-        };
-      }
-
-      // Remove Not Available
-      let updated = existing.filter((c) => c !== "Not Available");
-
-      // Good is exclusive
-      if (condition === "Good") {
-        if (clicked) {
-          setClicked(false);
-          return {
-            ...prev,
-            [part]: { selected: [] },
-          };
-        }
-        setClicked(true);
-        return {
-          ...prev,
-          [part]: { selected: ["Good"] },
-        };
-      }
-
-      if (condition === "Working") {
-        if (clicked) {
-          setClicked(false);
-          return {
-            ...prev,
-            [part]: { selected: [] },
-          };
-        }
-        setClicked(true);
-        return {
-          ...prev,
-          [part]: { selected: ["Working"] },
-        };
-      }
-      updated = updated.filter((c) => c !== "Good");
-      updated = updated.filter((c) => c !== "Working");
-      if (updated.includes(condition)) {
-        updated = updated.filter((c) => c !== condition);
-      } else {
-        updated.push(condition);
-      }
-      console.log("Updated ", updated);
-      return {
-        ...prev,
-        [part]: {
-          ...prev[part],
-          selected: updated,
-        },
+    if (condition === "Not Available") {
+      const next = {
+        ...exteriorConditions,
+        [part]: { selected: existing.includes("Not Available") ? [] : ["Not Available"] },
       };
-    });
+      setValue("exteriorConditions", next, { shouldValidate: true });
+      onChange({ exteriorConditions: next });
+      return;
+    }
+
+    if (condition === "Good" || condition === "Working") {
+      const next = {
+        ...exteriorConditions,
+        [part]: { selected: existing.includes(condition) ? [] : [condition] },
+      };
+      setValue("exteriorConditions", next, { shouldValidate: true });
+      onChange({ exteriorConditions: next });
+      return;
+    }
+
+    let updated = existing.filter(
+      (c) => c !== "Not Available" && c !== "Good" && c !== "Working",
+    );
+    if (updated.includes(condition)) {
+      updated = updated.filter((c) => c !== condition);
+    } else {
+      updated = [...updated, condition];
+    }
+    const next = {
+      ...exteriorConditions,
+      [part]: {
+        ...exteriorConditions[part],
+        selected: updated,
+      },
+    };
+    setValue("exteriorConditions", next, { shouldValidate: true });
+    onChange({ exteriorConditions: next });
   };
 
   const isMajor = (part: string) =>
@@ -109,9 +115,10 @@ const useFrontConditions = () => {
   const isGood = (part: string) =>
     selectedConditions(part).some((c) => GOOD_CONDITION.includes(c));
 
-  const selectedConditions = (part: string) => formData[part]?.selected || [];
+  const selectedConditions = (part: string) =>
+    exteriorConditions[part]?.selected || [];
+  const otherText = (part: string) => exteriorConditions[part]?.otherText || "";
   const handleFile = (file: File) => {
-    console.log("File ", file);
   };
   return {
     selectedConditions,
@@ -119,7 +126,8 @@ const useFrontConditions = () => {
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
+    isGood,
+    otherText,
   };
 };
 

@@ -1,5 +1,5 @@
 "use client";
-import Checkbox from "@/src/components/Checkbox";
+import DocumentVerificationItem from "@/src/components/DocumentVerificationItem";
 import { SectionComponentPropsI } from "../CarEvaluationForm/types";
 
 const DocumentsSection = ({ data, onChange }: SectionComponentPropsI) => {
@@ -19,37 +19,37 @@ const DocumentsSection = ({ data, onChange }: SectionComponentPropsI) => {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 space-y-4">
-        <Checkbox
+      <div className="bg-white rounded-2xl border-2 border-gray-300 p-6 space-y-6">
+        <DocumentVerificationItem
           id="rcBook"
           name="rcBook"
           label="RC Book (Registration Certificate)"
           checked={data.rcBook || false}
-          onChange={handleChange}
+          onCheckedChange={handleChange}
         />
 
-        <Checkbox
+        <DocumentVerificationItem
           id="insurance"
           name="insurance"
           label="Valid Insurance"
           checked={data.insurance || false}
-          onChange={handleChange}
+          onCheckedChange={handleChange}
         />
 
-        <Checkbox
+        <DocumentVerificationItem
           id="pollutionCertificate"
           name="pollutionCertificate"
           label="Pollution Certificate (PUC)"
           checked={data.pollutionCertificate || false}
-          onChange={handleChange}
+          onCheckedChange={handleChange}
         />
 
-        <Checkbox
+        <DocumentVerificationItem
           id="servicingHistory"
           name="servicingHistory"
           label="Servicing History"
           checked={data.servicingHistory || false}
-          onChange={handleChange}
+          onCheckedChange={handleChange}
         />
       </div>
     </div>

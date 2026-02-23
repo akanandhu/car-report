@@ -4,16 +4,18 @@ import React from 'react'
 import useRare from './useHook';
 import { PARTS } from './helper';
 import Input from '@/src/components/Input';
+import { SectionComponentPropsI } from "../../../CarEvaluationForm/types";
 
-function Rare() {
+function Rare({ data, onChange }: SectionComponentPropsI) {
     const {
     selectedConditions,
     isMajor,
     toggleCondition,
     updateOtherText,
     handleFile,
-    isGood
-  } = useRare();
+    isGood,
+    otherText,
+  } = useRare({ data, onChange });
     const accordionItems = PARTS.map((part) => {
     return ({
     title: part.name,
@@ -67,7 +69,7 @@ function Rare() {
         {selectedConditions(part.name).includes("Other") && (
           <Input
             placeholder="Enter observation..."
-            value={""}
+            value={otherText(part.name)}
             name={part.name}
             onChange={(e) => updateOtherText(part.name, e.target.value)}
             className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"

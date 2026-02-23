@@ -10,4 +10,5 @@ type ConditionSelectProps = {
   onChange: (val: string[]) => void;
   isMulti?: boolean;
   placeholder?: string;
+  exclusiveValue?: string;
 };
