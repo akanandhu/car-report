@@ -35,6 +35,7 @@ export class VehicleDocumentController {
             where: {
                 vehicleId: dto.vehicleId,
                 documentGroupId: dto.documentGroupId,
+                formFieldId: dto.formFieldId,
             },
         });
 
@@ -49,6 +50,7 @@ export class VehicleDocumentController {
                 status: dto.status || ('DRAFT' as any),
                 documentSpec: dto.documentSpec || null,
                 submittedBy: dto.submittedBy || null,
+                formFieldId: dto.formFieldId || null,
             });
         }
     }

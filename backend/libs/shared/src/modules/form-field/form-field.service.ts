@@ -277,4 +277,92 @@ export class SharedFormFieldService {
       orderBy: { order: 'asc' },
     });
   }
+
+  /**
+   * List form fields for a given documentGroupId, enriched with the
+   * VehicleDocument record for the given vehicleId (if it exists).
+   *
+   * Filters:
+   *  - Fields belong to the given documentGroupId (matches the group)
+   *  - VehicleDocument.vehicleId === vehicleId AND VehicleDocument.documentGroupId === documentGroupId
+   */
+  async getFieldsByGroupAndVehicle(vehicleId: string, documentGroupId: string) {
+    // Verify the document group exists
+    const documentGroup = await this.documentGroupRepository.findById(documentGroupId);
+    if (!documentGroup) {
+      throw new NotFoundException(`Document group '${documentGroupId}' not found`);
+    }
+
+    // Fetch all enabled, non-deleted fields for the group
+    const fields = await this.formFieldRepository.findMany({
+      where: {
+        documentGroupId,
+        isEnabled: true,
+        deletedAt: null,
+      },
+      orderBy: { order: 'asc' },
+    });
+
+    // Fetch VehicleDocument records for this vehicle + group combination
+    // There may be one per formFieldId (or one aggregate without formFieldId)
+    // Using 'any' cast to handle stale Prisma client types (pending `prisma generate`)
+    const vehicleDocs = (await (this.prisma.vehicleDocument as any).findMany({
+      where: {
+        vehicleId,
+        documentGroupId,
+      },
+    })) as any[];
+
+    // Build a lookup: formFieldId → vehicleDocument (null key for group-level doc)
+    const vehicleDocByFieldId = new Map<string | null, any>();
+    for (const vd of vehicleDocs) {
+      vehicleDocByFieldId.set(vd.formFieldId ?? null, vd);
+    }
+
+    return {
+      documentGroup: {
+        id: documentGroup.id,
+        name: documentGroup.name,
+        identifier: documentGroup.identifier,
+        order: documentGroup.order,
+        description: documentGroup.description,
+      },
+      vehicleId,
+      fields: fields.map((field) => {
+        // Try field-specific doc, then group-level doc (formFieldId = null)
+        const vehicleDoc =
+          vehicleDocByFieldId.get(field.id) ??
+          vehicleDocByFieldId.get(null) ??
+          null;
+
+        return {
+          id: field.id,
+          type: field.type,
+          label: field.label,
+          fieldKey: field.fieldKey,
+          placeholder: field.placeholder,
+          defaultValue: field.defaultValue,
+          isRequired: field.isRequired,
+          order: field.order,
+          validation: field.validation,
+          options: field.options,
+          endpoint: field.endpoint,
+          conditions: field.conditions,
+          isEnabled: field.isEnabled,
+          documentGroupId: field.documentGroupId,
+          // Saved vehicle document data for this field (if any)
+          vehicleDocument: vehicleDoc
+            ? {
+              id: vehicleDoc.id,
+              status: vehicleDoc.status,
+              documentSpec: vehicleDoc.documentSpec,
+              submittedBy: vehicleDoc.submittedBy,
+              createdAt: vehicleDoc.createdAt,
+              updatedAt: vehicleDoc.updatedAt,
+            }
+            : null,
+        };
+      }),
+    };
+  }
 }

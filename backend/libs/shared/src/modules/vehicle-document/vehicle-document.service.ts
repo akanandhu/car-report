@@ -25,6 +25,7 @@ export class SharedVehicleDocumentService {
             documentGroupId: string;
             documentSpec: Record<string, any>;
             submittedBy?: string;
+            formFieldId?: string;
         },
     ) {
         // Check if a document already exists for this vehicle + step
@@ -32,6 +33,7 @@ export class SharedVehicleDocumentService {
             where: {
                 vehicleId,
                 documentGroupId: data.documentGroupId,
+                formFieldId: data.formFieldId,
             },
         });
 
@@ -56,6 +58,7 @@ export class SharedVehicleDocumentService {
                 documentGroupId: data.documentGroupId,
                 documentSpec: data.documentSpec,
                 submittedBy: data.submittedBy || null,
+                formFieldId: data.formFieldId,
                 status: 'DRAFT' as any,
             });
         }

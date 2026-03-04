@@ -153,6 +153,7 @@ model VehicleDocument {
   documentSpec    Json?    @map("document_spec")
   status          VehicleDocumentStatus @default(DRAFT)
   submittedBy     String?  @map("submitted_by")
+  formFieldId     String?  @map("form_field_id")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -160,7 +161,7 @@ model VehicleDocument {
   documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
   vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
   submitter     User?         @relation("VehicleDocumentSubmitter", fields: [submittedBy], references: [id])
-
+  formField     FormField?    @relation(fields: [formFieldId], references: [id])
   @@map("vehicle_documents")
 }
 
@@ -185,7 +186,7 @@ model FormField {
 
   // Relations
   documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
-
+  vehicleDocuments VehicleDocument[]
   @@unique([documentGroupId, fieldKey])
   @@map("form_fields")
 }
