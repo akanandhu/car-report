@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { SharedDocumentGroupService } from '@shared/modules/document-group/document-group.service';
 import { CreateDocumentGroupDto, DocumentGroupResponseDto, UpdateDocumentGroupDto } from './dto/document-group.dto';
 
@@ -25,10 +25,30 @@ export class DocumentGroupController {
     }
 
     @Get()
-    @ApiOperation({ summary: 'List all document groups' })
+    @ApiOperation({ summary: 'List all document groups (optionally filtered by vehicleId)' })
+    @ApiQuery({ name: 'vehicleId', required: false, description: 'Filter to groups that have vehicle documents for this vehicle' })
+    @ApiQuery({ name: 'groupId', required: false, description: 'Further filter by a specific group ID (used with vehicleId)' })
     @ApiResponse({ status: 200, type: [DocumentGroupResponseDto] })
-    async findAll() {
+    async findAll(
+        @Query('vehicleId') vehicleId?: string,
+        @Query('groupId') groupId?: string,
+    ) {
+        if (vehicleId) {
+            return this.service.listByVehicleId(vehicleId, groupId);
+        }
         return this.service.repository.findMany({});
+    }
+
+    @Get('by-vehicle/:vehicleId')
+    @ApiOperation({ summary: 'List document groups that have form data for a specific vehicle' })
+    @ApiParam({ name: 'vehicleId', description: 'Vehicle ID' })
+    @ApiQuery({ name: 'groupId', required: false, description: 'Optionally filter to a specific document group ID' })
+    @ApiResponse({ status: 200, type: [DocumentGroupResponseDto] })
+    async listByVehicle(
+        @Param('vehicleId') vehicleId: string,
+        @Query('groupId') groupId?: string,
+    ) {
+        return this.service.listByVehicleId(vehicleId, groupId);
     }
 
     @Get(':id')

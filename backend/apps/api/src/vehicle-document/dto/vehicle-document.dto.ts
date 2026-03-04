@@ -61,6 +61,11 @@ export class CreateVehicleDocumentDto {
     @IsOptional()
     @IsUUID()
     submittedBy?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsUUID()
+    formFieldId?: string;
 }
 
 export class UpdateVehicleDocumentDto extends PartialType(CreateVehicleDocumentDto) { }

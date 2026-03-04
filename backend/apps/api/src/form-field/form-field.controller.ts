@@ -6,11 +6,12 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   HttpStatus,
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SharedFormFieldService } from '@shared/modules/form-field/form-field.service';
 import {
   CreateFormFieldDto,
@@ -76,6 +77,33 @@ export class FormFieldController {
     return {
       data: steps as TypeStepsResponseDto,
       message: 'Type steps retrieved successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
+  /**
+   * Get form fields for a specific document group, with saved vehicle document data
+   */
+  @Get('fields')
+  @ApiOperation({
+    summary: 'Get form fields for a document group with vehicle data',
+    description:
+      'Returns all enabled form fields for the given documentGroupId. ' +
+      'Each field includes the saved VehicleDocument value for the specified vehicle (if any).',
+  })
+  @ApiQuery({ name: 'vehicleId', required: true, description: 'Vehicle ID to load saved data for' })
+  @ApiQuery({ name: 'documentGroupId', required: true, description: 'Document group (step) ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Fields with vehicle document data' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Document group not found' })
+  async getFieldsForVehicle(
+    @Query('vehicleId') vehicleId: string,
+    @Query('documentGroupId') documentGroupId: string,
+  ): Promise<ResponseDto<any>> {
+    const result = await this.formFieldService.getFieldsByGroupAndVehicle(vehicleId, documentGroupId);
+
+    return {
+      data: result,
+      message: 'Form fields retrieved successfully',
       statusCode: HttpStatus.OK,
     };
   }
