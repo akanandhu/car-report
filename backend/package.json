@@ -21,8 +21,8 @@
     "pmg": "prisma migrate dev && prisma generate",
     "dev:api": "pnpm start:api:dev",
     "create:module": "ts-node scripts/create-module.ts",
-    "seed": "pnpm exec ts-node -r tsconfig-paths/register libs/shared/database/seeder/seeder.ts",
-    "make:seeder": "pnpm exec ts-node -r tsconfig-paths/register scripts/make-seeder.ts"
+    "seed": "pnpm exec ts-node -r tsconfig-paths/register --project tsconfig.tsnode.json libs/shared/database/seeder/seeder.ts",
+    "make:seeder": "pnpm exec ts-node -r tsconfig-paths/register --project tsconfig.tsnode.json scripts/make-seeder.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -15,35 +15,35 @@ model User {
   email    String  @unique
 
   // OTP fields for authentication
-  otpSecret String? @map("otp_secret")
+  otpSecret    String?   @map("otp_secret")
   otpExpiresAt DateTime? @map("otp_expires_at")
 
   mobileVerifiedAt DateTime? @map("mobile_verified_at")
   emailVerifiedAt  DateTime? @map("email_verified_at")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  client User?  @relation("UserClient", fields: [clientId], references: [id])
-  users  User[] @relation("UserClient")
-  userRoles UserRole[]
-  branches Branch[]
-  refreshTokens RefreshToken[]
-  createdVehicles Vehicle[] @relation("VehicleCreator")
-  modifiedVehicles Vehicle[] @relation("VehicleModifier")
+  client                    User?             @relation("UserClient", fields: [clientId], references: [id])
+  users                     User[]            @relation("UserClient")
+  userRoles                 UserRole[]
+  branches                  Branch[]
+  refreshTokens             RefreshToken[]
+  createdVehicles           Vehicle[]         @relation("VehicleCreator")
+  modifiedVehicles          Vehicle[]         @relation("VehicleModifier")
   submittedVehicleDocuments VehicleDocument[] @relation("VehicleDocumentSubmitter")
 
   @@map("users")
 }
 
 model Role {
-  id        String    @id @default(uuid())
-  name      String
-  identifier String 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id         String    @id @default(uuid())
+  name       String
+  identifier String
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
   userRoles UserRole[]
 
@@ -77,8 +77,8 @@ model Vehicle {
   deletedAt      DateTime? @map("deleted_at")
 
   // Relations
-  creator  User? @relation("VehicleCreator", fields: [createdBy], references: [id])
-  modifier User? @relation("VehicleModifier", fields: [lastModifiedBy], references: [id])
+  creator          User?             @relation("VehicleCreator", fields: [createdBy], references: [id])
+  modifier         User?             @relation("VehicleModifier", fields: [lastModifiedBy], references: [id])
   vehicleDocuments VehicleDocument[]
 
   @@map("vehicles")
@@ -88,17 +88,16 @@ model Branch {
   id        String    @id @default(uuid())
   name      String
   address   String
-  ownerId    String?   @map("user_id")
+  ownerId   String?   @map("user_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
+  // relation
+  owner User? @relation(fields: [ownerId], references: [id])
 
-// relation
-owner User? @relation(fields: [ownerId], references: [id])
   @@map("branches")
 }
-
 
 model RefreshToken {
   id        String   @id @default(uuid())
@@ -117,7 +116,7 @@ model RefreshToken {
 model DocumentGroup {
   id          String  @id @default(uuid())
   name        String
-  identifier  String  
+  identifier  String
   description String?
   type        String?
   parentId    String? @map("parent_id")
@@ -147,48 +146,48 @@ enum VehicleDocumentStatus {
 }
 
 model VehicleDocument {
-  id              String   @id @default(uuid())
-  documentGroupId String   @map("document_group_id")
-  vehicleId       String   @map("vehicle_id")
-  documentSpec    Json?    @map("document_spec")
+  id              String                @id @default(uuid())
+  documentGroupId String                @map("document_group_id")
+  vehicleId       String                @map("vehicle_id")
+  documentSpec    Json?                 @map("document_spec")
   status          VehicleDocumentStatus @default(DRAFT)
-  submittedBy     String?  @map("submitted_by")
-  formFieldId     String?  @map("form_field_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  submittedBy     String?               @map("submitted_by")
+  formFieldId     String?               @map("form_field_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
 
   // Relations
   documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
   vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
   submitter     User?         @relation("VehicleDocumentSubmitter", fields: [submittedBy], references: [id])
   formField     FormField?    @relation(fields: [formFieldId], references: [id])
+
   @@map("vehicle_documents")
 }
 
 model FormField {
-  id              String   @id @default(uuid())
-  documentGroupId String   @map("document_group_id")
-  type            String   // textfield, select, radio, checkbox, upload, textarea, number, date, email, phone
+  id              String    @id @default(uuid())
+  documentGroupId String    @map("document_group_id")
+  type            String // textfield, select, radio, checkbox, upload, textarea, number, date, email, phone
   label           String
-  fieldKey        String   @map("field_key")
+  fieldKey        String    @map("field_key")
   placeholder     String?
-  defaultValue    String?  @map("default_value")
-  isRequired      Boolean  @default(false) @map("is_required")
-  order           Int      @default(0)
-  validation      Json?    // { minLength, maxLength, pattern, patternMessage, min, max, allowedFileTypes, maxFileSize }
-  options         Json?    // [{ label, value }] for select/radio/checkbox
-  endpoint        String?  // URL for paginated options
-  conditions      Json?    // { dependsOn, operator, value, action } or { logic, action, rules: [...] }
-  isEnabled       Boolean  @default(true) @map("is_enabled")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  defaultValue    String?   @map("default_value")
+  isRequired      Boolean   @default(false) @map("is_required")
+  order           Int       @default(0)
+  validation      Json? // { minLength, maxLength, pattern, patternMessage, min, max, allowedFileTypes, maxFileSize }
+  options         Json? // [{ label, value }] for select/radio/checkbox
+  endpoint        String? // URL for paginated options
+  conditions      Json? // { dependsOn, operator, value, action } or { logic, action, rules: [...] }
+  isEnabled       Boolean   @default(true) @map("is_enabled")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
   // Relations
-  documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])
+  documentGroup    DocumentGroup     @relation(fields: [documentGroupId], references: [id])
   vehicleDocuments VehicleDocument[]
+
   @@unique([documentGroupId, fieldKey])
   @@map("form_fields")
 }
-
-

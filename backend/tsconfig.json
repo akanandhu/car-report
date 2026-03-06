@@ -31,6 +31,9 @@
       "@shared/database/prisma/*": [
         "libs/shared/database/prisma/*"
       ],
+      "@shared/database/seeder/*": [
+        "libs/shared/database/seeder/*"
+      ],
       "shared/shared": [
         "libs/shared/src"
       ],

@@ -10,6 +10,7 @@ import { VehicleModule } from './vehicle/vehicle.module';
 import { DocumentGroupModule } from './document-group/document-group.module';
 import { VehicleDocumentModule } from './vehicle-document/vehicle-document.module';
 import { FormFieldModule } from './form-field/form-field.module';
+import { SeederModule } from './seeder/seeder.module';
 
 
 @Module({
@@ -21,7 +22,8 @@ import { FormFieldModule } from './form-field/form-field.module';
     VehicleModule,
     DocumentGroupModule,
     VehicleDocumentModule,
-    FormFieldModule],
+    FormFieldModule,
+    SeederModule],
   controllers: [ApiController],
   providers: [ApiService],
 })
