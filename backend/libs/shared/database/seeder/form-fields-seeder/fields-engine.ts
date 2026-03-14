@@ -1,4 +1,4 @@
-import { opts } from './fields-basic.js';
+import { opts } from './fields-basic';
 
 /** checkbox + image helper for engine parts */
 const engPart = (label: string, fieldKey: string, order: number, conditions: string[], required = true) => [

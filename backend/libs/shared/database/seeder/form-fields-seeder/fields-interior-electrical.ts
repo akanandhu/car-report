@@ -1,4 +1,4 @@
-import { opts } from './fields-basic.js';
+import { opts } from './fields-basic';
 
 /**
  * Interior & Electrical section.

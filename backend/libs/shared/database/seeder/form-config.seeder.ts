@@ -11,7 +11,7 @@ import {
     AIR_CONDITIONING_FIELDS,
     SPECIAL_COMMENTS_FIELDS,
     MANUAL_RATINGS_FIELDS,
-} from './form-fields-seeder/index.js';
+} from './form-fields-seeder';
 
 /**
  * Map each group identifier to its field array.

@@ -1,4 +1,4 @@
-import { opts } from './fields-basic.js';
+import { opts } from './fields-basic';
 
 // ── Re-usable condition-option sets ──────────────────────────────────────
 const BODY_CONDITIONS = ['Good', 'Scratched', 'Dented', 'Damaged', 'Repaired', 'Replaced', 'Rusted', 'Repainted', 'Other'];
