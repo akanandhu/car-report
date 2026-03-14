@@ -9,7 +9,7 @@ import Back from "@/src/components/Back";
 const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
   const { errors, handleSubmit, isLoading, onSubmit, register } =
     useEmailLoginForm();
-
+  
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <Back onBack={onBack} />

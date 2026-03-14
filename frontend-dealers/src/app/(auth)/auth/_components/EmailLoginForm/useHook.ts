@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,11 +28,22 @@ const useEmailLoginForm = () => {
     setIsLoading(true);
 
     console.log("Email Login:", data);
+    const res = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
 
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/");
-    }, 2000);
+    if (res?.ok) {
+      router.push("/dashboard");
+    } else {
+      alert("Invalid credentials");
+    }
+
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   router.push("/");
+    // }, 2000);
   };
 
   return {
