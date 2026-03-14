@@ -58,7 +58,7 @@ export class SharedVehicleDocumentService {
                 documentGroupId: data.documentGroupId,
                 documentSpec: data.documentSpec,
                 submittedBy: data.submittedBy || null,
-                formFieldId: data.formFieldId ?? null,
+                formFieldId: data.formFieldId || null,
                 status: 'DRAFT' as any,
             });
         }
