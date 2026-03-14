@@ -46,7 +46,7 @@ services:
 networks:
   car-report-network:
     driver: bridge
-
+  
 volumes:
   postgres_data:
     driver: local

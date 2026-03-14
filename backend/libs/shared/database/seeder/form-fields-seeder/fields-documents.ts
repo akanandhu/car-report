@@ -1,4 +1,4 @@
-import { opts } from './fields-basic.js';
+import { opts } from './fields-basic';
 
 /**
  * Documents section – RC images, insurance, hypothecation, NOC, etc.
