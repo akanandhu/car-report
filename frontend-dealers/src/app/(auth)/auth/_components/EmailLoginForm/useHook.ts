@@ -33,7 +33,7 @@ const useEmailLoginForm = () => {
       password: data.password,
       redirect: false,
     });
-
+    console.log("SignIn Response:", res);
     if (res?.ok) {
       router.push("/dashboard");
     } else {
