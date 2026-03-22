@@ -42,6 +42,15 @@ const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
       />
 
       <Input
+        label="Phone Number"
+        type="tel"
+        placeholder="+91 98765 43210"
+        {...register("phoneNumber")}
+        error={errors.phoneNumber?.message}
+        disabled={isLoading}
+      />
+
+      <Input
         label="Password"
         type="password"
         placeholder="••••••••"
