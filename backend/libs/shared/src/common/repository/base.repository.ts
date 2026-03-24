@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseModel } from '../interface';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 
@@ -32,6 +32,12 @@ export interface DeleteOptions {
 @Injectable()
 export abstract class BaseRepository<T extends BaseModel> {
   protected abstract readonly modelName: string;
+
+  /**
+   * Set to false for models that have no `deletedAt` column.
+   * When false, soft-delete filters are never applied.
+   */
+  protected readonly softDeleteEnabled: boolean = true;
 
   constructor(protected readonly prisma: PrismaService) { }
 
@@ -73,9 +79,10 @@ export abstract class BaseRepository<T extends BaseModel> {
       ...restOptions
     } = options || {};
 
-    const whereClause = includeSoftDeleted
-      ? where
-      : { ...where, deletedAt: null };
+    const whereClause =
+      !this.softDeleteEnabled || includeSoftDeleted
+        ? where
+        : { ...where, deletedAt: null };
 
     return this.model.findMany({
       where: whereClause,
@@ -91,9 +98,10 @@ export abstract class BaseRepository<T extends BaseModel> {
   ): Promise<T | null> {
     const { includeSoftDeleted = false, where, ...restOptions } = options;
 
-    const whereClause = includeSoftDeleted
-      ? where
-      : { ...where, deletedAt: null };
+    const whereClause =
+      !this.softDeleteEnabled || includeSoftDeleted
+        ? where
+        : { ...where, deletedAt: null };
 
     return this.model.findFirst({
       where: whereClause,
@@ -119,7 +127,10 @@ export abstract class BaseRepository<T extends BaseModel> {
   ): Promise<T | null> {
     const { includeSoftDeleted = false, ...restOptions } = options || {};
 
-    const whereClause = includeSoftDeleted ? { id } : { id, deletedAt: null };
+    const whereClause =
+      !this.softDeleteEnabled || includeSoftDeleted
+        ? { id }
+        : { id, deletedAt: null };
 
     return this.model.findFirst({
       where: whereClause,
