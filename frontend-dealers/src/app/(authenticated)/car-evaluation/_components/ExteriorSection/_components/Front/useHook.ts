@@ -71,9 +71,9 @@ const useFrontConditions = ({
     const existing = exteriorConditions[part]?.selected || [];
 
     if (condition === "Not Available") {
-      const next = {
+      const next: ExteriorFormData["exteriorConditions"] = {
         ...exteriorConditions,
-        [part]: { selected: existing.includes("Not Available") ? [] : ["Not Available"] },
+        [part]: { selected: existing.includes("Not Available" as Condition) ? [] : ["Not Available" as Condition] },
       };
       setValue("exteriorConditions", next, { shouldValidate: true });
       onChange({ exteriorConditions: next });
