@@ -4,6 +4,7 @@ import { RoleSeeder } from './role.seeder';
 import { UserSeeder } from './user.seeder';
 import { FormConfigSeeder } from './form-config.seeder';
 import { DocumentGroupSeeder } from './document-group.seeder';
+import { PdfTemplateSeeder } from './pdf-template.seeder';
 
 export interface SeederResult {
     success: boolean;
@@ -43,6 +44,10 @@ export class SeederService {
             {
                 name: 'FormConfigSeeder',
                 fn: () => FormConfigSeeder.seed(this.prisma),
+            },
+            {
+                name: 'PdfTemplateSeeder',
+                fn: () => PdfTemplateSeeder.seed(this.prisma as any),
             },
         ];
 

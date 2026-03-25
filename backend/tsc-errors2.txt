@@ -1,0 +1,6 @@
+﻿apps/api/src/tempAuth/auth.controller.ts(15,29): error TS2307: Cannot find module '@shared/modules/tempAuth/auth.service' or its corresponding type declarations.
+apps/api/src/tempAuth/auth.controller.ts(30,30): error TS2307: Cannot find module '@shared/modules/tempAuth/guards/jwt-auth.guard' or its corresponding type declarations.
+apps/api/src/tempAuth/auth.controller.ts(69,41): error TS2339: Property 'findUserWithProfileByIdAndRoleName' does not exist on type 'SharedUserService'.
+apps/api/src/tempAuth/auth.module.ts(3,48): error TS2307: Cannot find module '@shared/modules/tempAuth/auth.module' or its corresponding type declarations.
+apps/api/test/app.e2e-spec.ts(19,12): error TS2349: This expression is not callable.
+  Type '{ default: SuperTestStatic; Test: typeof Test; agent: typeof TestAgent & ((app?: App | undefined, options?: AgentOptions | undefined) => TestAgent<...>); }' has no call signatures.
