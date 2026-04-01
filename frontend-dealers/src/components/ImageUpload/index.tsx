@@ -6,9 +6,14 @@ import React, { useRef, useState } from "react";
 type UploadBoxProps = {
   label?: string;
   onFileSelect?: (file: File) => void;
+  required?: boolean;
 };
 
-export default function ImageUpload({ label, onFileSelect }: UploadBoxProps) {
+export default function ImageUpload({
+  label,
+  onFileSelect,
+  required,
+}: UploadBoxProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -42,7 +47,11 @@ export default function ImageUpload({ label, onFileSelect }: UploadBoxProps) {
 
   return (
     <div>
-      {label && <p className="text-sm font-medium mb-2">{label}</p>}
+      {label && (
+        <p className="text-sm font-bold mb-2 text-black">
+          {label} {required ? <span className="text-red-600">*</span> : ""}
+        </p>
+      )}
 
       {/* Upload Box */}
       <div
@@ -77,7 +86,9 @@ export default function ImageUpload({ label, onFileSelect }: UploadBoxProps) {
             </button>
           </>
         ) : (
-          <span className="text-sm text-gray-400"><UploadFileIcon/> Upload</span>
+          <span className="text-sm text-gray-400">
+            <UploadFileIcon /> Upload
+          </span>
         )}
 
         {/* Hidden Input */}

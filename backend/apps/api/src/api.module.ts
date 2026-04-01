@@ -11,6 +11,8 @@ import { DocumentGroupModule } from './document-group/document-group.module';
 import { VehicleDocumentModule } from './vehicle-document/vehicle-document.module';
 import { FormFieldModule } from './form-field/form-field.module';
 import { SeederModule } from './seeder/seeder.module';
+import { PdfTemplateModule } from './pdf-template/pdf-template.module';
+import { ClientTemplateModule } from './client-template/client-template.module';
 
 
 @Module({
@@ -23,7 +25,7 @@ import { SeederModule } from './seeder/seeder.module';
     DocumentGroupModule,
     VehicleDocumentModule,
     FormFieldModule,
-    SeederModule],
+    SeederModule, PdfTemplateModule, ClientTemplateModule],
   controllers: [ApiController],
   providers: [ApiService],
 })

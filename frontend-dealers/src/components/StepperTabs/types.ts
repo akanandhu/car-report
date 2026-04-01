@@ -6,4 +6,3 @@ export interface StepperTabsProps {
   onSectionChange: (index: number) => void;
   className?: string;
 }
-

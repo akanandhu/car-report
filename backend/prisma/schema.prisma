@@ -34,6 +34,9 @@ model User {
   modifiedVehicles          Vehicle[]         @relation("VehicleModifier")
   submittedVehicleDocuments VehicleDocument[] @relation("VehicleDocumentSubmitter")
 
+  pdfTemplates     PdfTemplate[]    @relation("PdfTemplateClient")
+  clientTemplates  ClientTemplate[] @relation("ClientTemplateUser")
+
   @@map("users")
 }
 
@@ -191,3 +194,33 @@ model FormField {
   @@unique([documentGroupId, fieldKey])
   @@map("form_fields")
 }
+
+model PdfTemplate {
+  id          String   @id @default(uuid())
+  identifier  String   @unique
+  name        String
+  description String?
+  clientId    String?  @map("client_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  client          User?            @relation("PdfTemplateClient", fields: [clientId], references: [id])
+  clientTemplates ClientTemplate[]
+
+  @@map("pdf_templates")
+}
+
+model ClientTemplate {
+  id            String   @id @default(uuid())
+  clientId      String   @map("client_id")
+  pdfTemplateId String   @map("pdf_template_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  client      User        @relation("ClientTemplateUser", fields: [clientId], references: [id])
+  pdfTemplate PdfTemplate @relation(fields: [pdfTemplateId], references: [id])
+
+  @@unique([clientId])
+  @@map("client_templates")
+}
+

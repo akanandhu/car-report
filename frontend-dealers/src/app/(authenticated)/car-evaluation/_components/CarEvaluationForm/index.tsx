@@ -5,16 +5,8 @@ import StepperTabs from "@/src/components/StepperTabs";
 import Button from "@/src/components/Button";
 import ChevronLeft from "@/public/assets/svg/ChevronLeft";
 import ChevronRight from "@/public/assets/svg/ChevronRight";
-import SellerSection from "../SellerSection";
-import RegistrationSection from "../RegistrationSection";
-import CarSpecsSection from "../CarSpecsSection";
-import DocumentsSection from "../DocumentsSection";
-import ExteriorSection from "../ExteriorSection";
 import Draft from "@/public/assets/svg/Draft";
-import Engine from "../Engine";
-import InteriorElectrical from "../InteriorElectrical";
-import TestDrive from "../TestDrive";
-import Features from "../Features";
+import DynamicFormSection from "../DynamicFormSection";
 
 const CarEvaluationForm = () => {
   const {
@@ -22,6 +14,9 @@ const CarEvaluationForm = () => {
     currentSection,
     formData,
     progress,
+    currentFields,
+    loading,
+    fieldsLoading,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -31,37 +26,59 @@ const CarEvaluationForm = () => {
     handleBack,
   } = useCarEvaluationForm();
 
-  const renderSection = () => {
-    const sectionProps = {
-      data: formData,
-      onChange: handleDataChange,
-    };
-
-    switch (sections[currentSection].id) {
-      case "seller":
-        return <SellerSection {...sectionProps} />;
-      case "registration":
-        return <RegistrationSection {...sectionProps} />;
-      case "specs":
-        return <CarSpecsSection {...sectionProps} />;
-      case "documents":
-        return <DocumentsSection {...sectionProps} />;
-      case "exterior":
-        return <ExteriorSection {...sectionProps} />;
-      case "interiorElectrical":
-        return <InteriorElectrical {...sectionProps} />;
-      case "testDrive":
-        return <TestDrive {...sectionProps} />;
-      case "features":
-        return <Features {...sectionProps} />;
-      case "engine":
-        return <Engine {...sectionProps} />;  
-      default:
-        return null;
-    }
-  };
-
   const isLastSection = currentSection === sections.length - 1;
+
+  // Loading skeleton for sections
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-4xl mx-auto px-6 py-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse" />
+            </div>
+            <div className="h-4 w-full bg-gray-200 rounded-full animate-pulse mb-4" />
+            <div className="flex gap-4 overflow-hidden">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse flex-shrink-0"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+            <div className="space-y-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i}>
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+                  <div className="h-14 w-full bg-gray-200 rounded-xl animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-gray-500 mb-4">
+            No evaluation sections available.
+          </p>
+          <Button variant="outlined" onClick={handleBack}>
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -85,7 +102,7 @@ const CarEvaluationForm = () => {
                 Step {currentSection + 1} of {sections.length}
               </span>
               <span className="text-sm font-medium text-gray-700">
-                {sections[currentSection].label}
+                {sections[currentSection]?.label}
               </span>
             </div>
             <Progress value={progress} />
@@ -101,7 +118,22 @@ const CarEvaluationForm = () => {
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-          {renderSection()}
+          {fieldsLoading ? (
+            <div className="space-y-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i}>
+                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
+                  <div className="h-14 w-full bg-gray-200 rounded-xl animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DynamicFormSection
+              fields={currentFields}
+              data={formData}
+              onChange={handleDataChange}
+            />
+          )}
         </div>
       </div>
 
@@ -156,4 +188,3 @@ const CarEvaluationForm = () => {
 };
 
 export default CarEvaluationForm;
-

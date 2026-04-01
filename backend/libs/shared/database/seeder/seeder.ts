@@ -5,6 +5,7 @@ import { Pool } from 'pg';
 import { RoleSeeder } from './role.seeder';
 import { UserSeeder } from './user.seeder';
 import { FormConfigSeeder } from './form-config.seeder';
+import { PdfTemplateSeeder } from './pdf-template.seeder';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -28,6 +29,10 @@ async function main() {
         console.log('📋 Seeding form configuration...');
         await FormConfigSeeder.seed(prisma);
         console.log('✅ Form configuration seeded successfully\n');
+
+        console.log('📄 Seeding PDF Templates...');
+        await PdfTemplateSeeder.seed(prisma);
+        console.log('✅ PDF Templates seeded successfully\n');
 
         console.log('🎉 All seeders completed successfully!');
     } catch (error) {
