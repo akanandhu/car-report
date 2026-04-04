@@ -5,9 +5,13 @@ type FetchDocumentGroupsResponse = DocumentGroupI[] | {
   data: DocumentGroupI[];
 };
 
-export const fetchDocumentGroups = async (): Promise<DocumentGroupI[]> => {
+export const fetchDocumentGroups = async (type: "FORM_STEP" | "FORM_TYPE"): Promise<DocumentGroupI[]> => {
   const res = await apiClient<FetchDocumentGroupsResponse>(
-    "document-groups"
+    "document-groups", {
+    params: {
+      type
+    }
+  }
   );
 
   return Array.isArray(res) ? res : res.data ?? [];

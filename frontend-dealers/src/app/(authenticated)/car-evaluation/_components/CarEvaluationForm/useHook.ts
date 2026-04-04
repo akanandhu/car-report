@@ -33,7 +33,7 @@ const useCarEvaluationForm = () => {
     const loadGroups = async () => {
       try {
         setLoading(true);
-        const groups = await fetchDocumentGroups();
+        const groups = await fetchDocumentGroups("FORM_STEP");
 
         if (cancelled) return;
 

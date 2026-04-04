@@ -64,7 +64,7 @@ export default function ConditionSelect({
       window.removeEventListener("scroll", handleResizeOrScroll, true);
     };
   }, [open]);
-  // âœ… Handle Selection
+
   const handleSelect = (selectedValue: string) => {
     let updatedValues: string[] = [];
 
