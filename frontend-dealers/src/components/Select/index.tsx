@@ -94,6 +94,13 @@ export default function ConditionSelect({
     );
   };
 
+  const getDisplayText = () => {
+    if (value.length === 0) return placeholder;
+    return value
+      .map((v) => options.find((opt) => opt.value === v)?.label ?? v)
+      .join(", ");
+  };
+
   return (
     <div ref={containerRef} className="w-full relative">
       {label && (
@@ -106,7 +113,7 @@ export default function ConditionSelect({
         flex justify-between items-center text-left bg-white"
       >
         <span className="text-gray-700 truncate">
-          {value.length > 0 ? value.join(", ") : placeholder}
+          {getDisplayText()}
         </span>
 
         <span className="text-gray-400">{open ? "^" : "v"}</span>
@@ -127,11 +134,10 @@ export default function ConditionSelect({
               <label
                 key={opt.value}
                 className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50
-                ${
-                  disabled
+                ${disabled
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
-                }`}
+                  }`}
               >
                 {/* Checkbox Multi */}
                 {isMulti ? (

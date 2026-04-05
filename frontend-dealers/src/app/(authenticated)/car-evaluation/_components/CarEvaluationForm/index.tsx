@@ -17,6 +17,8 @@ const CarEvaluationForm = () => {
     currentFields,
     loading,
     fieldsLoading,
+    configOptions,
+    variantDerivedOptions,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -132,6 +134,8 @@ const CarEvaluationForm = () => {
               fields={currentFields}
               data={formData}
               onChange={handleDataChange}
+              configOptions={configOptions}
+              variantDerivedOptions={variantDerivedOptions}
             />
           )}
         </div>

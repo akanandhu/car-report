@@ -129,6 +129,22 @@ export class FormConfigSeeder {
                     });
                     totalCreated++;
                 } else {
+                    // Update existing field with latest values from seeder
+                    await prisma.formField.update({
+                        where: { id: existing.id },
+                        data: {
+                            type: field.type,
+                            label: field.label,
+                            placeholder: field.placeholder ?? null,
+                            defaultValue: field.defaultValue ?? null,
+                            isRequired: field.isRequired ?? false,
+                            order: field.order,
+                            validation: field.validation ?? undefined,
+                            options: field.options ?? undefined,
+                            endpoint: field.endpoint ?? null,
+                            conditions: field.conditions ?? undefined,
+                        },
+                    });
                     totalSkipped++;
                 }
             }
