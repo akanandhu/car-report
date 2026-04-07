@@ -17,6 +17,7 @@ const CarEvaluationForm = () => {
     currentFields,
     loading,
     fieldsLoading,
+    submitting,
     configOptions,
     variantDerivedOptions,
     handleNext,
@@ -164,6 +165,7 @@ const CarEvaluationForm = () => {
                 variant="outlined"
                 onClick={handleSaveDraft}
                 className="py-3 px-6"
+                disabled={submitting}
               >
                 <div className="flex items-center gap-2">
                   <Draft className="w-5 h-5" />
@@ -175,6 +177,7 @@ const CarEvaluationForm = () => {
                 variant="contained"
                 onClick={isLastSection ? handleSubmit : handleNext}
                 className="py-3 px-6"
+                disabled={submitting}
               >
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">

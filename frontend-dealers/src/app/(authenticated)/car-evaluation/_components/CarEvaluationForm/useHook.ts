@@ -14,8 +14,16 @@ import {
   VariantFullItem,
   CatalogueOption,
 } from "@/src/networks/catalogue/types";
+import { createVehicle, updateVehicle } from "@/src/networks/vehicles";
+import {
+  saveStepData,
+  submitAllSteps,
+  getVehicleFormData,
+} from "@/src/networks/vehicle-documents";
 
 type OptionMap = Record<string, CatalogueOption[]>;
+
+const VEHICLE_ID_KEY = "car-evaluation-vehicle-id";
 
 const useCarEvaluationForm = () => {
   const router = useRouter();
@@ -27,6 +35,10 @@ const useCarEvaluationForm = () => {
 
   const [loading, setLoading] = useState(true);
   const [fieldsLoading, setFieldsLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Track the vehicle ID (set after creation on first step)
+  const [vehicleId, setVehicleId] = useState<string | null>(null);
 
   // Track the raw document groups (needed for IDs when fetching fields)
   const [documentGroups, setDocumentGroups] = useState<DocumentGroupI[]>([]);
@@ -43,6 +55,9 @@ const useCarEvaluationForm = () => {
 
   // Ref to track previous values for cascade clearing
   const prevCascadeRef = useRef<Record<string, string>>({});
+
+  // Cache field keys per section index so we can extract step-specific data when saving
+  const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
 
   const progress =
     sections.length > 0
@@ -99,13 +114,35 @@ const useCarEvaluationForm = () => {
 
     loadGroups();
 
-    // Load draft from localStorage
-    const draft = localStorage.getItem("car-evaluation-draft");
-    if (draft) {
-      try {
-        setFormData(JSON.parse(draft));
-      } catch (error) {
-        console.error("Failed to load draft:", error);
+    // Load draft: check for existing vehicleId and recover form data
+    const savedVehicleId = localStorage.getItem(VEHICLE_ID_KEY);
+    if (savedVehicleId) {
+      setVehicleId(savedVehicleId);
+      // Load saved form data from backend
+      getVehicleFormData(savedVehicleId, "EVALUATION")
+        .then((docs) => {
+          const merged: FormDataI = {};
+          for (const doc of docs) {
+            if (doc.documentSpec) {
+              Object.assign(merged, doc.documentSpec);
+            }
+          }
+          if (Object.keys(merged).length > 0) {
+            setFormData((prev) => ({ ...prev, ...merged }));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load saved form data:", err);
+        });
+    } else {
+      // Fallback: load draft from localStorage
+      const draft = localStorage.getItem("car-evaluation-draft");
+      if (draft) {
+        try {
+          setFormData(JSON.parse(draft));
+        } catch (error) {
+          console.error("Failed to load draft:", error);
+        }
       }
     }
 
@@ -126,6 +163,11 @@ const useCarEvaluationForm = () => {
         setFieldsLoading(true);
         const result = await fetchFormFields(group.id);
         setCurrentFields(result.fields);
+
+        // Cache the field keys for this section so we can use them when saving
+        sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
+          (f) => f.fieldKey
+        );
       } catch (error) {
         console.error("Failed to load form fields:", error);
         setCurrentFields([]);
@@ -338,10 +380,88 @@ const useCarEvaluationForm = () => {
     formData.car_variant,
   ]);
 
-  const handleNext = () => {
-    if (currentSection < sections.length - 1) {
+  /**
+   * Helper: extract only the field values belonging to a specific step.
+   * Uses the cached field keys from sectionFieldKeysRef.
+   */
+  const getStepFormData = (sectionIndex: number): Record<string, any> => {
+    const fieldKeys = sectionFieldKeysRef.current[sectionIndex];
+    if (!fieldKeys || fieldKeys.length === 0) return { ...formData };
+
+    const stepData: Record<string, any> = {};
+    for (const key of fieldKeys) {
+      if (formData[key] !== undefined && formData[key] !== "") {
+        stepData[key] = formData[key];
+      }
+    }
+    return stepData;
+  };
+
+  /**
+   * Helper: save the current step's form data to the backend.
+   * Sends only the fields that belong to this step's document group.
+   */
+  const saveCurrentStepData = async (vId: string, sectionIndex: number) => {
+    const group = documentGroups[sectionIndex];
+    if (!group) return;
+
+    const stepData = getStepFormData(sectionIndex);
+
+    await saveStepData(vId, {
+      documentGroupId: group.id,
+      documentSpec: stepData,
+    });
+  };
+
+  /**
+   * Helper: create a new vehicle in DRAFT status.
+   * Returns the new vehicle ID.
+   */
+  const createDraftVehicle = async (): Promise<string> => {
+    const vehicleName = [
+      formData.car_brand,
+      formData.car_model,
+      formData.manufacturing_year,
+    ]
+      .filter(Boolean)
+      .join(" ") || "New Vehicle";
+
+    const vehicle = await createVehicle({
+      name: vehicleName,
+      vehicleNumber: formData.vehicle_number || `TEMP-${Date.now()}`,
+      status: "draft",
+      model: formData.car_model || "unknown",
+    });
+
+    setVehicleId(vehicle.id);
+    localStorage.setItem(VEHICLE_ID_KEY, vehicle.id);
+    return vehicle.id;
+  };
+
+  const handleNext = async () => {
+    if (currentSection >= sections.length - 1) return;
+
+    try {
+      setSubmitting(true);
+
+      let currentVehicleId = vehicleId;
+
+      // Create the vehicle as DRAFT if it doesn't exist yet
+      if (!currentVehicleId) {
+        currentVehicleId = await createDraftVehicle();
+      }
+
+      // Save this step's field data
+      await saveCurrentStepData(currentVehicleId, currentSection);
+
+      // Advance to next section
       setCurrentSection(currentSection + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("Failed to save step data:", error);
+      alert("Failed to save. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -361,26 +481,61 @@ const useCarEvaluationForm = () => {
     setFormData((prev) => ({ ...prev, ...newData }));
   };
 
-  const handleSaveDraft = () => {
-    localStorage.setItem("car-evaluation-draft", JSON.stringify(formData));
-    alert("Draft saved successfully!");
+  const handleSaveDraft = async () => {
+    try {
+      setSubmitting(true);
+
+      let currentVehicleId = vehicleId;
+
+      // If no vehicle exists yet, create one as DRAFT first
+      if (!currentVehicleId) {
+        currentVehicleId = await createDraftVehicle();
+      }
+
+      // Save this step's field data to backend
+      await saveCurrentStepData(currentVehicleId, currentSection);
+
+      // Also save to localStorage as a fallback
+      localStorage.setItem("car-evaluation-draft", JSON.stringify(formData));
+
+      alert("Draft saved successfully!");
+    } catch (error) {
+      console.error("Failed to save draft:", error);
+      alert("Failed to save draft. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSubmit = () => {
-    const evaluation = {
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      status: "in-sale" as const,
-      ...formData,
-    };
+  const handleSubmit = async () => {
+    if (!vehicleId) {
+      alert("No vehicle found. Please start from the first step.");
+      return;
+    }
 
-    const savedCars = localStorage.getItem("car-evaluations");
-    const cars = savedCars ? JSON.parse(savedCars) : [];
-    cars.unshift(evaluation);
-    localStorage.setItem("car-evaluations", JSON.stringify(cars));
+    try {
+      setSubmitting(true);
 
-    localStorage.removeItem("car-evaluation-draft");
-    router.push("/");
+      // Save the last step's data first
+      await saveCurrentStepData(vehicleId, currentSection);
+
+      // Submit all steps (DRAFT → SUBMITTED)
+      await submitAllSteps(vehicleId, "EVALUATION");
+
+      // Update vehicle status to completed
+      await updateVehicle(vehicleId, { status: "completed" });
+
+      // Clean up localStorage
+      localStorage.removeItem(VEHICLE_ID_KEY);
+      localStorage.removeItem("car-evaluation-draft");
+
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to submit evaluation:", error);
+      alert("Failed to submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -395,6 +550,7 @@ const useCarEvaluationForm = () => {
     currentFields,
     loading,
     fieldsLoading,
+    submitting,
     variantsLoading,
     configOptions,
     variantDerivedOptions,

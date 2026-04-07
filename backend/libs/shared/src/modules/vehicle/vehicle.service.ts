@@ -34,16 +34,23 @@ export class SharedVehicleService {
     }
 
     // Create vehicle
-    const vehicle = await this.vehicleRepository.create({
-      name: data.name,
-      vehicleNumber: data.vehicleNumber,
-      status: data.status,
-      model: data.model,
-      createdBy: data.createdBy || null,
-      lastModifiedBy: null,
-    });
+    try {
+      const vehicle = await this.vehicleRepository.create({
+        name: data.name,
+        vehicleNumber: data.vehicleNumber,
+        status: data.status,
+        model: data.model,
+        createdBy: data.createdBy || null,
+        lastModifiedBy: null,
+      });
 
-    return vehicle;
+      return vehicle;
+
+    } catch (err) {
+      console.log(err, 'errorChecking')
+    }
+
+
   }
 
   /**
