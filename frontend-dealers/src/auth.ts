@@ -19,7 +19,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           password: string;
         };
         try {
-          const res = await fetch(`${process.env.API_BASE_URL}/auth/login`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
