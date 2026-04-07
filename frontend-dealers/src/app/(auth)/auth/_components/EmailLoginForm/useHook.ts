@@ -241,9 +241,7 @@ const useEmailLoginForm = () => {
 
     try {
       const response = await verifyPasswordResetOtp(forgotEmail, otp);
-      console.log("The success ", response);
       if(response?.status === 200){
-
         setForgotOtp(otp);
         setForgotStep("reset");
         toast.success(response?.message || "OTP verified. You can reset your password.");

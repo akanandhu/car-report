@@ -1,9 +1,11 @@
 "use client"; 
 import Button from "../Button";
 import Logout from "@/public/assets/svg/Logout";
+import useAutoSignOutOnSessionError from "@/src/hooks/useAutoSignOutOnSessionError";
 import useNavbar from "./useHook";
 const Navbar = () => {
   const { onLogout, isLoggingOut } = useNavbar();
+  useAutoSignOutOnSessionError();
   return (
     <div className="flex justify-between md:px-32 px-2 w-full sticky top-0 z-50 bg-white border-b border-slate-200">
       <div className="w-full mx-auto px-3 py-4 flex items-center justify-between">

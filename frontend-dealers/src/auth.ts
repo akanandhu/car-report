@@ -1,6 +1,66 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+type RefreshTokenResponse = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    expiresIn?: number;
+  };
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
+};
+
+const refreshAccessToken = async (token: {
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpires?: number;
+}) => {
+  if (!token.refreshToken) {
+    return { ...token, error: "MissingRefreshToken" };
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh-token`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: token.refreshToken }),
+      },
+    );
+
+    if (!res.ok) {
+      return { ...token, error: "RefreshAccessTokenError" };
+    }
+
+    const refreshed: RefreshTokenResponse | null = await res
+      .json()
+      .catch(() => null);
+    const accessToken = refreshed?.data?.accessToken ?? refreshed?.accessToken;
+    const refreshToken = refreshed?.data?.refreshToken ?? refreshed?.refreshToken;
+    const expiresIn = refreshed?.data?.expiresIn ?? refreshed?.expiresIn ?? 900;
+
+    if (!accessToken) {
+      return { ...token, error: "RefreshAccessTokenError" };
+    }
+
+    return {
+      ...token,
+      accessToken,
+      refreshToken: refreshToken ?? token.refreshToken,
+      accessTokenExpires: Date.now() + expiresIn * 1000,
+      error: undefined,
+    };
+  } catch (error) {
+    console.error("Refresh access token failed:", error);
+    return { ...token, error: "RefreshAccessTokenError" };
+  }
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
@@ -10,7 +70,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: {},
       },
       async authorize(credentials) {
-        console.log("Authorize called with credentials:", credentials);
         if (!credentials) {
           return null;
         }
@@ -30,7 +89,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }),
           });
           const user = await res.json();
-          console.log("Authorize Response:", user);
           if (!res.ok || !user) {
             return null;
           }
@@ -58,13 +116,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
+      const refreshBufferMs = 60 * 1000;
       if (user) {
         token.id = user.id;
         // Persist access token from authorize() result
         token.accessToken = (user as { token?: string }).token;
+        token.refreshToken = (user as { refreshToken?: string }).refreshToken;
+        const expiresIn = (user as { expiresIn?: number }).expiresIn ?? 900;
+        token.accessTokenExpires = Date.now() + expiresIn * 1000;
       }
 
-      return token;
+      if (
+        token.accessTokenExpires &&
+        Date.now() < token.accessTokenExpires - refreshBufferMs
+      ) {
+        return token;
+      }
+
+      return refreshAccessToken(token);
     },
 
     async session({ session, token }) {
@@ -72,9 +141,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user = session.user ?? ({} as typeof session.user);
       session.user.id = token.id as string;
       session.accessToken = token.accessToken as string | undefined;
+      session.error = token.error as string | undefined;
 
       return session;
     },
+
   },
 
   events: {

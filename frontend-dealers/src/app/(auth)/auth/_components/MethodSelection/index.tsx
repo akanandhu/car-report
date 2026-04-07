@@ -35,7 +35,7 @@ const MethodSelection = ({
         </div>
       </Button>
 
-      <Button
+      {/* <Button
         variant="outlined"
         startAdornment={<Phone />}
         endAdornment={<ChevronRight />}
@@ -50,7 +50,7 @@ const MethodSelection = ({
             {isSignup ? "Quick and easy signup" : "Quick access with OTP"}
           </div>
         </div>
-      </Button>
+      </Button> */}
 
     </div>
   );
