@@ -4,7 +4,6 @@ import Plus from "@/public/assets/svg/Plus";
 import Button from "@/src/components/Button";
 import Input from "@/src/components/Input";
 import Link from "next/link";
-import React from "react";
 
 const Hero = () => {
   return (

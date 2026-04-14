@@ -1,14 +1,14 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Input from "@/src/components/Input";
 import ConditionSelect from "@/src/components/Select";
 import RadioButton from "@/src/components/Radio";
 import Checkbox from "@/src/components/Checkbox";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormFieldI } from "../CarEvaluationForm/types";
-import { fetchCatalogueOptions } from "@/src/networks/catalogue";
 import { DynamicFormSectionProps } from "./types";
 import { getEndpointDependencies, isFieldVisible, resolveEndpoint } from "./utils";
+import { fetchCatalogueOptions } from "@/src/networks/catalogue";
 
 const DynamicFormSection = ({
   fields,
@@ -37,86 +37,86 @@ const DynamicFormSection = ({
   /**
    * Fetch options for a resolved endpoint URL
    */
-  // const fetchOptionsForEndpoint = useCallback(
-  //   async (resolvedEndpoint: string) => {
-  //     if (endpointOptions[resolvedEndpoint] || loadingEndpoints[resolvedEndpoint]) return;
+  const fetchOptionsForEndpoint = useCallback(
+    async (resolvedEndpoint: string) => {
+      if (endpointOptions[resolvedEndpoint] || loadingEndpoints[resolvedEndpoint]) return;
 
-  //     setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
+      setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
 
-  //     try {
-  //       const options = await fetchCatalogueOptions(resolvedEndpoint);
-  //       setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: options }));
-  //     } catch (error) {
-  //       console.error(`Failed to fetch options from endpoint: ${resolvedEndpoint}`, error);
-  //       setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
-  //     } finally {
-  //       setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
-  //     }
-  //   },
-  //   [endpointOptions, loadingEndpoints]
-  // );
+      try {
+        const options = await fetchCatalogueOptions(resolvedEndpoint);
+        setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: options }));
+      } catch (error) {
+        console.error(`Failed to fetch options from endpoint: ${resolvedEndpoint}`, error);
+        setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
+      } finally {
+        setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
+      }
+    },
+    [endpointOptions, loadingEndpoints]
+  );
 
   // Detect parent field changes and clear dependent child fields
-  // useEffect(() => {
-  //   const cascadingFields = fields.filter(
-  //     (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0
-  //   );
+  useEffect(() => {
+    const cascadingFields = fields.filter(
+      (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0
+    );
 
-  //   const depFieldKeys = new Set<string>();
-  //   cascadingFields.forEach((f) => {
-  //     getEndpointDependencies(f.endpoint!).forEach((dep) => depFieldKeys.add(dep));
-  //   });
+    const depFieldKeys = new Set<string>();
+    cascadingFields.forEach((f) => {
+      getEndpointDependencies(f.endpoint!).forEach((dep) => depFieldKeys.add(dep));
+    });
 
-  //   const currentDeps: Record<string, string> = {};
-  //   depFieldKeys.forEach((key) => {
-  //     currentDeps[key] = String(data[key] ?? "");
-  //   });
+    const currentDeps: Record<string, string> = {};
+    depFieldKeys.forEach((key) => {
+      currentDeps[key] = String(data[key] ?? "");
+    });
 
-  //   const changedKeys = new Set<string>();
-  //   depFieldKeys.forEach((key) => {
-  //     if (prevDepsRef.current[key] !== undefined && prevDepsRef.current[key] !== currentDeps[key]) {
-  //       changedKeys.add(key);
-  //     }
-  //   });
+    const changedKeys = new Set<string>();
+    depFieldKeys.forEach((key) => {
+      if (prevDepsRef.current[key] !== undefined && prevDepsRef.current[key] !== currentDeps[key]) {
+        changedKeys.add(key);
+      }
+    });
 
-  //   if (changedKeys.size > 0) {
-  //     // Find all child fields whose endpoint depends on a changed field and clear their values
-  //     const fieldsToClear: Record<string, string> = {};
-  //     cascadingFields.forEach((f) => {
-  //       const deps = getEndpointDependencies(f.endpoint!);
-  //       if (deps.some((dep) => changedKeys.has(dep))) {
-  //         fieldsToClear[f.fieldKey] = "";
-  //       }
-  //     });
+    if (changedKeys.size > 0) {
+      // Find all child fields whose endpoint depends on a changed field and clear their values
+      const fieldsToClear: Record<string, string> = {};
+      cascadingFields.forEach((f) => {
+        const deps = getEndpointDependencies(f.endpoint!);
+        if (deps.some((dep) => changedKeys.has(dep))) {
+          fieldsToClear[f.fieldKey] = "";
+        }
+      });
 
-  //     if (Object.keys(fieldsToClear).length > 0) {
-  //       onChange(fieldsToClear);
-  //     }
-  //   }
+      if (Object.keys(fieldsToClear).length > 0) {
+        onChange(fieldsToClear);
+      }
+    }
 
-  //   prevDepsRef.current = currentDeps;
-  // }, [data, fields]);
+    prevDepsRef.current = currentDeps;
+  }, [data, fields]);
 
   // Fetch options for all visible select/radio fields that have endpoints
   // Skip fields that already have injected options (from config cache or variant data)
-  // useEffect(() => {
-  //   fields.forEach((field) => {
-  //     if (
-  //       (field.type === "select" || field.type === "radio") &&
-  //       field.endpoint &&
-  //       !injectedOptions[field.fieldKey] &&
-  //       isFieldVisible(field, data)
-  //     ) {
-  //       const resolved = resolveEndpoint(field.endpoint, data);
-  //       if (resolved && !endpointOptions[resolved] && !loadingEndpoints[resolved]) {
-  //         fetchOptionsForEndpoint(resolved);
-  //       }
-  //     }
-  //   });
-  // }, [fields, data, fetchOptionsForEndpoint, endpointOptions, loadingEndpoints]);
+  useEffect(() => {
+    fields.forEach((field) => {
+      if (
+        (field.type === "select" || field.type === "radio") &&
+        field.endpoint &&
+        !injectedOptions[field.fieldKey] &&
+        isFieldVisible(field, data)
+      ) {
+        const resolved = resolveEndpoint(field.endpoint, data);
+        if (resolved && !endpointOptions[resolved] && !loadingEndpoints[resolved]) {
+          fetchOptionsForEndpoint(resolved);
+        }
+      }
+    });
+  }, [fields, data, fetchOptionsForEndpoint, endpointOptions, loadingEndpoints]);
 
   const renderField = (field: FormFieldI) => {
-    // if (!isFieldVisible(field, data)) return null;
+    if (!isFieldVisible(field, data)) return null;
 
     const commonKey = field.fieldKey;
     const value = data[commonKey];

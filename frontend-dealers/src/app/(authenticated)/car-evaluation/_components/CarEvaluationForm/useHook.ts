@@ -23,6 +23,44 @@ type OptionMap = Record<string, CatalogueOption[]>;
 
 const VEHICLE_ID_KEY = "car-evaluation-vehicle-id";
 
+// ── Pure helper functions (no side effects, no hooks) ────────────
+
+/**
+ * Derive transmission_type options from variants filtered by fuel type.
+ */
+const deriveTransmissionOptions = (
+  variants: VariantFullItem[],
+  fuelType: string,
+): CatalogueOption[] => {
+  if (!fuelType || variants.length === 0) return [];
+  const filtered = variants.filter((v) => v.fuel_type === fuelType);
+  const types = [...new Set(filtered.map((v) => v.transmission_type))].filter(
+    Boolean,
+  );
+  return types.map((tt) => ({
+    label: tt.charAt(0).toUpperCase() + tt.slice(1),
+    value: tt,
+  }));
+};
+
+/**
+ * Derive car_variant options from variants filtered by fuel type + transmission type.
+ */
+const deriveVariantOptions = (
+  variants: VariantFullItem[],
+  fuelType: string,
+  transmissionType: string,
+): CatalogueOption[] => {
+  if (!fuelType || !transmissionType || variants.length === 0) return [];
+  const filtered = variants.filter(
+    (v) => v.fuel_type === fuelType && v.transmission_type === transmissionType,
+  );
+  return filtered.map((v) => ({
+    label: v.display_name,
+    value: String(v.id),
+  }));
+};
+
 const useCarEvaluationForm = () => {
   const router = useRouter();
   const methods = useForm({
@@ -53,9 +91,6 @@ const useCarEvaluationForm = () => {
     {},
   );
   const [variantsLoading, setVariantsLoading] = useState(false);
-
-  // Ref to track previous values for cascade clearing
-  const prevCascadeRef = useRef<Record<string, string>>({});
 
   // Cache field keys per section index so we can extract step-specific data when saving
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
@@ -149,7 +184,6 @@ const useCarEvaluationForm = () => {
     };
   }, []);
 
-  // ── Fetch form fields when section changes ─────────────────────
   const loadFields = useCallback(
     async (sectionIndex: number) => {
       if (documentGroups.length === 0) return;
@@ -183,7 +217,7 @@ const useCarEvaluationForm = () => {
     }
   }, [currentSection, documentGroups, loadFields]);
 
-  // ── Fetch variants when car_model changes ──────────────────────
+  // ── Fetch variants when car_model changes (legitimate API side-effect) ──
   useEffect(() => {
     const modelId = formData.car_model;
     const makeYear = formData.manufacturing_year;
@@ -204,7 +238,7 @@ const useCarEvaluationForm = () => {
 
         setAllVariants(variants);
 
-        // Derive fuel_type options from all variants
+        // Derive fuel_type options from all fetched variants
         const fuelTypes = [...new Set(variants.map((v) => v.fuel_type))].filter(
           Boolean,
         );
@@ -213,27 +247,50 @@ const useCarEvaluationForm = () => {
           value: ft,
         }));
 
-        setVariantDerivedOptions((prev) => ({
-          ...prev,
-          fuel_type: fuelOptions,
-          // Reset downstream options since model changed
-          transmission_type: [],
-          car_variant: [],
-        }));
+        // Compute downstream options via auto-selection
+        let autoFuel = "";
+        let transmissionOpts: CatalogueOption[] = [];
+        let autoTransmission = "";
+        let variantOpts: CatalogueOption[] = [];
 
-        // Auto-select if only one fuel type
         if (fuelTypes.length === 1) {
-          setFormData((prev) => ({ ...prev, fuel_type: fuelTypes[0] }));
+          autoFuel = fuelTypes[0];
+          transmissionOpts = deriveTransmissionOptions(variants, autoFuel);
+
+          if (transmissionOpts.length === 1) {
+            autoTransmission = transmissionOpts[0].value;
+            variantOpts = deriveVariantOptions(
+              variants,
+              autoFuel,
+              autoTransmission,
+            );
+          }
+        }
+
+        setVariantDerivedOptions({
+          fuel_type: fuelOptions,
+          transmission_type: transmissionOpts,
+          car_variant: variantOpts,
+        });
+
+        // Auto-select form values if applicable
+        if (autoFuel) {
+          setFormData((prev) => ({
+            ...prev,
+            fuel_type: autoFuel,
+            ...(autoTransmission
+              ? { transmission_type: autoTransmission }
+              : {}),
+          }));
         }
       } catch (error) {
         console.error("Failed to fetch variants:", error);
         setAllVariants([]);
-        setVariantDerivedOptions((prev) => ({
-          ...prev,
+        setVariantDerivedOptions({
           fuel_type: [],
           transmission_type: [],
           car_variant: [],
-        }));
+        });
       } finally {
         if (!cancelled) setVariantsLoading(false);
       }
@@ -245,135 +302,6 @@ const useCarEvaluationForm = () => {
       cancelled = true;
     };
   }, [formData.car_model, formData.manufacturing_year]);
-
-  // ── Derive transmission_type options when fuel_type changes ─────
-  useEffect(() => {
-    const fuelType = formData.fuel_type;
-
-    if (!fuelType || allVariants.length === 0) {
-      setVariantDerivedOptions((prev) => ({
-        ...prev,
-        transmission_type: [],
-        car_variant: [],
-      }));
-      return;
-    }
-
-    // Filter variants by selected fuel type
-    const filteredByFuel = allVariants.filter((v) => v.fuel_type === fuelType);
-
-    // Derive unique transmission types
-    const transmissionTypes = [
-      ...new Set(filteredByFuel.map((v) => v.transmission_type)),
-    ].filter(Boolean);
-
-    const transmissionOptions: CatalogueOption[] = transmissionTypes.map(
-      (tt) => ({
-        label: tt.charAt(0).toUpperCase() + tt.slice(1),
-        value: tt,
-      }),
-    );
-
-    setVariantDerivedOptions((prev) => ({
-      ...prev,
-      transmission_type: transmissionOptions,
-      // Reset variant options since fuel changed
-      car_variant: [],
-    }));
-
-    // Auto-select if only one transmission type
-    if (transmissionTypes.length === 1) {
-      setFormData((prev) => ({
-        ...prev,
-        transmission_type: transmissionTypes[0],
-      }));
-    }
-  }, [formData.fuel_type, allVariants]);
-
-  // ── Derive car_variant options when transmission_type changes ──
-  useEffect(() => {
-    const fuelType = formData.fuel_type;
-    const transmissionType = formData.transmission_type;
-
-    if (!fuelType || !transmissionType || allVariants.length === 0) {
-      setVariantDerivedOptions((prev) => ({
-        ...prev,
-        car_variant: [],
-      }));
-      return;
-    }
-
-    // Filter variants by both fuel type and transmission type
-    const filteredVariants = allVariants.filter(
-      (v) =>
-        v.fuel_type === fuelType && v.transmission_type === transmissionType,
-    );
-
-    const variantOptions: CatalogueOption[] = filteredVariants.map((v) => ({
-      label: v.display_name,
-      value: String(v.id),
-    }));
-
-    setVariantDerivedOptions((prev) => ({
-      ...prev,
-      car_variant: variantOptions,
-    }));
-  }, [formData.fuel_type, formData.transmission_type, allVariants]);
-
-  // ── Cascade clearing: when a parent field changes, clear children
-  useEffect(() => {
-    const cascadeChain = [
-      "car_brand",
-      "manufacturing_year",
-      "car_model",
-      "fuel_type",
-      "transmission_type",
-      "car_variant",
-    ];
-
-    const currentVals: Record<string, string> = {};
-    cascadeChain.forEach((key) => {
-      currentVals[key] = String(formData[key] ?? "");
-    });
-
-    const changedKeys = new Set<string>();
-    cascadeChain.forEach((key) => {
-      if (
-        prevCascadeRef.current[key] !== undefined &&
-        prevCascadeRef.current[key] !== currentVals[key]
-      ) {
-        changedKeys.add(key);
-      }
-    });
-
-    if (changedKeys.size > 0) {
-      const fieldsToClear: Record<string, string> = {};
-
-      changedKeys.forEach((changedKey) => {
-        const changedIdx = cascadeChain.indexOf(changedKey);
-        // Clear all children after this field
-        for (let i = changedIdx + 1; i < cascadeChain.length; i++) {
-          const childKey = cascadeChain[i];
-          if (formData[childKey]) {
-            fieldsToClear[childKey] = "";
-          }
-        }
-      });
-
-      if (Object.keys(fieldsToClear).length > 0) {
-        setFormData((prev) => ({ ...prev, ...fieldsToClear }));
-      }
-    }
-
-    prevCascadeRef.current = currentVals;
-  }, [
-    formData.car_brand,
-    formData.manufacturing_year,
-    formData.car_model,
-    formData.fuel_type,
-    formData.transmission_type,
-    formData.car_variant,
-  ]);
 
   /**
    * Helper: extract only the field values belonging to a specific step.
@@ -469,8 +397,79 @@ const useCarEvaluationForm = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  /**
+   * Smart change handler: replaces the old useEffect cascade chain.
+   * Performs cascade clearing + option re-derivation synchronously
+   * in the event handler instead of reactively via useEffect.
+   */
   const handleDataChange = (newData: Partial<FormDataI>) => {
-    setFormData((prev) => ({ ...prev, ...newData }));
+    const updated: FormDataI = { ...formData, ...newData };
+
+    // Cascade clearing: if a parent in the chain changed, clear all children
+    const cascadeChain = [
+      "car_brand",
+      "manufacturing_year",
+      "car_model",
+      "fuel_type",
+      "transmission_type",
+      "car_variant",
+    ];
+
+    let highestChangedIdx = -1;
+    for (const key of Object.keys(newData)) {
+      const idx = cascadeChain.indexOf(key);
+      if (idx >= 0 && (highestChangedIdx === -1 || idx < highestChangedIdx)) {
+        highestChangedIdx = idx;
+      }
+    }
+
+    // Clear all children after the highest changed parent
+    if (highestChangedIdx >= 0) {
+      for (let i = highestChangedIdx + 1; i < cascadeChain.length; i++) {
+        updated[cascadeChain[i]] = "";
+      }
+    }
+
+    // Determine if the change is upstream of variants (requires API refetch)
+    const needsVariantRefetch =
+      newData.car_brand !== undefined ||
+      newData.manufacturing_year !== undefined ||
+      newData.car_model !== undefined;
+
+    if (needsVariantRefetch) {
+      // The model useEffect will re-fetch variants and set new options.
+      // Clear variant-derived options immediately so stale options don't linger.
+      setVariantDerivedOptions({
+        fuel_type: [],
+        transmission_type: [],
+        car_variant: [],
+      });
+    } else if (highestChangedIdx >= 0 && allVariants.length > 0) {
+      // A cascade field changed (fuel_type or transmission_type)
+      // Re-derive downstream options synchronously from the current variants
+      const fuelType = String(updated.fuel_type ?? "");
+      const transmissionOpts = deriveTransmissionOptions(allVariants, fuelType);
+
+      // Auto-select if only one transmission option and transmission was cleared
+      if (transmissionOpts.length === 1 && !updated.transmission_type) {
+        updated.transmission_type = transmissionOpts[0].value;
+      }
+
+      const transmissionType = String(updated.transmission_type ?? "");
+      const variantOpts = deriveVariantOptions(
+        allVariants,
+        fuelType,
+        transmissionType,
+      );
+
+      setVariantDerivedOptions((prev) => ({
+        ...prev,
+        transmission_type: transmissionOpts,
+        car_variant: variantOpts,
+      }));
+    }
+
+    setFormData(updated);
   };
 
   const handleSaveDraft = async () => {
