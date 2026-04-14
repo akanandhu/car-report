@@ -8,6 +8,7 @@ import {
     HttpStatus,
     ValidationPipe,
     UsePipes,
+    HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SharedVehicleDocumentService } from '@shared/modules/vehicle-document/vehicle-document.service';
@@ -31,27 +32,39 @@ export class VehicleDocumentController {
     @ApiOperation({ summary: 'Create or Update a vehicle document' })
     @ApiResponse({ status: 201, type: VehicleDocumentResponseDto })
     async createOrUpdate(@Body() dto: CreateVehicleDocumentDto) {
-        const existing = await this.service.repository.findFirst({
-            where: {
-                vehicleId: dto.vehicleId,
-                documentGroupId: dto.documentGroupId,
-                formFieldId: dto.formFieldId,
-            },
-        });
 
-        if (existing) {
-            return this.service.repository.update({
-                where: { id: existing.id },
-                data: dto,
+        try {
+            const existing = await this.service.repository.findFirst({
+                where: {
+                    vehicleId: dto.vehicleId,
+                    documentGroupId: dto.documentGroupId,
+                    formFieldId: dto.formFieldId,
+                },
             });
-        } else {
-            return this.service.repository.create({
-                ...dto,
-                status: dto.status || ('DRAFT' as any),
-                documentSpec: dto.documentSpec || null,
-                submittedBy: dto.submittedBy || null,
-                formFieldId: dto.formFieldId || null,
-            });
+
+            if (existing) {
+                return this.service.repository.update({
+                    where: { id: existing.id },
+                    data: dto,
+                });
+            } else {
+                return this.service.repository.create({
+                    ...dto,
+                    status: dto.status || ('DRAFT' as any),
+                    documentSpec: dto.documentSpec || null,
+                    submittedBy: dto.submittedBy || null,
+                    formFieldId: dto.formFieldId || null,
+                });
+            }
+        } catch (error) {
+            console.error('VehicleDocument createOrUpdate failed', error.stack);
+            throw new HttpException(
+                {
+                    message: 'Something went wrong while saving vehicle document',
+                    detail: error.message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 

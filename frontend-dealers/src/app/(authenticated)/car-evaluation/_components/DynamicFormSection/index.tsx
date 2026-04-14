@@ -69,7 +69,10 @@ const DynamicFormSection = ({
 
     const currentDeps: Record<string, string> = {};
     depFieldKeys.forEach((key) => {
-      currentDeps[key] = String(data[key] ?? "");
+      const rawVal = data[key];
+      currentDeps[key] = rawVal && typeof rawVal === "object" && rawVal.id !== undefined
+        ? String(rawVal.id)
+        : String(rawVal ?? "");
     });
 
     const changedKeys = new Set<string>();
@@ -222,6 +225,10 @@ const DynamicFormSection = ({
         );
 
       case "select": {
+        // Fields that should store { id, label } objects instead of plain string values
+        const objectValueFields = ["car_brand", "car_model", "car_variant"];
+        const isObjectValueField = objectValueFields.includes(commonKey);
+
         // Check if this field has injected options (from config cache or variant data)
         const hasInjectedOptions = !!injectedOptions[commonKey];
 
@@ -246,6 +253,11 @@ const DynamicFormSection = ({
               : []
             : field.options || [];
 
+        // Extract the string ID from object-valued fields for the Select component
+        const selectValue = isObjectValueField && value && typeof value === "object" && value.id
+          ? [String(value.id)]
+          : Array.isArray(value) ? value : value ? [value] : [];
+
         return (
           <div key={field.id} className="w-full">
             <ConditionSelect
@@ -254,10 +266,25 @@ const DynamicFormSection = ({
               }
               
               options={selectOptions}
-              value={Array.isArray(value) ? value : value ? [value] : []}
-              onChange={(val) =>
-                onChange({ [commonKey]: val.length === 1 ? val[0] : val })
-              }
+              value={selectValue}
+              onChange={(val) => {
+                const selectedId = val.length === 1 ? val[0] : val;
+
+                if (isObjectValueField && typeof selectedId === "string") {
+                  // Store as { id, label } object for car_brand, car_model, car_variant
+                  const selectedOption = selectOptions.find(
+                    (opt) => opt.value === selectedId
+                  );
+                  onChange({
+                    [commonKey]: {
+                      id: selectedId,
+                      label: selectedOption?.label || selectedId,
+                    },
+                  });
+                } else {
+                  onChange({ [commonKey]: selectedId });
+                }
+              }}
               isMulti={false}
               placeholder={
                 isLoading

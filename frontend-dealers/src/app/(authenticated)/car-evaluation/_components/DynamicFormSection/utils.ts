@@ -11,10 +11,14 @@ export function resolveEndpoint(
 
   while ((match = placeholderRegex.exec(endpointTemplate)) !== null) {
     const fieldKey = match[1];
-    const value = data[fieldKey];
-    if (value === undefined || value === null || value === "") {
+    const rawValue = data[fieldKey];
+    if (rawValue === undefined || rawValue === null || rawValue === "") {
       return null; // Can't resolve — dependency not yet filled
     }
+    // Support object-valued fields like { id: "11", label: "Audi" }
+    const value = typeof rawValue === "object" && rawValue.id !== undefined
+      ? rawValue.id
+      : rawValue;
     resolved = resolved.replace(match[0], String(value));
   }
 

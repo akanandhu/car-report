@@ -227,7 +227,7 @@ export class CatalogueService {
     }
   }
 
-  async getConfig(city_name: string): Promise<ConfigResponse> {
+  async getConfig(city_name: string): Promise<any> {
     try {
       const url = `${this.SPINNY_CONFIG_URL}/?city_name=${city_name}&v2`;
       console.log('Fetching:', url);

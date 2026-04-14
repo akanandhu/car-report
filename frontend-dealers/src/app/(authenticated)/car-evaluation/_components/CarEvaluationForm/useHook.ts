@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { SectionI, FormDataI } from "./types";
 import { fetchDocumentGroups } from "@/src/networks/document-groups";
 import { fetchFormFields } from "@/src/networks/form-fields";
@@ -20,8 +20,6 @@ import {
 import { useForm } from "react-hook-form";
 
 type OptionMap = Record<string, CatalogueOption[]>;
-
-const VEHICLE_ID_KEY = "car-evaluation-vehicle-id";
 
 // ── Pure helper functions (no side effects, no hooks) ────────────
 
@@ -63,6 +61,8 @@ const deriveVariantOptions = (
 
 const useCarEvaluationForm = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const methods = useForm({
     mode: 'onBlur',
   });
@@ -76,8 +76,9 @@ const useCarEvaluationForm = () => {
   const [fieldsLoading, setFieldsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Track the vehicle ID (set after creation on first step)
-  const [vehicleId, setVehicleId] = useState<string | null>(null);
+  // Track the vehicle ID from URL search params
+  const vehicleIdFromUrl = searchParams.get('vehicleId');
+  const [vehicleId, setVehicleIdState] = useState<string | null>(vehicleIdFromUrl);
 
   // Track the raw document groups (needed for IDs when fetching fields)
   const [documentGroups, setDocumentGroups] = useState<DocumentGroupI[]>([]);
@@ -147,12 +148,10 @@ const useCarEvaluationForm = () => {
 
     loadGroups();
 
-    // Load draft: check for existing vehicleId and recover form data
-    const savedVehicleId = localStorage.getItem(VEHICLE_ID_KEY);
-    if (savedVehicleId) {
-      setVehicleId(savedVehicleId);
+    // Load draft: check for existing vehicleId from URL and recover form data
+    if (vehicleIdFromUrl) {
       // Load saved form data from backend
-      getVehicleFormData(savedVehicleId, "EVALUATION")
+      getVehicleFormData(vehicleIdFromUrl, "EVALUATION")
         .then((docs) => {
           const merged: FormDataI = {};
           for (const doc of docs) {
@@ -167,16 +166,6 @@ const useCarEvaluationForm = () => {
         .catch((err) => {
           console.error("Failed to load saved form data:", err);
         });
-    } else {
-      // Fallback: load draft from localStorage
-      const draft = localStorage.getItem("car-evaluation-draft");
-      if (draft) {
-        try {
-          setFormData(JSON.parse(draft));
-        } catch (error) {
-          console.error("Failed to load draft:", error);
-        }
-      }
     }
 
     return () => {
@@ -217,9 +206,18 @@ const useCarEvaluationForm = () => {
     }
   }, [currentSection, documentGroups, loadFields]);
 
+  /**
+   * Helper: extract a plain string ID from a form value that may be
+   * either a plain string or an object { id, label }.
+   */
+  const extractId = (val: any): string => {
+    if (val && typeof val === "object" && val.id !== undefined) return String(val.id);
+    return String(val ?? "");
+  };
+
   // ── Fetch variants when car_model changes (legitimate API side-effect) ──
   useEffect(() => {
-    const modelId = formData.car_model;
+    const modelId = extractId(formData.car_model);
     const makeYear = formData.manufacturing_year;
 
     if (!modelId || !makeYear) {
@@ -337,12 +335,30 @@ const useCarEvaluationForm = () => {
   };
 
   /**
+   * Helper: update the vehicleId in both state and URL search params.
+   */
+  const setVehicleId = useCallback((id: string) => {
+    setVehicleIdState(id);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('vehicleId', id);
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [searchParams, pathname, router]);
+
+  /**
    * Helper: create a new vehicle in DRAFT status.
    * Returns the new vehicle ID.
    */
   const createDraftVehicle = async (): Promise<string> => {
+    // Extract display labels from object-valued fields { id, label }
+    const brandLabel = formData.car_brand?.label || extractId(formData.car_brand);
+    const modelLabel = formData.car_model?.label || extractId(formData.car_model);
+
     const vehicleName =
-      [formData.car_brand, formData.car_model, formData.manufacturing_year]
+      [
+        brandLabel,
+        modelLabel,
+        formData.manufacturing_year,
+      ]
         .filter(Boolean)
         .join(" ") || "New Vehicle";
 
@@ -350,11 +366,10 @@ const useCarEvaluationForm = () => {
       name: vehicleName,
       vehicleNumber: formData.vehicle_number || `TEMP-${Date.now()}`,
       status: "draft",
-      model: formData.car_model || "unknown",
+      model: extractId(formData.car_model) || "unknown",
     });
 
     setVehicleId(vehicle.id);
-    localStorage.setItem(VEHICLE_ID_KEY, vehicle.id);
     return vehicle.id;
   };
 
@@ -486,9 +501,6 @@ const useCarEvaluationForm = () => {
       // Save this step's field data to backend
       await saveCurrentStepData(currentVehicleId, currentSection);
 
-      // Also save to localStorage as a fallback
-      localStorage.setItem("car-evaluation-draft", JSON.stringify(formData));
-
       alert("Draft saved successfully!");
     } catch (error) {
       console.error("Failed to save draft:", error);
@@ -515,10 +527,6 @@ const useCarEvaluationForm = () => {
 
       // Update vehicle status to completed
       await updateVehicle(vehicleId, { status: "completed" });
-
-      // Clean up localStorage
-      localStorage.removeItem(VEHICLE_ID_KEY);
-      localStorage.removeItem("car-evaluation-draft");
 
       router.push("/");
     } catch (error) {

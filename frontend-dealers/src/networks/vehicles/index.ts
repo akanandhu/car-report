@@ -11,6 +11,34 @@ interface ApiResponse<T> {
   statusCode: number;
 }
 
+interface PaginatedApiResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+  message: string;
+  statusCode: number;
+}
+
+export const fetchVehicles = async (
+  page: number = 1,
+  limit: number = 20,
+  search?: string,
+): Promise<PaginatedApiResponse<VehicleResponse>> => {
+  const res = await apiClient<PaginatedApiResponse<VehicleResponse>>(
+    "vehicles",
+    {
+      params: { page, limit, ...(search ? { search } : {}) },
+    },
+  );
+  return res;
+};
+
 export const createVehicle = async (
   payload: CreateVehiclePayload
 ): Promise<VehicleResponse> => {
