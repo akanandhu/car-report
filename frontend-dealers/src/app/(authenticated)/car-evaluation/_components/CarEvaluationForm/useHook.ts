@@ -6,10 +6,7 @@ import { fetchDocumentGroups } from "@/src/networks/document-groups";
 import { fetchFormFields } from "@/src/networks/form-fields";
 import { FormFieldI } from "@/src/networks/form-fields/types";
 import { DocumentGroupI } from "@/src/networks/document-groups/types";
-import {
-  fetchConfigFull,
-  fetchVariantsFull,
-} from "@/src/networks/catalogue";
+import { fetchConfigFull, fetchVariantsFull } from "@/src/networks/catalogue";
 import {
   VariantFullItem,
   CatalogueOption,
@@ -20,6 +17,7 @@ import {
   submitAllSteps,
   getVehicleFormData,
 } from "@/src/networks/vehicle-documents";
+import { useForm } from "react-hook-form";
 
 type OptionMap = Record<string, CatalogueOption[]>;
 
@@ -27,6 +25,9 @@ const VEHICLE_ID_KEY = "car-evaluation-vehicle-id";
 
 const useCarEvaluationForm = () => {
   const router = useRouter();
+  const methods = useForm({
+    mode: 'onBlur',
+  });
 
   const [sections, setSections] = useState<SectionI[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
@@ -49,7 +50,7 @@ const useCarEvaluationForm = () => {
   // ── Variant-derived state ──────────────────────────────────────
   const [allVariants, setAllVariants] = useState<VariantFullItem[]>([]);
   const [variantDerivedOptions, setVariantDerivedOptions] = useState<OptionMap>(
-    {}
+    {},
   );
   const [variantsLoading, setVariantsLoading] = useState(false);
 
@@ -60,11 +61,8 @@ const useCarEvaluationForm = () => {
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
 
   const progress =
-    sections.length > 0
-      ? ((currentSection + 1) / sections.length) * 100
-      : 0;
+    sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
 
-  // ── Fetch config data once on mount ────────────────────────────
   useEffect(() => {
     const loadConfig = async () => {
       try {
@@ -103,7 +101,7 @@ const useCarEvaluationForm = () => {
           sorted.map((g) => ({
             id: g.id,
             label: g.name,
-          }))
+          })),
         );
       } catch (error) {
         console.error("Failed to load document groups:", error);
@@ -166,7 +164,7 @@ const useCarEvaluationForm = () => {
 
         // Cache the field keys for this section so we can use them when saving
         sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
-          (f) => f.fieldKey
+          (f) => f.fieldKey,
         );
       } catch (error) {
         console.error("Failed to load form fields:", error);
@@ -175,7 +173,7 @@ const useCarEvaluationForm = () => {
         setFieldsLoading(false);
       }
     },
-    [documentGroups]
+    [documentGroups],
   );
 
   // Load fields whenever section changes or documentGroups are ready
@@ -208,7 +206,7 @@ const useCarEvaluationForm = () => {
 
         // Derive fuel_type options from all variants
         const fuelTypes = [...new Set(variants.map((v) => v.fuel_type))].filter(
-          Boolean
+          Boolean,
         );
         const fuelOptions: CatalogueOption[] = fuelTypes.map((ft) => ({
           label: ft.charAt(0).toUpperCase() + ft.slice(1),
@@ -262,9 +260,7 @@ const useCarEvaluationForm = () => {
     }
 
     // Filter variants by selected fuel type
-    const filteredByFuel = allVariants.filter(
-      (v) => v.fuel_type === fuelType
-    );
+    const filteredByFuel = allVariants.filter((v) => v.fuel_type === fuelType);
 
     // Derive unique transmission types
     const transmissionTypes = [
@@ -275,7 +271,7 @@ const useCarEvaluationForm = () => {
       (tt) => ({
         label: tt.charAt(0).toUpperCase() + tt.slice(1),
         value: tt,
-      })
+      }),
     );
 
     setVariantDerivedOptions((prev) => ({
@@ -310,8 +306,7 @@ const useCarEvaluationForm = () => {
     // Filter variants by both fuel type and transmission type
     const filteredVariants = allVariants.filter(
       (v) =>
-        v.fuel_type === fuelType &&
-        v.transmission_type === transmissionType
+        v.fuel_type === fuelType && v.transmission_type === transmissionType,
     );
 
     const variantOptions: CatalogueOption[] = filteredVariants.map((v) => ({
@@ -418,13 +413,10 @@ const useCarEvaluationForm = () => {
    * Returns the new vehicle ID.
    */
   const createDraftVehicle = async (): Promise<string> => {
-    const vehicleName = [
-      formData.car_brand,
-      formData.car_model,
-      formData.manufacturing_year,
-    ]
-      .filter(Boolean)
-      .join(" ") || "New Vehicle";
+    const vehicleName =
+      [formData.car_brand, formData.car_model, formData.manufacturing_year]
+        .filter(Boolean)
+        .join(" ") || "New Vehicle";
 
     const vehicle = await createVehicle({
       name: vehicleName,
@@ -544,6 +536,7 @@ const useCarEvaluationForm = () => {
 
   return {
     sections,
+    methods,
     currentSection,
     formData,
     progress,

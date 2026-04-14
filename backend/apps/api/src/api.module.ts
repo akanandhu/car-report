@@ -13,9 +13,9 @@ import { FormFieldModule } from './form-field/form-field.module';
 import { SeederModule } from './seeder/seeder.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 
-
 @Module({
-  imports: [UserModule,
+  imports: [
+    UserModule,
     RoleModule,
     BranchModule,
     AuthModule,
@@ -25,8 +25,9 @@ import { CatalogueModule } from './catalogue/catalogue.module';
     VehicleDocumentModule,
     FormFieldModule,
     SeederModule,
-    CatalogueModule],
+    CatalogueModule,
+  ],
   controllers: [ApiController],
   providers: [ApiService],
 })
-export class ApiModule { }
+export class ApiModule {}

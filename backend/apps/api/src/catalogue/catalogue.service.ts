@@ -72,9 +72,9 @@ export interface ConfigResponse {
 @Injectable()
 export class CatalogueService {
   private readonly SPINNY_BASE_URL = 'https://api.spinny.com/v3/api/catalogue';
-  private readonly SPINNY_CONFIG_URL = 'https://api.spinny.com/api/c/configs'
+  private readonly SPINNY_CONFIG_URL = 'https://api.spinny.com/api/c/configs';
 
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   /**
    * Fetch vehicle makes from external Spinny API
@@ -97,55 +97,13 @@ export class CatalogueService {
       }));
 
       return { options };
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_error) {
       throw new HttpException(
         'Failed to fetch vehicle makes from external API',
         HttpStatus.BAD_GATEWAY,
       );
     }
-  }
-
-  async getConfig(city_name: string): Promise<ConfigResponse> {
-    try {
-      const url = `${this.SPINNY_CONFIG_URL}/?city_name=${city_name}&v2`;
-      console.log('Fetching:', url);
-      const response = await this.httpService.axiosRef.get(url);
-      const result = response.data
-      return result
-    } catch (error) {
-      throw new HttpException(
-        `Failed to fetch configs from external API ${error}`,
-        HttpStatus.BAD_GATEWAY,
-      );
-    }
-  }
-
-  /**
-   * Get config options for a specific field, formatted for Select components
-   */
-  async getConfigOptions(
-    city_name: string,
-    field: string,
-  ): Promise<{ options: MakeOption[] }> {
-    const config = await this.getConfig(city_name);
-    const data = config as any;
-
-    // The config response has filters at root level or inside data
-    const filters = data?.filters || data?.data?.filters || data;
-
-    const fieldData = filters?.[field];
-    if (!fieldData || !Array.isArray(fieldData)) {
-      return { options: [] };
-    }
-
-    const options: MakeOption[] = fieldData
-      .filter((item: any) => item.active !== false)
-      .map((item: any) => ({
-        label: String(item.display_name),
-        value: String(item.name),
-      }));
-
-    return { options };
   }
 
   /**
@@ -171,7 +129,7 @@ export class CatalogueService {
       });
 
       const results = response.data?.results || [];
-      const options: MakeOption[] = results.map((model: any) => ({
+      const options: MakeOption[] = results.map((model) => ({
         label: model.display_name,
         value: String(model.id),
       }));
@@ -269,27 +227,36 @@ export class CatalogueService {
     }
   }
 
-  /**
-   * Fetch full config data in a single call.
-   * Returns all filter options keyed by field name.
-   */
-  async getConfigFull(
-    city_name: string,
-  ): Promise<{
+  async getConfig(city_name: string): Promise<ConfigResponse> {
+    try {
+      const url = `${this.SPINNY_CONFIG_URL}/?city_name=${city_name}&v2`;
+      console.log('Fetching:', url);
+      const response = await this.httpService.axiosRef.get(url);
+      const result = response.data;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch configs from external API ${error}`,
+        HttpStatus.BAD_GATEWAY,
+      );
+    }
+  }
+
+  async getConfigFull(city_name: string): Promise<{
     make_year: MakeOption[];
     mileage: MakeOption[];
     no_of_owners: MakeOption[];
     sell_time: MakeOption[];
   }> {
     const config = await this.getConfig(city_name);
-    const data = config as any;
+    const data = config;
     const filters = data?.filters || data?.data?.filters || data;
 
-    const mapField = (fieldData: any[]): MakeOption[] => {
+    const mapField = (fieldData): MakeOption[] => {
       if (!fieldData || !Array.isArray(fieldData)) return [];
       return fieldData
-        .filter((item: any) => item.active !== false)
-        .map((item: any) => ({
+        .filter((item) => item.active !== false)
+        .map((item) => ({
           label: String(item.display_name),
           value: String(item.name),
         }));

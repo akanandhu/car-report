@@ -1,149 +1,14 @@
 "use client";
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import Input from "@/src/components/Input";
 import ConditionSelect from "@/src/components/Select";
 import RadioButton from "@/src/components/Radio";
 import Checkbox from "@/src/components/Checkbox";
 import ImageUpload from "@/src/components/ImageUpload";
-import { FormFieldI, FormDataI } from "../CarEvaluationForm/types";
-import { FormFieldComplexConditionI, FormFieldConditionI } from "@/src/networks/form-fields/types";
+import { FormFieldI } from "../CarEvaluationForm/types";
 import { fetchCatalogueOptions } from "@/src/networks/catalogue";
-
-interface DynamicFormSectionProps {
-  fields: FormFieldI[];
-  data: FormDataI;
-  onChange: (newData: Partial<FormDataI>) => void;
-  /** Options from cached config API, keyed by fieldKey (e.g. manufacturing_year, ownership_number) */
-  configOptions?: Record<string, { label: string; value: string }[]>;
-  /** Options derived from variant data, keyed by fieldKey (e.g. fuel_type, transmission_type, car_variant) */
-  variantDerivedOptions?: Record<string, { label: string; value: string }[]>;
-}
-
-/**
- * Replace `{fieldKey}` placeholders in an endpoint string with actual form data values.
- * Returns null if any placeholder cannot be resolved (value missing/empty).
- */
-function resolveEndpoint(
-  endpointTemplate: string,
-  data: FormDataI
-): string | null {
-  const placeholderRegex = /\{(\w+)\}/g;
-  let resolved = endpointTemplate;
-  let match: RegExpExecArray | null;
-
-  while ((match = placeholderRegex.exec(endpointTemplate)) !== null) {
-    const fieldKey = match[1];
-    const value = data[fieldKey];
-    if (value === undefined || value === null || value === "") {
-      return null; // Can't resolve — dependency not yet filled
-    }
-    resolved = resolved.replace(match[0], String(value));
-  }
-
-  return resolved;
-}
-
-/**
- * Extract field keys from {placeholder} patterns in an endpoint template.
- */
-function getEndpointDependencies(endpointTemplate: string): string[] {
-  const deps: string[] = [];
-  const regex = /\{(\w+)\}/g;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(endpointTemplate)) !== null) {
-    deps.push(match[1]);
-  }
-  return deps;
-}
-
-/**
- * Evaluate a simple condition against current form data
- */
-function evaluateSimpleCondition(
-  condition: Omit<FormFieldConditionI, "action">,
-  data: FormDataI
-): boolean {
-  const fieldValue = data[condition.dependsOn];
-
-  switch (condition.operator) {
-    case "equals":
-      return (
-        String(fieldValue ?? "").toLowerCase() ===
-        String(condition.value ?? "").toLowerCase()
-      );
-    case "not_equals":
-      return (
-        String(fieldValue ?? "").toLowerCase() !==
-        String(condition.value ?? "").toLowerCase()
-      );
-    case "contains":
-      if (Array.isArray(fieldValue)) {
-        return fieldValue.includes(condition.value);
-      }
-      return String(fieldValue ?? "").includes(String(condition.value ?? ""));
-    case "not_empty":
-      return fieldValue !== undefined && fieldValue !== null && fieldValue !== "";
-    case "empty":
-      return fieldValue === undefined || fieldValue === null || fieldValue === "";
-    case "in":
-      if (Array.isArray(condition.value)) {
-        return condition.value.includes(String(fieldValue ?? ""));
-      }
-      return false;
-    case "greater_than":
-      return Number(fieldValue) > Number(condition.value);
-    case "less_than":
-      return Number(fieldValue) < Number(condition.value);
-    default:
-      return true;
-  }
-}
-
-/**
- * Recursively evaluate conditions (simple or complex with AND/OR logic)
- */
-function evaluateConditions(
-  conditions: FormFieldConditionI | FormFieldComplexConditionI,
-  data: FormDataI
-): boolean {
-  // Complex condition with logic (AND/OR)
-  if ("logic" in conditions && "rules" in conditions) {
-    const complex = conditions as FormFieldComplexConditionI;
-    const results = complex.rules.map((rule) => {
-      if ("logic" in rule) {
-        return evaluateConditions(
-          { ...rule, action: complex.action } as FormFieldComplexConditionI,
-          data
-        );
-      }
-      return evaluateSimpleCondition(rule, data);
-    });
-
-    const passed =
-      complex.logic === "AND"
-        ? results.every(Boolean)
-        : results.some(Boolean);
-
-    return complex.action === "show" ? passed : !passed;
-  }
-
-  // Simple condition
-  const simple = conditions as FormFieldConditionI;
-  const passed = evaluateSimpleCondition(simple, data);
-  return simple.action === "show" ? passed : !passed;
-}
-
-/**
- * Check if a field should be visible based on its conditions
- */
-function isFieldVisible(
-  field: FormFieldI,
-  data: FormDataI
-): boolean {
-  if (!field.conditions) return true;
-  return evaluateConditions(field.conditions, data);
-}
+import { DynamicFormSectionProps } from "./types";
+import { getEndpointDependencies, isFieldVisible, resolveEndpoint } from "./utils";
 
 const DynamicFormSection = ({
   fields,
@@ -172,86 +37,86 @@ const DynamicFormSection = ({
   /**
    * Fetch options for a resolved endpoint URL
    */
-  const fetchOptionsForEndpoint = useCallback(
-    async (resolvedEndpoint: string) => {
-      if (endpointOptions[resolvedEndpoint] || loadingEndpoints[resolvedEndpoint]) return;
+  // const fetchOptionsForEndpoint = useCallback(
+  //   async (resolvedEndpoint: string) => {
+  //     if (endpointOptions[resolvedEndpoint] || loadingEndpoints[resolvedEndpoint]) return;
 
-      setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
+  //     setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
 
-      try {
-        const options = await fetchCatalogueOptions(resolvedEndpoint);
-        setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: options }));
-      } catch (error) {
-        console.error(`Failed to fetch options from endpoint: ${resolvedEndpoint}`, error);
-        setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
-      } finally {
-        setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
-      }
-    },
-    [endpointOptions, loadingEndpoints]
-  );
+  //     try {
+  //       const options = await fetchCatalogueOptions(resolvedEndpoint);
+  //       setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: options }));
+  //     } catch (error) {
+  //       console.error(`Failed to fetch options from endpoint: ${resolvedEndpoint}`, error);
+  //       setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
+  //     } finally {
+  //       setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
+  //     }
+  //   },
+  //   [endpointOptions, loadingEndpoints]
+  // );
 
   // Detect parent field changes and clear dependent child fields
-  useEffect(() => {
-    const cascadingFields = fields.filter(
-      (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0
-    );
+  // useEffect(() => {
+  //   const cascadingFields = fields.filter(
+  //     (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0
+  //   );
 
-    const depFieldKeys = new Set<string>();
-    cascadingFields.forEach((f) => {
-      getEndpointDependencies(f.endpoint!).forEach((dep) => depFieldKeys.add(dep));
-    });
+  //   const depFieldKeys = new Set<string>();
+  //   cascadingFields.forEach((f) => {
+  //     getEndpointDependencies(f.endpoint!).forEach((dep) => depFieldKeys.add(dep));
+  //   });
 
-    const currentDeps: Record<string, string> = {};
-    depFieldKeys.forEach((key) => {
-      currentDeps[key] = String(data[key] ?? "");
-    });
+  //   const currentDeps: Record<string, string> = {};
+  //   depFieldKeys.forEach((key) => {
+  //     currentDeps[key] = String(data[key] ?? "");
+  //   });
 
-    const changedKeys = new Set<string>();
-    depFieldKeys.forEach((key) => {
-      if (prevDepsRef.current[key] !== undefined && prevDepsRef.current[key] !== currentDeps[key]) {
-        changedKeys.add(key);
-      }
-    });
+  //   const changedKeys = new Set<string>();
+  //   depFieldKeys.forEach((key) => {
+  //     if (prevDepsRef.current[key] !== undefined && prevDepsRef.current[key] !== currentDeps[key]) {
+  //       changedKeys.add(key);
+  //     }
+  //   });
 
-    if (changedKeys.size > 0) {
-      // Find all child fields whose endpoint depends on a changed field and clear their values
-      const fieldsToClear: Record<string, string> = {};
-      cascadingFields.forEach((f) => {
-        const deps = getEndpointDependencies(f.endpoint!);
-        if (deps.some((dep) => changedKeys.has(dep))) {
-          fieldsToClear[f.fieldKey] = "";
-        }
-      });
+  //   if (changedKeys.size > 0) {
+  //     // Find all child fields whose endpoint depends on a changed field and clear their values
+  //     const fieldsToClear: Record<string, string> = {};
+  //     cascadingFields.forEach((f) => {
+  //       const deps = getEndpointDependencies(f.endpoint!);
+  //       if (deps.some((dep) => changedKeys.has(dep))) {
+  //         fieldsToClear[f.fieldKey] = "";
+  //       }
+  //     });
 
-      if (Object.keys(fieldsToClear).length > 0) {
-        onChange(fieldsToClear);
-      }
-    }
+  //     if (Object.keys(fieldsToClear).length > 0) {
+  //       onChange(fieldsToClear);
+  //     }
+  //   }
 
-    prevDepsRef.current = currentDeps;
-  }, [data, fields]);
+  //   prevDepsRef.current = currentDeps;
+  // }, [data, fields]);
 
   // Fetch options for all visible select/radio fields that have endpoints
   // Skip fields that already have injected options (from config cache or variant data)
-  useEffect(() => {
-    fields.forEach((field) => {
-      if (
-        (field.type === "select" || field.type === "radio") &&
-        field.endpoint &&
-        !injectedOptions[field.fieldKey] &&
-        isFieldVisible(field, data)
-      ) {
-        const resolved = resolveEndpoint(field.endpoint, data);
-        if (resolved && !endpointOptions[resolved] && !loadingEndpoints[resolved]) {
-          fetchOptionsForEndpoint(resolved);
-        }
-      }
-    });
-  }, [fields, data, fetchOptionsForEndpoint, endpointOptions, loadingEndpoints]);
+  // useEffect(() => {
+  //   fields.forEach((field) => {
+  //     if (
+  //       (field.type === "select" || field.type === "radio") &&
+  //       field.endpoint &&
+  //       !injectedOptions[field.fieldKey] &&
+  //       isFieldVisible(field, data)
+  //     ) {
+  //       const resolved = resolveEndpoint(field.endpoint, data);
+  //       if (resolved && !endpointOptions[resolved] && !loadingEndpoints[resolved]) {
+  //         fetchOptionsForEndpoint(resolved);
+  //       }
+  //     }
+  //   });
+  // }, [fields, data, fetchOptionsForEndpoint, endpointOptions, loadingEndpoints]);
 
   const renderField = (field: FormFieldI) => {
-    if (!isFieldVisible(field, data)) return null;
+    // if (!isFieldVisible(field, data)) return null;
 
     const commonKey = field.fieldKey;
     const value = data[commonKey];
