@@ -8,7 +8,12 @@ import {
   UseGuards,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { SharedAuthService } from '@shared/modules/auth/auth.service';
 import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
@@ -25,7 +30,7 @@ import type { Request } from 'express';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: SharedAuthService) { }
+  constructor(private readonly authService: SharedAuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -62,7 +67,10 @@ export class AuthController {
     description: 'Invalid credentials',
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
-    const result = await this.authService.login(loginDto.email, loginDto.password);
+    const result = await this.authService.login(
+      loginDto.email,
+      loginDto.password,
+    );
 
     return {
       success: true,
@@ -83,8 +91,12 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid or expired refresh token',
   })
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
-    const tokens = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+  async refreshToken(
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ): Promise<AuthResponseDto> {
+    const tokens = await this.authService.refreshToken(
+      refreshTokenDto.refreshToken,
+    );
 
     return {
       success: true,
@@ -104,8 +116,12 @@ export class AuthController {
     status: HttpStatus.NOT_FOUND,
     description: 'User not found',
   })
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto): Promise<AuthResponseDto> {
-    const result = await this.authService.forgotPassword(forgotPasswordDto.email);
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<AuthResponseDto> {
+    const result = await this.authService.forgotPassword(
+      forgotPasswordDto.email,
+    );
 
     return {
       success: true,
@@ -125,7 +141,9 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid or expired OTP',
   })
-  async verifyResetOtp(@Body() verifyOtpDto: VerifyOtpDto): Promise<AuthResponseDto> {
+  async verifyResetOtp(
+    @Body() verifyOtpDto: VerifyOtpDto,
+  ): Promise<AuthResponseDto> {
     const result = await this.authService.verifyResetOtp(
       verifyOtpDto.email,
       verifyOtpDto.otp,
@@ -149,7 +167,9 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Invalid or expired OTP',
   })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<AuthResponseDto> {
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<AuthResponseDto> {
     const result = await this.authService.resetPassword(
       resetPasswordDto.email,
       resetPasswordDto.otp,

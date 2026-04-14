@@ -12,7 +12,7 @@ export const testDriveSchema = z.object({
   clutchSystem: z.array(z.string()).optional(),
   transmissionAutomatic: z.array(z.string()).optional(),
   vehicleHorn: z.array(z.string()).optional(),
-  testDriveOtherDetails: z.record(z.string()).optional(),
+  testDriveOtherDetails: z.record(z.string(), z.string()).optional(),
 });
 
 export type TestDriveFormData = z.infer<typeof testDriveSchema>;
