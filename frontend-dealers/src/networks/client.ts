@@ -6,6 +6,8 @@ type ApiOptions = {
   params?: Record<string, string | number | boolean | undefined>;
 };
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export async function apiClient<T>(
   endpoint: string,
   options: ApiOptions = {},
@@ -15,7 +17,7 @@ export async function apiClient<T>(
   const token =
     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-  let url = `http://localhost:3001/${endpoint}`;
+  let url = `${BASE_URL}/${endpoint}`;
 
   if (params) {
     const searchParams = new URLSearchParams();
