@@ -20,7 +20,7 @@ COPY . .
 RUN pnpm prisma generate
 
 # Build the application
-RUN pnpm nest build api
+RUN pnpm build
 
 # Production stage
 FROM node:20-alpine AS production
