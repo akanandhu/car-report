@@ -52,5 +52,7 @@ RUN pnpm prisma generate
 EXPOSE 3000
 
 # Start the application
-CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm run seed && node dist/apps/api/main.js"]
+COPY start.sh ./
+RUN chmod +x start.sh
+CMD ["sh", "start.sh"]
 
