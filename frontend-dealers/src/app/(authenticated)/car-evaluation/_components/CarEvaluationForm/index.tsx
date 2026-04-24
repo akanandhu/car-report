@@ -8,6 +8,7 @@ import ChevronRight from "@/public/assets/svg/ChevronRight";
 import Draft from "@/public/assets/svg/Draft";
 import DynamicFormSection from "../DynamicFormSection";
 import CarEvaluationShimmer from "../CarEvaluationShimmer";
+import CarEvaluationNoSection from "../NoSections";
 
 const CarEvaluationForm = () => {
   const {
@@ -37,18 +38,7 @@ const CarEvaluationForm = () => {
   }
 
   if (sections.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-gray-500 mb-4">
-            No evaluation sections available.
-          </p>
-          <Button variant="outlined" onClick={handleBack}>
-            Go Back
-          </Button>
-        </div>
-      </div>
-    );
+    return <CarEvaluationNoSection handleBack={handleBack} />;
   }
 
   return (
