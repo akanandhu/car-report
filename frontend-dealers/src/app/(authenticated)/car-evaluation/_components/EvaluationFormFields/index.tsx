@@ -19,12 +19,11 @@ const EvaluationFormFields = ({
           key={currentSection}
           initial={{ opacity: 0, x: 40, scale: 0.98 }} // start from right
           animate={{ opacity: 1, x: 0, scale: 1 }} // move to center
-          exit={{ opacity: 0, x: -40, scale: 0.99 }} 
+          exit={{ opacity: 0, x: -40, scale: 0.99 }}
           transition={{
-            type: "spring",
-            stiffness: 420,
-            damping: 32,
-            mass: 0.7,
+            type: "tween",
+            duration: 0.16,
+            ease: [0.4, 0, 0.2, 1],
           }}
         >
           {isLoading ? (
