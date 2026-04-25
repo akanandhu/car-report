@@ -1,4 +1,5 @@
 export { DOCUMENT_GROUPS } from './groups';
+export { FIELD_SUBGROUPS } from './subgroups';
 export { BASIC_FIELDS, opts } from './fields-basic';
 export { DOCUMENTS_FIELDS } from './fields-documents';
 export { EXTERIOR_FIELDS } from './fields-exterior';

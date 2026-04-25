@@ -7,6 +7,7 @@ export interface FormFieldInterface extends BaseModel {
     label: string;
     fieldKey: string;
     placeholder?: string | null;
+    subgroup?: string | null;
     defaultValue?: string | null;
     isRequired: boolean;
     order: number;

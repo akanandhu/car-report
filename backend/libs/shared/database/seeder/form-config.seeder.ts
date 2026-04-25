@@ -11,6 +11,7 @@ import {
     AIR_CONDITIONING_FIELDS,
     SPECIAL_COMMENTS_FIELDS,
     MANUAL_RATINGS_FIELDS,
+    FIELD_SUBGROUPS,
 } from './form-fields-seeder';
 
 /**
@@ -81,6 +82,17 @@ export class FormConfigSeeder {
                 });
                 console.log(`  ✓ Created group: ${groupDef.name}`);
             } else {
+                await prisma.documentGroup.update({
+                    where: { id: group.id },
+                    data: {
+                        name: groupDef.name,
+                        description: groupDef.description,
+                        type: groupDef.type,
+                        groupName: 'EVALUATION',
+                        order: groupDef.order,
+                        isEnabled: true,
+                    },
+                });
                 console.log(`  ⊗ Group already exists: ${groupDef.name}`);
             }
 
@@ -105,6 +117,7 @@ export class FormConfigSeeder {
             }
 
             for (const field of sorted) {
+                const subgroup = field.subgroup ?? FIELD_SUBGROUPS[identifier]?.[field.fieldKey] ?? null;
                 const existing = await prisma.formField.findFirst({
                     where: { documentGroupId: groupId, fieldKey: field.fieldKey },
                 });
@@ -124,6 +137,7 @@ export class FormConfigSeeder {
                             options: field.options ?? undefined,
                             endpoint: field.endpoint ?? null,
                             conditions: field.conditions ?? undefined,
+                            subgroup,
                             isEnabled: true,
                         },
                     });
@@ -143,6 +157,7 @@ export class FormConfigSeeder {
                             options: field.options ?? undefined,
                             endpoint: field.endpoint ?? null,
                             conditions: field.conditions ?? undefined,
+                            subgroup,
                         },
                     });
                     totalSkipped++;

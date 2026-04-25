@@ -42,6 +42,7 @@ export type FormFieldI = {
   label: string;
   fieldKey: string;
   placeholder?: string;
+  subgroup?: string | null;
   defaultValue?: string;
   isRequired: boolean;
   order: number;
@@ -51,4 +52,10 @@ export type FormFieldI = {
   conditions?: FormFieldConditionI | FormFieldComplexConditionI;
   isEnabled: boolean;
   documentGroupId: string;
+};
+
+export type FormFieldGroupI = {
+  subgroup: string | null;
+  order: number;
+  fields: FormFieldI[];
 };

@@ -2,22 +2,26 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Input from "@/src/components/Input";
 import ConditionSelect from "@/src/components/Select";
-import RadioButton from "@/src/components/Radio";
+import SegmentedRadio from "@/src/components/SegmentedRadio";
 import Checkbox from "@/src/components/Checkbox";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormFieldI } from "../CarEvaluationForm/types";
 import { DynamicFormSectionProps } from "./types";
-import { getEndpointDependencies, isFieldVisible, resolveEndpoint } from "./utils";
+import {
+  getEndpointDependencies,
+  isFieldVisible,
+  resolveEndpoint,
+} from "./utils";
 import { fetchCatalogueOptions } from "@/src/networks/catalogue";
 
 const DynamicFormSection = ({
   fields,
+  fieldGroups,
   data,
   onChange,
   configOptions = {},
   variantDerivedOptions = {},
 }: DynamicFormSectionProps) => {
-
   const injectedOptions: Record<string, { label: string; value: string }[]> = {
     ...configOptions,
     ...variantDerivedOptions,
@@ -39,45 +43,61 @@ const DynamicFormSection = ({
    */
   const fetchOptionsForEndpoint = useCallback(
     async (resolvedEndpoint: string) => {
-      if (endpointOptions[resolvedEndpoint] || loadingEndpoints[resolvedEndpoint]) return;
+      if (
+        endpointOptions[resolvedEndpoint] ||
+        loadingEndpoints[resolvedEndpoint]
+      )
+        return;
 
       setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
 
       try {
         const options = await fetchCatalogueOptions(resolvedEndpoint);
-        setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: options }));
+        setEndpointOptions((prev) => ({
+          ...prev,
+          [resolvedEndpoint]: options,
+        }));
       } catch (error) {
-        console.error(`Failed to fetch options from endpoint: ${resolvedEndpoint}`, error);
+        console.error(
+          `Failed to fetch options from endpoint: ${resolvedEndpoint}`,
+          error,
+        );
         setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
       } finally {
         setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
       }
     },
-    [endpointOptions, loadingEndpoints]
+    [endpointOptions, loadingEndpoints],
   );
 
   // Detect parent field changes and clear dependent child fields
   useEffect(() => {
     const cascadingFields = fields.filter(
-      (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0
+      (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0,
     );
 
     const depFieldKeys = new Set<string>();
     cascadingFields.forEach((f) => {
-      getEndpointDependencies(f.endpoint!).forEach((dep) => depFieldKeys.add(dep));
+      getEndpointDependencies(f.endpoint!).forEach((dep) =>
+        depFieldKeys.add(dep),
+      );
     });
 
     const currentDeps: Record<string, string> = {};
     depFieldKeys.forEach((key) => {
       const rawVal = data[key];
-      currentDeps[key] = rawVal && typeof rawVal === "object" && rawVal.id !== undefined
-        ? String(rawVal.id)
-        : String(rawVal ?? "");
+      currentDeps[key] =
+        rawVal && typeof rawVal === "object" && rawVal.id !== undefined
+          ? String(rawVal.id)
+          : String(rawVal ?? "");
     });
 
     const changedKeys = new Set<string>();
     depFieldKeys.forEach((key) => {
-      if (prevDepsRef.current[key] !== undefined && prevDepsRef.current[key] !== currentDeps[key]) {
+      if (
+        prevDepsRef.current[key] !== undefined &&
+        prevDepsRef.current[key] !== currentDeps[key]
+      ) {
         changedKeys.add(key);
       }
     });
@@ -111,12 +131,22 @@ const DynamicFormSection = ({
         isFieldVisible(field, data)
       ) {
         const resolved = resolveEndpoint(field.endpoint, data);
-        if (resolved && !endpointOptions[resolved] && !loadingEndpoints[resolved]) {
+        if (
+          resolved &&
+          !endpointOptions[resolved] &&
+          !loadingEndpoints[resolved]
+        ) {
           fetchOptionsForEndpoint(resolved);
         }
       }
     });
-  }, [fields, data, fetchOptionsForEndpoint, endpointOptions, loadingEndpoints]);
+  }, [
+    fields,
+    data,
+    fetchOptionsForEndpoint,
+    endpointOptions,
+    loadingEndpoints,
+  ]);
 
   const renderField = (field: FormFieldI) => {
     if (!isFieldVisible(field, data)) return null;
@@ -133,12 +163,12 @@ const DynamicFormSection = ({
         return (
           <Input
             key={field.id}
-            label={
-              field.isRequired ? `${field.label} *` : field.label
-            }
+            label={field.isRequired ? `${field.label} *` : field.label}
             type="text"
             name={commonKey}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={
+              field.placeholder || `Enter ${field.label.toLowerCase()}`
+            }
             value={value || ""}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
@@ -153,7 +183,9 @@ const DynamicFormSection = ({
             </label>
             <textarea
               name={commonKey}
-              placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+              placeholder={
+                field.placeholder || `Enter ${field.label.toLowerCase()}`
+              }
               value={value || ""}
               onChange={(e) => onChange({ [commonKey]: e.target.value })}
               rows={4}
@@ -166,12 +198,12 @@ const DynamicFormSection = ({
         return (
           <Input
             key={field.id}
-            label={
-              field.isRequired ? `${field.label} *` : field.label
-            }
+            label={field.isRequired ? `${field.label} *` : field.label}
             type="number"
             name={commonKey}
-            placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+            placeholder={
+              field.placeholder || `Enter ${field.label.toLowerCase()}`
+            }
             value={value || ""}
             min={field.validation?.min}
             max={field.validation?.max}
@@ -183,9 +215,7 @@ const DynamicFormSection = ({
         return (
           <Input
             key={field.id}
-            label={
-              field.isRequired ? `${field.label} *` : field.label
-            }
+            label={field.isRequired ? `${field.label} *` : field.label}
             type="email"
             name={commonKey}
             placeholder={field.placeholder || "Enter email address"}
@@ -198,9 +228,7 @@ const DynamicFormSection = ({
         return (
           <Input
             key={field.id}
-            label={
-              field.isRequired ? `${field.label} *` : field.label
-            }
+            label={field.isRequired ? `${field.label} *` : field.label}
             type="tel"
             name={commonKey}
             placeholder={field.placeholder || "Enter phone number"}
@@ -214,9 +242,7 @@ const DynamicFormSection = ({
         return (
           <Input
             key={field.id}
-            label={
-              field.isRequired ? `${field.label} *` : field.label
-            }
+            label={field.isRequired ? `${field.label} *` : field.label}
             type="date"
             name={commonKey}
             value={value || ""}
@@ -241,9 +267,7 @@ const DynamicFormSection = ({
 
         const isLoading =
           isEndpointField &&
-          (resolvedEndpoint
-            ? loadingEndpoints[resolvedEndpoint]
-            : true); // still loading if can't resolve yet
+          (resolvedEndpoint ? loadingEndpoints[resolvedEndpoint] : true); // still loading if can't resolve yet
 
         const selectOptions = hasInjectedOptions
           ? injectedOptions[commonKey]
@@ -254,17 +278,19 @@ const DynamicFormSection = ({
             : field.options || [];
 
         // Extract the string ID from object-valued fields for the Select component
-        const selectValue = isObjectValueField && value && typeof value === "object" && value.id
-          ? [String(value.id)]
-          : Array.isArray(value) ? value : value ? [value] : [];
+        const selectValue =
+          isObjectValueField && value && typeof value === "object" && value.id
+            ? [String(value.id)]
+            : Array.isArray(value)
+              ? value
+              : value
+                ? [value]
+                : [];
 
         return (
           <div key={field.id} className="w-full">
             <ConditionSelect
-              label={
-                field.isRequired ? `${field.label} *` : field.label
-              }
-              
+              label={field.isRequired ? `${field.label} *` : field.label}
               options={selectOptions}
               value={selectValue}
               onChange={(val) => {
@@ -273,7 +299,7 @@ const DynamicFormSection = ({
                 if (isObjectValueField && typeof selectedId === "string") {
                   // Store as { id, label } object for car_brand, car_model, car_variant
                   const selectedOption = selectOptions.find(
-                    (opt) => opt.value === selectedId
+                    (opt) => opt.value === selectedId,
                   );
                   onChange({
                     [commonKey]: {
@@ -328,23 +354,17 @@ const DynamicFormSection = ({
               {field.label}
               {requiredMark}
             </label>
-            <div className="flex flex-wrap gap-4">
-              {radioOptions.map((opt: { value: string | number | readonly string[] | undefined; label: string | undefined; }, idx: number) => (
-                <RadioButton
-                  key={`${commonKey}_${opt.value}_${idx}`}
-                  id={`${commonKey}_${opt.value}_${idx}`}
-                  name={commonKey}
-                  label={opt.label}
-                  value={opt.value}
-                  checked={value === opt.value}
-                  onChange={(e) =>
-                    onChange({
-                      [commonKey]: (e.target as HTMLInputElement).value,
-                    })
-                  }
-                />
-              ))}
-            </div>
+            <SegmentedRadio
+              name={commonKey}
+              options={radioOptions.map((opt) => ({
+                label: opt.label,
+                value: opt.value,
+              }))}
+              value={value}
+              onChange={(selectedValue) =>
+                onChange({ [commonKey]: selectedValue })
+              }
+            />
           </div>
         );
       }
@@ -357,27 +377,32 @@ const DynamicFormSection = ({
               {requiredMark}
             </label>
             <div className="flex flex-wrap gap-4">
-              {(field.options || []).map((opt: { value: string; label: string | undefined; }, idx: number) => {
-                const currentValues: string[] = Array.isArray(value)
-                  ? value
-                  : [];
-                const isChecked = currentValues.includes(opt.value);
+              {(field.options || []).map(
+                (
+                  opt: { value: string; label: string | undefined },
+                  idx: number,
+                ) => {
+                  const currentValues: string[] = Array.isArray(value)
+                    ? value
+                    : [];
+                  const isChecked = currentValues.includes(opt.value);
 
-                return (
-                  <Checkbox
-                    key={`${commonKey}_${opt.value}_${idx}`}
-                    id={`${commonKey}_${opt.value}_${idx}`}
-                    label={opt.label}
-                    checked={isChecked}
-                    onChange={() => {
-                      const newValues = isChecked
-                        ? currentValues.filter((v) => v !== opt.value)
-                        : [...currentValues, opt.value];
-                      onChange({ [commonKey]: newValues });
-                    }}
-                  />
-                );
-              })}
+                  return (
+                    <Checkbox
+                      key={`${commonKey}_${opt.value}_${idx}`}
+                      id={`${commonKey}_${opt.value}_${idx}`}
+                      label={opt.label}
+                      checked={isChecked}
+                      onChange={() => {
+                        const newValues = isChecked
+                          ? currentValues.filter((v) => v !== opt.value)
+                          : [...currentValues, opt.value];
+                        onChange({ [commonKey]: newValues });
+                      }}
+                    />
+                  );
+                },
+              )}
             </div>
           </div>
         );
@@ -418,9 +443,27 @@ const DynamicFormSection = ({
 
   return (
     <div className="space-y-5">
-      {fields.map((field) => (
-        <div key={field.id}>{renderField(field)}</div>
-      ))}
+      {fieldGroups.map((group) => {
+        if (!group.subgroup) {
+          return group.fields.map((field) => {
+            return <div key={field.id}>{renderField(field)}</div>;
+          });
+        } else {
+          return (
+            <div className='border border-gray-200 rounded-2xl space-y-4 p-5' key={group.subgroup}>
+              <h3 className="text-lg font-bold text-gray-900 mb-3">
+                {group.subgroup}
+              </h3>
+              <div className="border-b border-gray-200"></div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {group.fields.map((field) => {
+                  return <div key={field.id}>{renderField(field)}</div>;
+                })}
+              </div>
+            </div>
+          );
+        }
+      })}
     </div>
   );
 };
