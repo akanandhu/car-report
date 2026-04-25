@@ -6,6 +6,7 @@ const EvaluationFormFields = ({
   currentSection,
   isLoading,
   currentFields,
+  currentFieldGroups,
   formData,
   handleDataChange,
   configOptions,
@@ -38,6 +39,7 @@ const EvaluationFormFields = ({
           ) : (
             <DynamicFormSection
               fields={currentFields}
+              fieldGroups={currentFieldGroups}
               data={formData}
               onChange={handleDataChange}
               configOptions={configOptions}

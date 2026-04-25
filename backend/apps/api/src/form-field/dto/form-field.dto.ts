@@ -265,6 +265,12 @@ export class FormFieldResponseDto {
     @ApiProperty() updatedAt: Date;
 }
 
+export class FormFieldGroupResponseDto {
+    @ApiPropertyOptional() subgroup?: string | null;
+    @ApiProperty() order: number;
+    @ApiProperty({ type: [FormFieldResponseDto] }) fields: FormFieldResponseDto[];
+}
+
 export class StepInfoDto {
     @ApiProperty() stepId: string;
     @ApiProperty() stepNumber: number;
@@ -279,7 +285,7 @@ export class FormConfigResponseDto {
     @ApiProperty() stepName: string;
     @ApiPropertyOptional() stepDescription?: string;
     @ApiProperty() totalSteps: number;
-    @ApiProperty({ type: [FormFieldResponseDto] }) fields: FormFieldResponseDto[];
+    @ApiProperty({ type: [FormFieldGroupResponseDto] }) fieldGroups: FormFieldGroupResponseDto[];
 }
 
 export class TypeStepsResponseDto {

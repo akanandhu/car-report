@@ -13,6 +13,7 @@ const CarEvaluationForm = () => {
     formData,
     progress,
     currentFields,
+    currentFieldGroups,
     loading,
     fieldsLoading,
     submitting,
@@ -54,6 +55,7 @@ const CarEvaluationForm = () => {
           currentSection={currentSection}
           isLoading={fieldsLoading}
           currentFields={currentFields}
+          currentFieldGroups={currentFieldGroups}
           formData={formData}
           handleDataChange={handleDataChange}
           configOptions={configOptions}

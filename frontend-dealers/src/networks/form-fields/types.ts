@@ -53,3 +53,9 @@ export type FormFieldI = {
   isEnabled: boolean;
   documentGroupId: string;
 };
+
+export type FormFieldGroupI = {
+  subgroup: string | null;
+  order: number;
+  fields: FormFieldI[];
+};

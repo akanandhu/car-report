@@ -4,6 +4,25 @@ import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { DocumentGroupRepository } from '../document-group/repository/document-group.repository';
 import { FIELD_TYPES } from './interface/form-field.interface';
 
+type FormFieldResponse = {
+  id: string;
+  type: string;
+  label: string;
+  fieldKey: string;
+  placeholder: string | null;
+  subgroup: string | null;
+  defaultValue: string | null;
+  isRequired: boolean;
+  order: number;
+  validation: unknown;
+  options: unknown;
+  endpoint: string | null;
+  conditions: unknown;
+  isEnabled?: boolean;
+  documentGroupId?: string;
+  vehicleDocument?: unknown;
+};
+
 @Injectable()
 export class SharedFormFieldService {
   private readonly formFieldRepository: FormFieldRepository;
@@ -14,6 +33,36 @@ export class SharedFormFieldService {
   ) {
     this.formFieldRepository = new FormFieldRepository(prisma);
     this.documentGroupRepository = new DocumentGroupRepository(prisma);
+  }
+
+  private groupFieldsBySubgroup(fields: FormFieldResponse[]) {
+    const fieldGroups = new Map<
+      string,
+      { subgroup: string | null; order: number; fields: FormFieldResponse[] }
+    >();
+
+    for (const field of fields) {
+      const groupKey = field.subgroup ?? '__default';
+      const existingGroup = fieldGroups.get(groupKey);
+
+      if (existingGroup) {
+        existingGroup.fields.push(field);
+        existingGroup.order = Math.min(existingGroup.order, field.order);
+      } else {
+        fieldGroups.set(groupKey, {
+          subgroup: field.subgroup,
+          order: field.order,
+          fields: [field],
+        });
+      }
+    }
+
+    return Array.from(fieldGroups.values())
+      .map((group) => ({
+        ...group,
+        fields: group.fields.sort((a, b) => a.order - b.order),
+      }))
+      .sort((a, b) => a.order - b.order);
   }
 
   /**
@@ -57,6 +106,22 @@ export class SharedFormFieldService {
       orderBy: { order: 'asc' },
     });
 
+    const formattedFields = fields.map((field) => ({
+      id: field.id,
+      type: field.type,
+      label: field.label,
+      fieldKey: field.fieldKey,
+      placeholder: field.placeholder,
+      subgroup: field.subgroup,
+      defaultValue: field.defaultValue,
+      isRequired: field.isRequired,
+      order: field.order,
+      validation: field.validation,
+      options: field.options,
+      endpoint: field.endpoint,
+      conditions: field.conditions,
+    }));
+
     return {
       type: type.toUpperCase(),
       step,
@@ -64,21 +129,7 @@ export class SharedFormFieldService {
       stepName: stepGroup.name,
       stepDescription: stepGroup.description,
       totalSteps: allSteps.length,
-      fields: fields.map((field) => ({
-        id: field.id,
-        type: field.type,
-        label: field.label,
-        fieldKey: field.fieldKey,
-        placeholder: field.placeholder,
-        subgroup: field.subgroup,
-        defaultValue: field.defaultValue,
-        isRequired: field.isRequired,
-        order: field.order,
-        validation: field.validation,
-        options: field.options,
-        endpoint: field.endpoint,
-        conditions: field.conditions,
-      })),
+      fieldGroups: this.groupFieldsBySubgroup(formattedFields),
     };
   }
 
@@ -323,6 +374,43 @@ export class SharedFormFieldService {
       vehicleDocByFieldId.set(vd.formFieldId ?? null, vd);
     }
 
+    const formattedFields = fields.map((field) => {
+      // Try field-specific doc, then group-level doc (formFieldId = null)
+      const vehicleDoc =
+        vehicleDocByFieldId.get(field.id) ??
+        vehicleDocByFieldId.get(null) ??
+        null;
+
+      return {
+        id: field.id,
+        type: field.type,
+        label: field.label,
+        fieldKey: field.fieldKey,
+        placeholder: field.placeholder,
+        subgroup: field.subgroup,
+        defaultValue: field.defaultValue,
+        isRequired: field.isRequired,
+        order: field.order,
+        validation: field.validation,
+        options: field.options,
+        endpoint: field.endpoint,
+        conditions: field.conditions,
+        isEnabled: field.isEnabled,
+        documentGroupId: field.documentGroupId,
+        // Saved vehicle document data for this field (if any)
+        vehicleDocument: vehicleDoc
+          ? {
+            id: vehicleDoc.id,
+            status: vehicleDoc.status,
+            documentSpec: vehicleDoc.documentSpec,
+            submittedBy: vehicleDoc.submittedBy,
+            createdAt: vehicleDoc.createdAt,
+            updatedAt: vehicleDoc.updatedAt,
+          }
+          : null,
+      };
+    });
+
     return {
       documentGroup: {
         id: documentGroup.id,
@@ -332,42 +420,7 @@ export class SharedFormFieldService {
         description: documentGroup.description,
       },
       vehicleId,
-      fields: fields.map((field) => {
-        // Try field-specific doc, then group-level doc (formFieldId = null)
-        const vehicleDoc =
-          vehicleDocByFieldId.get(field.id) ??
-          vehicleDocByFieldId.get(null) ??
-          null;
-
-        return {
-          id: field.id,
-          type: field.type,
-          label: field.label,
-          fieldKey: field.fieldKey,
-          placeholder: field.placeholder,
-          subgroup: field.subgroup,
-          defaultValue: field.defaultValue,
-          isRequired: field.isRequired,
-          order: field.order,
-          validation: field.validation,
-          options: field.options,
-          endpoint: field.endpoint,
-          conditions: field.conditions,
-          isEnabled: field.isEnabled,
-          documentGroupId: field.documentGroupId,
-          // Saved vehicle document data for this field (if any)
-          vehicleDocument: vehicleDoc
-            ? {
-              id: vehicleDoc.id,
-              status: vehicleDoc.status,
-              documentSpec: vehicleDoc.documentSpec,
-              submittedBy: vehicleDoc.submittedBy,
-              createdAt: vehicleDoc.createdAt,
-              updatedAt: vehicleDoc.updatedAt,
-            }
-            : null,
-        };
-      }),
+      fieldGroups: this.groupFieldsBySubgroup(formattedFields),
     };
   }
 }

@@ -16,6 +16,7 @@ import { fetchCatalogueOptions } from "@/src/networks/catalogue";
 
 const DynamicFormSection = ({
   fields,
+  fieldGroups,
   data,
   onChange,
   configOptions = {},
@@ -25,22 +26,6 @@ const DynamicFormSection = ({
     ...configOptions,
     ...variantDerivedOptions,
   };
-
-  const groupedFields = fields.reduce(
-    (arr, field) => {
-      const key = field.subgroup || "__default";
-
-      if (!arr[key]) {
-        arr[key] = [];
-      }
-
-      arr[key].push(field);
-      return arr;
-    },
-    {} as Record<string, typeof fields>,
-  );
-
-  console.log(Object.entries(groupedFields));
 
   // Cache for options fetched from API endpoints, keyed by resolved endpoint URL
   const [endpointOptions, setEndpointOptions] = useState<
@@ -472,20 +457,20 @@ const DynamicFormSection = ({
 
   return (
     <div className="space-y-5">
-      {Object.entries(groupedFields).map((fields) => {
-        if (fields[0] === "__default") {
-          return fields[1].map((field) => {
+      {fieldGroups.map((group) => {
+        if (!group.subgroup) {
+          return group.fields.map((field) => {
             return <div key={field.id}>{renderField(field)}</div>;
           });
         } else {
           return (
-            <div className='border border-gray-200 rounded-2xl space-y-4 p-5' key={fields[0]}>
+            <div className='border border-gray-200 rounded-2xl space-y-4 p-5' key={group.subgroup}>
               <h3 className="text-lg font-bold text-gray-900 mb-3">
-                {fields[0]}
+                {group.subgroup}
               </h3>
               <div className="border-b border-gray-200"></div>
-              <div className="grid md:grid-cols-2 gap-2" key={fields[0]}>
-                {fields[1].map((field) => {
+              <div className="grid md:grid-cols-2 gap-2">
+                {group.fields.map((field) => {
                   return <div key={field.id}>{renderField(field)}</div>;
                 })}
               </div>

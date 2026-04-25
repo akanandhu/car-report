@@ -11,7 +11,7 @@ import {
 import { fetchDocumentGroups } from "@/src/networks/document-groups";
 import { DocumentGroupI } from "@/src/networks/document-groups/types";
 import { fetchFormFields } from "@/src/networks/form-fields";
-import { FormFieldI } from "@/src/networks/form-fields/types";
+import { FormFieldGroupI, FormFieldI } from "@/src/networks/form-fields/types";
 import { createVehicle, updateVehicle } from "@/src/networks/vehicles";
 import {
   getVehicleFormData,
@@ -118,6 +118,9 @@ const useCarEvaluationForm = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [formData, setFormData] = useState<FormDataI>({});
   const [currentFields, setCurrentFields] = useState<FormFieldI[]>([]);
+  const [currentFieldGroups, setCurrentFieldGroups] = useState<
+    FormFieldGroupI[]
+  >([]);
   const [documentGroups, setDocumentGroups] = useState<DocumentGroupI[]>([]);
   const [vehicleId, setVehicleIdState] = useState<string | null>(
     vehicleIdFromUrl,
@@ -176,6 +179,7 @@ const useCarEvaluationForm = () => {
           const fields = await fetchFormFields(enabledGroups[0].id);
           if (!active) return;
           setCurrentFields(fields.fields);
+          setCurrentFieldGroups(fields.fieldGroups);
           sectionFieldKeysRef.current[0] = fields.fields.map(
             (field) => field.fieldKey,
           );
@@ -240,12 +244,14 @@ const useCarEvaluationForm = () => {
       setFieldsLoading(true);
       const result = await fetchFormFields(group.id);
       setCurrentFields(result.fields);
+      setCurrentFieldGroups(result.fieldGroups);
       sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
         (field) => field.fieldKey,
       );
     } catch (error) {
       console.error("Failed to load form fields:", error);
       setCurrentFields([]);
+      setCurrentFieldGroups([]);
     } finally {
       setFieldsLoading(false);
     }
@@ -477,6 +483,7 @@ const useCarEvaluationForm = () => {
     formData,
     progress,
     currentFields,
+    currentFieldGroups,
     loading,
     fieldsLoading,
     submitting,
