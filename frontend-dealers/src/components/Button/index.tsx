@@ -14,10 +14,10 @@ const Button = ({
   ...rest
 }: ButtonProps) => {
   const baseStyles =
-    "inline-flex items-center justify-center rounded-2xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
   const variantStyles = {
     outlined:
-      "border-2 border-gray-300 bg-transparent text-gray-900 hover:border-slate-400 hover:bg-slate-50 focus:ring-slate-400",
+      "shadow-sm border-gray-300 bg-transparent text-gray-900 hover:border-slate-400 hover:bg-slate-50 focus:ring-slate-400",
     filled:
       "border-2 border-slate-700 bg-slate-700 text-white hover:bg-slate-800 hover:border-slate-800 focus:ring-slate-500",
     contained:

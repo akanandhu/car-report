@@ -19,7 +19,7 @@ import {
 } from "@/src/networks/vehicle-documents";
 import { useForm } from "react-hook-form";
 
-type OptionMap = Record<string, CatalogueOption[]>;
+export type OptionMap = Record<string, CatalogueOption[]>;
 
 // ── Pure helper functions (no side effects, no hooks) ────────────
 

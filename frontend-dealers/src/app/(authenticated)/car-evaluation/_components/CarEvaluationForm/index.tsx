@@ -1,14 +1,10 @@
 "use client";
 import useCarEvaluationForm from "./useHook";
-import Progress from "@/src/components/Progress";
-import StepperTabs from "@/src/components/StepperTabs";
-import Button from "@/src/components/Button";
-import ChevronLeft from "@/public/assets/svg/ChevronLeft";
-import ChevronRight from "@/public/assets/svg/ChevronRight";
-import Draft from "@/public/assets/svg/Draft";
-import DynamicFormSection from "../DynamicFormSection";
 import CarEvaluationShimmer from "../CarEvaluationShimmer";
 import CarEvaluationNoSection from "../NoSections";
+import EvaluationFormHead from "../EvaluationFormHead";
+import EvaluationFormFields from "../EvaluationFormFields";
+import EvaluationFormFooter from "../EvaluationFormFooter";
 
 const CarEvaluationForm = () => {
   const {
@@ -42,109 +38,35 @@ const CarEvaluationForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={handleBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ChevronLeft color="black" className="w-6 h-6" />
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">Car Evaluation</h1>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <div id="form-container" className="bg-white m-4">
+        <EvaluationFormHead
+          currentSection={currentSection}
+          sections={sections}
+          progress={progress}
+          handleBack={handleBack}
+          handleSectionChange={handleSectionChange}
+          handleSaveDraft={handleSaveDraft}
+          submitting={submitting}
+        />
 
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">
-                Step {currentSection + 1} of {sections.length}
-              </span>
-              <span className="text-sm font-medium text-gray-700">
-                {sections[currentSection]?.label}
-              </span>
-            </div>
-            <Progress value={progress} />
-          </div>
+        <EvaluationFormFields
+          isLoading={fieldsLoading}
+          currentFields={currentFields}
+          formData={formData}
+          handleDataChange={handleDataChange}
+          configOptions={configOptions}
+          variantDerivedOptions={variantDerivedOptions}
+        />
 
-          <StepperTabs
-            sections={sections}
-            activeSection={currentSection}
-            onSectionChange={handleSectionChange}
-          />
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-          {fieldsLoading ? (
-            <div className="space-y-5">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i}>
-                  <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-                  <div className="h-14 w-full bg-gray-200 rounded-xl animate-pulse" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <DynamicFormSection
-              fields={currentFields}
-              data={formData}
-              onChange={handleDataChange}
-              configOptions={configOptions}
-              variantDerivedOptions={variantDerivedOptions}
-            />
-          )}
-        </div>
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            {currentSection > 0 && (
-              <Button
-                variant="outlined"
-                onClick={handlePrevious}
-                className="py-3 px-6"
-              >
-                <div className="flex items-center gap-2">
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="font-semibold">Previous</span>
-                </div>
-              </Button>
-            )}
-
-            {currentSection === 0 && <div />}
-
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outlined"
-                onClick={handleSaveDraft}
-                className="py-3 px-6"
-                disabled={submitting}
-              >
-                <div className="flex items-center gap-2">
-                  <Draft className="w-5 h-5" />
-                  <span className="font-semibold">Save Draft</span>
-                </div>
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={isLastSection ? handleSubmit : handleNext}
-                className="py-3 px-6"
-                disabled={submitting}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">
-                    {isLastSection ? "Submit" : "Next"}
-                  </span>
-                  {!isLastSection && <ChevronRight className="w-5 h-5" />}
-                </div>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <EvaluationFormFooter
+          currentSection={currentSection}
+          submitting={submitting}
+          isLastSection={isLastSection}
+          handlePrevious={handlePrevious}
+          handleNext={handleNext}
+          handleSubmit={handleSubmit}
+        />
       </div>
     </div>
   );

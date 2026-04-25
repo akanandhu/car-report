@@ -6,7 +6,7 @@ const Progress = ({ value, className = "" }: ProgressProps) => {
   return (
     <div className={progressClasses}>
       <div
-        className="h-full bg-slate-700 transition-all duration-300 ease-in-out"
+        className="h-full bg-slate-700 rounded-r-full transition-all duration-300 ease-in-out"
         style={{ width: `${value}%` }}
       />
     </div>
