@@ -1,376 +1,335 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SectionI, FormDataI } from "./types";
-import { fetchDocumentGroups } from "@/src/networks/document-groups";
-import { fetchFormFields } from "@/src/networks/form-fields";
-import { FormFieldI } from "@/src/networks/form-fields/types";
-import { DocumentGroupI } from "@/src/networks/document-groups/types";
+
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { fetchConfigFull, fetchVariantsFull } from "@/src/networks/catalogue";
 import {
-  VariantFullItem,
   CatalogueOption,
+  VariantFullItem,
 } from "@/src/networks/catalogue/types";
+import { fetchDocumentGroups } from "@/src/networks/document-groups";
+import { DocumentGroupI } from "@/src/networks/document-groups/types";
+import { fetchFormFields } from "@/src/networks/form-fields";
+import { FormFieldI } from "@/src/networks/form-fields/types";
 import { createVehicle, updateVehicle } from "@/src/networks/vehicles";
 import {
+  getVehicleFormData,
   saveStepData,
   submitAllSteps,
-  getVehicleFormData,
 } from "@/src/networks/vehicle-documents";
-import { useForm } from "react-hook-form";
+import { FormDataI, SectionI } from "./types";
 
 export type OptionMap = Record<string, CatalogueOption[]>;
 
-// ── Pure helper functions (no side effects, no hooks) ────────────
+const optionLabel = (value: string) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 
-/**
- * Derive transmission_type options from variants filtered by fuel type.
- */
-const deriveTransmissionOptions = (
+const getValue = (value: unknown) => {
+  if (value && typeof value === "object" && "id" in value) {
+    return String(value.id);
+  }
+
+  return String(value ?? "");
+};
+
+const getTransmissionOptions = (
   variants: VariantFullItem[],
   fuelType: string,
-): CatalogueOption[] => {
-  if (!fuelType || variants.length === 0) return [];
-  const filtered = variants.filter((v) => v.fuel_type === fuelType);
-  const types = [...new Set(filtered.map((v) => v.transmission_type))].filter(
-    Boolean,
-  );
-  return types.map((tt) => ({
-    label: tt.charAt(0).toUpperCase() + tt.slice(1),
-    value: tt,
+) => {
+  const types = variants
+    .filter((variant) => variant.fuel_type === fuelType)
+    .map((variant) => variant.transmission_type)
+    .filter(Boolean);
+
+  return [...new Set(types)].map((value) => ({
+    label: optionLabel(value),
+    value,
   }));
 };
 
-/**
- * Derive car_variant options from variants filtered by fuel type + transmission type.
- */
-const deriveVariantOptions = (
+const getVariantOptions = (
   variants: VariantFullItem[],
   fuelType: string,
   transmissionType: string,
-): CatalogueOption[] => {
-  if (!fuelType || !transmissionType || variants.length === 0) return [];
-  const filtered = variants.filter(
-    (v) => v.fuel_type === fuelType && v.transmission_type === transmissionType,
-  );
-  return filtered.map((v) => ({
-    label: v.display_name,
-    value: String(v.id),
+) =>
+  variants
+    .filter(
+      (variant) =>
+        variant.fuel_type === fuelType &&
+        variant.transmission_type === transmissionType,
+    )
+    .map((variant) => ({
+      label: variant.display_name,
+      value: String(variant.id),
+    }));
+
+const getVariantSelection = (variants: VariantFullItem[], data: FormDataI) => {
+  const nextData = { ...data };
+  const fuelTypes = [
+    ...new Set(variants.map((variant) => variant.fuel_type).filter(Boolean)),
+  ];
+  const fuelOptions = fuelTypes.map((value) => ({
+    label: optionLabel(value),
+    value,
   }));
+  let transmissionOptions: CatalogueOption[] = [];
+  let variantOptions: CatalogueOption[] = [];
+
+  if (fuelTypes.length === 1) {
+    nextData.fuel_type = fuelTypes[0];
+    transmissionOptions = getTransmissionOptions(variants, fuelTypes[0]);
+  }
+
+  if (transmissionOptions.length === 1) {
+    nextData.transmission_type = transmissionOptions[0].value;
+    variantOptions = getVariantOptions(
+      variants,
+      String(nextData.fuel_type ?? ""),
+      transmissionOptions[0].value,
+    );
+  }
+
+  return {
+    data: nextData,
+    options: {
+      fuel_type: fuelOptions,
+      transmission_type: transmissionOptions,
+      car_variant: variantOptions,
+    },
+  };
+};
+
+const emptyVariantOptions: OptionMap = {
+  fuel_type: [],
+  transmission_type: [],
+  car_variant: [],
 };
 
 const useCarEvaluationForm = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const methods = useForm({
-    mode: 'onBlur',
-  });
+  const methods = useForm({ mode: "onBlur" });
+
+  const vehicleIdFromUrl = searchParams.get("vehicleId");
 
   const [sections, setSections] = useState<SectionI[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
   const [formData, setFormData] = useState<FormDataI>({});
   const [currentFields, setCurrentFields] = useState<FormFieldI[]>([]);
+  const [documentGroups, setDocumentGroups] = useState<DocumentGroupI[]>([]);
+  const [vehicleId, setVehicleIdState] = useState<string | null>(
+    vehicleIdFromUrl,
+  );
+
+  const [configOptions, setConfigOptions] = useState<OptionMap>({});
+  const [variantDerivedOptions, setVariantDerivedOptions] =
+    useState<OptionMap>(emptyVariantOptions);
+  const [allVariants, setAllVariants] = useState<VariantFullItem[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [fieldsLoading, setFieldsLoading] = useState(false);
+  const [variantsLoading, setVariantsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Track the vehicle ID from URL search params
-  const vehicleIdFromUrl = searchParams.get('vehicleId');
-  const [vehicleId, setVehicleIdState] = useState<string | null>(vehicleIdFromUrl);
-
-  // Track the raw document groups (needed for IDs when fetching fields)
-  const [documentGroups, setDocumentGroups] = useState<DocumentGroupI[]>([]);
-
-  // ── Cached config data (fetched once on mount) ─────────────────
-  const [configOptions, setConfigOptions] = useState<OptionMap>({});
-
-  // ── Variant-derived state ──────────────────────────────────────
-  const [allVariants, setAllVariants] = useState<VariantFullItem[]>([]);
-  const [variantDerivedOptions, setVariantDerivedOptions] = useState<OptionMap>(
-    {},
-  );
-  const [variantsLoading, setVariantsLoading] = useState(false);
-
-  // Cache field keys per section index so we can extract step-specific data when saving
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
+  const initialVehicleIdRef = useRef(vehicleIdFromUrl);
 
   const progress =
     sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
 
   useEffect(() => {
-    const loadConfig = async () => {
+    let active = true;
+
+    const load = async () => {
       try {
-        const config = await fetchConfigFull("chennai");
+        setLoading(true);
+
+        const [config, groups] = await Promise.all([
+          fetchConfigFull("chennai"),
+          fetchDocumentGroups("FORM_STEP"),
+        ]);
+
+        if (!active) return;
+
+        const enabledGroups = groups
+          .filter((group) => group.isEnabled)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
         setConfigOptions({
           manufacturing_year: config.make_year ?? [],
           ownership_number: config.no_of_owners ?? [],
           kms_driven: config.mileage ?? [],
           sell_time: config.sell_time ?? [],
         });
-      } catch (error) {
-        console.error("Failed to load config data:", error);
-      }
-    };
-    loadConfig();
-  }, []);
-
-  // ── Fetch document groups on mount ─────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadGroups = async () => {
-      try {
-        setLoading(true);
-        const groups = await fetchDocumentGroups("FORM_STEP");
-
-        if (cancelled) return;
-
-        // Sort by order and filter enabled
-        const sorted = groups
-          .filter((g) => g.isEnabled)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-        setDocumentGroups(sorted);
+        setDocumentGroups(enabledGroups);
         setSections(
-          sorted.map((g) => ({
-            id: g.id,
-            label: g.name,
+          enabledGroups.map((group) => ({
+            id: group.id,
+            label: group.name,
           })),
         );
+
+        if (enabledGroups[0]) {
+          setFieldsLoading(true);
+          const fields = await fetchFormFields(enabledGroups[0].id);
+          if (!active) return;
+          setCurrentFields(fields.fields);
+          sectionFieldKeysRef.current[0] = fields.fields.map(
+            (field) => field.fieldKey,
+          );
+          setFieldsLoading(false);
+        }
+
+        const initialVehicleId = initialVehicleIdRef.current;
+        if (!initialVehicleId) return;
+
+        const docs = await getVehicleFormData(initialVehicleId, "EVALUATION");
+        if (!active) return;
+
+        const savedData = docs.reduce<FormDataI>((data, doc) => {
+          if (doc.documentSpec) return { ...data, ...doc.documentSpec };
+          return data;
+        }, {});
+
+        if (!Object.keys(savedData).length) return;
+
+        const modelId = getValue(savedData.car_model);
+        const makeYear = getValue(savedData.manufacturing_year);
+
+        if (!modelId || !makeYear) {
+          setFormData(savedData);
+          return;
+        }
+
+        setVariantsLoading(true);
+        const variants = await fetchVariantsFull(modelId, makeYear);
+        if (!active) return;
+
+        const selected = getVariantSelection(variants, savedData);
+        setAllVariants(variants);
+        setVariantDerivedOptions(selected.options);
+        setFormData(selected.data);
       } catch (error) {
-        console.error("Failed to load document groups:", error);
+        console.error("Failed to load form:", error);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (active) {
+          setLoading(false);
+          setFieldsLoading(false);
+          setVariantsLoading(false);
+        }
       }
     };
 
-    loadGroups();
-
-    // Load draft: check for existing vehicleId from URL and recover form data
-    if (vehicleIdFromUrl) {
-      // Load saved form data from backend
-      getVehicleFormData(vehicleIdFromUrl, "EVALUATION")
-        .then((docs) => {
-          const merged: FormDataI = {};
-          for (const doc of docs) {
-            if (doc.documentSpec) {
-              Object.assign(merged, doc.documentSpec);
-            }
-          }
-          if (Object.keys(merged).length > 0) {
-            setFormData((prev) => ({ ...prev, ...merged }));
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to load saved form data:", err);
-        });
-    }
+    load();
 
     return () => {
-      cancelled = true;
+      active = false;
     };
   }, []);
 
-  const loadFields = useCallback(
-    async (sectionIndex: number) => {
-      if (documentGroups.length === 0) return;
+  const loadFields = async (
+    sectionIndex: number,
+    groups: DocumentGroupI[] = documentGroups,
+  ) => {
+    const group = groups[sectionIndex];
+    if (!group) return;
 
-      const group = documentGroups[sectionIndex];
-      if (!group) return;
-
-      try {
-        setFieldsLoading(true);
-        const result = await fetchFormFields(group.id);
-        setCurrentFields(result.fields);
-
-        // Cache the field keys for this section so we can use them when saving
-        sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
-          (f) => f.fieldKey,
-        );
-      } catch (error) {
-        console.error("Failed to load form fields:", error);
-        setCurrentFields([]);
-      } finally {
-        setFieldsLoading(false);
-      }
-    },
-    [documentGroups],
-  );
-
-  // Load fields whenever section changes or documentGroups are ready
-  useEffect(() => {
-    if (documentGroups.length > 0) {
-      loadFields(currentSection);
+    try {
+      setFieldsLoading(true);
+      const result = await fetchFormFields(group.id);
+      setCurrentFields(result.fields);
+      sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
+        (field) => field.fieldKey,
+      );
+    } catch (error) {
+      console.error("Failed to load form fields:", error);
+      setCurrentFields([]);
+    } finally {
+      setFieldsLoading(false);
     }
-  }, [currentSection, documentGroups, loadFields]);
-
-  /**
-   * Helper: extract a plain string ID from a form value that may be
-   * either a plain string or an object { id, label }.
-   */
-  const extractId = (val: any): string => {
-    if (val && typeof val === "object" && val.id !== undefined) return String(val.id);
-    return String(val ?? "");
   };
 
-  // ── Fetch variants when car_model changes (legitimate API side-effect) ──
-  useEffect(() => {
-    const modelId = extractId(formData.car_model);
-    const makeYear = formData.manufacturing_year;
+  const loadVariants = async (data: FormDataI) => {
+    const modelId = getValue(data.car_model);
+    const makeYear = getValue(data.manufacturing_year);
 
     if (!modelId || !makeYear) {
       setAllVariants([]);
-      setVariantDerivedOptions({});
-      return;
+      setVariantDerivedOptions(emptyVariantOptions);
+      return data;
     }
 
-    let cancelled = false;
-
-    const loadVariants = async () => {
+    try {
       setVariantsLoading(true);
-      try {
-        const variants = await fetchVariantsFull(modelId, makeYear);
-        if (cancelled) return;
+      const variants = await fetchVariantsFull(modelId, makeYear);
+      const selected = getVariantSelection(variants, data);
 
-        setAllVariants(variants);
+      setAllVariants(variants);
+      setVariantDerivedOptions(selected.options);
 
-        // Derive fuel_type options from all fetched variants
-        const fuelTypes = [...new Set(variants.map((v) => v.fuel_type))].filter(
-          Boolean,
-        );
-        const fuelOptions: CatalogueOption[] = fuelTypes.map((ft) => ({
-          label: ft.charAt(0).toUpperCase() + ft.slice(1),
-          value: ft,
-        }));
-
-        // Compute downstream options via auto-selection
-        let autoFuel = "";
-        let transmissionOpts: CatalogueOption[] = [];
-        let autoTransmission = "";
-        let variantOpts: CatalogueOption[] = [];
-
-        if (fuelTypes.length === 1) {
-          autoFuel = fuelTypes[0];
-          transmissionOpts = deriveTransmissionOptions(variants, autoFuel);
-
-          if (transmissionOpts.length === 1) {
-            autoTransmission = transmissionOpts[0].value;
-            variantOpts = deriveVariantOptions(
-              variants,
-              autoFuel,
-              autoTransmission,
-            );
-          }
-        }
-
-        setVariantDerivedOptions({
-          fuel_type: fuelOptions,
-          transmission_type: transmissionOpts,
-          car_variant: variantOpts,
-        });
-
-        // Auto-select form values if applicable
-        if (autoFuel) {
-          setFormData((prev) => ({
-            ...prev,
-            fuel_type: autoFuel,
-            ...(autoTransmission
-              ? { transmission_type: autoTransmission }
-              : {}),
-          }));
-        }
-      } catch (error) {
-        console.error("Failed to fetch variants:", error);
-        setAllVariants([]);
-        setVariantDerivedOptions({
-          fuel_type: [],
-          transmission_type: [],
-          car_variant: [],
-        });
-      } finally {
-        if (!cancelled) setVariantsLoading(false);
-      }
-    };
-
-    loadVariants();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [formData.car_model, formData.manufacturing_year]);
-
-  /**
-   * Helper: extract only the field values belonging to a specific step.
-   * Uses the cached field keys from sectionFieldKeysRef.
-   */
-  const getStepFormData = (sectionIndex: number): Record<string, any> => {
-    const fieldKeys = sectionFieldKeysRef.current[sectionIndex];
-    if (!fieldKeys || fieldKeys.length === 0) return { ...formData };
-
-    const stepData: Record<string, any> = {};
-    for (const key of fieldKeys) {
-      if (formData[key] !== undefined && formData[key] !== "") {
-        stepData[key] = formData[key];
-      }
+      return selected.data;
+    } catch (error) {
+      console.error("Failed to fetch variants:", error);
+      setAllVariants([]);
+      setVariantDerivedOptions(emptyVariantOptions);
+      return data;
+    } finally {
+      setVariantsLoading(false);
     }
-    return stepData;
   };
 
-  /**
-   * Helper: save the current step's form data to the backend.
-   * Sends only the fields that belong to this step's document group.
-   */
-  const saveCurrentStepData = async (vId: string, sectionIndex: number) => {
+  const updateVehicleId = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("vehicleId", id);
+    setVehicleIdState(id);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const getStepFormData = (sectionIndex: number) => {
+    const fieldKeys = sectionFieldKeysRef.current[sectionIndex];
+    if (!fieldKeys?.length) return { ...formData };
+
+    return fieldKeys.reduce<Record<string, unknown>>((data, key) => {
+      if (formData[key] !== undefined && formData[key] !== "") {
+        data[key] = formData[key];
+      }
+
+      return data;
+    }, {});
+  };
+
+  const saveCurrentStepData = async (id: string, sectionIndex: number) => {
     const group = documentGroups[sectionIndex];
     if (!group) return;
 
-    const stepData = getStepFormData(sectionIndex);
-
-    await saveStepData(vId, {
+    await saveStepData(id, {
       documentGroupId: group.id,
-      documentSpec: stepData,
+      documentSpec: getStepFormData(sectionIndex),
     });
   };
 
-  /**
-   * Helper: update the vehicleId in both state and URL search params.
-   */
-  const setVehicleId = useCallback((id: string) => {
-    setVehicleIdState(id);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('vehicleId', id);
-    router.replace(`${pathname}?${params.toString()}`);
-  }, [searchParams, pathname, router]);
-
-  /**
-   * Helper: create a new vehicle in DRAFT status.
-   * Returns the new vehicle ID.
-   */
-  const createDraftVehicle = async (): Promise<string> => {
-    // Extract display labels from object-valued fields { id, label }
-    const brandLabel = formData.car_brand?.label || extractId(formData.car_brand);
-    const modelLabel = formData.car_model?.label || extractId(formData.car_model);
-
-    const vehicleName =
-      [
-        brandLabel,
-        modelLabel,
-        formData.manufacturing_year,
-      ]
-        .filter(Boolean)
-        .join(" ") || "New Vehicle";
+  const createDraftVehicle = async () => {
+    const brand = formData.car_brand?.label || getValue(formData.car_brand);
+    const model = formData.car_model?.label || getValue(formData.car_model);
+    const name =
+      [brand, model, formData.manufacturing_year].filter(Boolean).join(" ") ||
+      "New Vehicle";
 
     const vehicle = await createVehicle({
-      name: vehicleName,
-      vehicleNumber: formData.vehicle_number || `TEMP-${Date.now()}`,
+      name,
+      vehicleNumber: formData.registration_number || `TEMP-${Date.now()}`,
       status: "draft",
-      model: extractId(formData.car_model) || "unknown",
+      model: model || "unknown",
     });
 
-    setVehicleId(vehicle.id);
+    updateVehicleId(vehicle.id);
     return vehicle.id;
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNext = async () => {
@@ -378,20 +337,12 @@ const useCarEvaluationForm = () => {
 
     try {
       setSubmitting(true);
+      const currentVehicleId = vehicleId || (await createDraftVehicle());
 
-      let currentVehicleId = vehicleId;
-
-      // Create the vehicle as DRAFT if it doesn't exist yet
-      if (!currentVehicleId) {
-        currentVehicleId = await createDraftVehicle();
-      }
-
-      // Save this step's field data
       await saveCurrentStepData(currentVehicleId, currentSection);
-
-      // Advance to next section
       setCurrentSection(currentSection + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      loadFields(currentSection + 1);
+      scrollToTop();
     } catch (error) {
       console.error("Failed to save step data:", error);
       alert("Failed to save. Please try again.");
@@ -401,27 +352,22 @@ const useCarEvaluationForm = () => {
   };
 
   const handlePrevious = () => {
-    if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    if (currentSection === 0) return;
+
+    setCurrentSection(currentSection - 1);
+    loadFields(currentSection - 1);
+    scrollToTop();
   };
 
   const handleSectionChange = (index: number) => {
     setCurrentSection(index);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    loadFields(index);
+    scrollToTop();
   };
 
-  /**
-   * Smart change handler: replaces the old useEffect cascade chain.
-   * Performs cascade clearing + option re-derivation synchronously
-   * in the event handler instead of reactively via useEffect.
-   */
-  const handleDataChange = (newData: Partial<FormDataI>) => {
-    const updated: FormDataI = { ...formData, ...newData };
-
-    // Cascade clearing: if a parent in the chain changed, clear all children
-    const cascadeChain = [
+  const handleDataChange = async (newData: Partial<FormDataI>) => {
+    const nextData = { ...formData, ...newData };
+    const chain = [
       "car_brand",
       "manufacturing_year",
       "car_model",
@@ -429,78 +375,68 @@ const useCarEvaluationForm = () => {
       "transmission_type",
       "car_variant",
     ];
+    const changedIndex = chain.findIndex((key) =>
+      Object.prototype.hasOwnProperty.call(newData, key),
+    );
 
-    let highestChangedIdx = -1;
-    for (const key of Object.keys(newData)) {
-      const idx = cascadeChain.indexOf(key);
-      if (idx >= 0 && (highestChangedIdx === -1 || idx < highestChangedIdx)) {
-        highestChangedIdx = idx;
-      }
+    if (changedIndex >= 0) {
+      chain.slice(changedIndex + 1).forEach((key) => {
+        nextData[key] = "";
+      });
     }
 
-    // Clear all children after the highest changed parent
-    if (highestChangedIdx >= 0) {
-      for (let i = highestChangedIdx + 1; i < cascadeChain.length; i++) {
-        updated[cascadeChain[i]] = "";
-      }
+    if (newData.car_brand !== undefined) {
+      setAllVariants([]);
+      setVariantDerivedOptions(emptyVariantOptions);
+      setFormData(nextData);
+      return;
     }
 
-    // Determine if the change is upstream of variants (requires API refetch)
-    const needsVariantRefetch =
-      newData.car_brand !== undefined ||
+    const shouldFetchVariants =
       newData.manufacturing_year !== undefined ||
       newData.car_model !== undefined;
 
-    if (needsVariantRefetch) {
-      // The model useEffect will re-fetch variants and set new options.
-      // Clear variant-derived options immediately so stale options don't linger.
-      setVariantDerivedOptions({
-        fuel_type: [],
-        transmission_type: [],
-        car_variant: [],
-      });
-    } else if (highestChangedIdx >= 0 && allVariants.length > 0) {
-      // A cascade field changed (fuel_type or transmission_type)
-      // Re-derive downstream options synchronously from the current variants
-      const fuelType = String(updated.fuel_type ?? "");
-      const transmissionOpts = deriveTransmissionOptions(allVariants, fuelType);
+    if (shouldFetchVariants) {
+      setFormData(nextData);
+      setVariantDerivedOptions(emptyVariantOptions);
+      const dataWithVariants = await loadVariants(nextData);
+      setFormData(dataWithVariants);
+      return;
+    }
 
-      // Auto-select if only one transmission option and transmission was cleared
-      if (transmissionOpts.length === 1 && !updated.transmission_type) {
-        updated.transmission_type = transmissionOpts[0].value;
-      }
-
-      const transmissionType = String(updated.transmission_type ?? "");
-      const variantOpts = deriveVariantOptions(
+    if (
+      newData.fuel_type !== undefined ||
+      newData.transmission_type !== undefined
+    ) {
+      const transmissionOptions = getTransmissionOptions(
         allVariants,
-        fuelType,
-        transmissionType,
+        String(nextData.fuel_type ?? ""),
       );
 
-      setVariantDerivedOptions((prev) => ({
-        ...prev,
-        transmission_type: transmissionOpts,
-        car_variant: variantOpts,
+      if (transmissionOptions.length === 1 && !nextData.transmission_type) {
+        nextData.transmission_type = transmissionOptions[0].value;
+      }
+
+      setVariantDerivedOptions((options) => ({
+        ...options,
+        transmission_type: transmissionOptions,
+        car_variant: getVariantOptions(
+          allVariants,
+          String(nextData.fuel_type ?? ""),
+          String(nextData.transmission_type ?? ""),
+        ),
       }));
     }
 
-    setFormData(updated);
+    setFormData(nextData);
   };
 
   const handleSaveDraft = async () => {
     try {
       setSubmitting(true);
+      const currentVehicleId = vehicleId || (await createDraftVehicle());
 
-      let currentVehicleId = vehicleId;
-
-      // If no vehicle exists yet, create one as DRAFT first
-      if (!currentVehicleId) {
-        currentVehicleId = await createDraftVehicle();
-      }
-
-      // Save this step's field data to backend
       await saveCurrentStepData(currentVehicleId, currentSection);
-
       alert("Draft saved successfully!");
     } catch (error) {
       console.error("Failed to save draft:", error);
@@ -518,16 +454,9 @@ const useCarEvaluationForm = () => {
 
     try {
       setSubmitting(true);
-
-      // Save the last step's data first
       await saveCurrentStepData(vehicleId, currentSection);
-
-      // Submit all steps (DRAFT → SUBMITTED)
       await submitAllSteps(vehicleId, "EVALUATION");
-
-      // Update vehicle status to completed
       await updateVehicle(vehicleId, { status: "completed" });
-
       router.push("/");
     } catch (error) {
       console.error("Failed to submit evaluation:", error);
