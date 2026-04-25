@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Input from "@/src/components/Input";
 import ConditionSelect from "@/src/components/Select";
-import RadioButton from "@/src/components/Radio";
+import SegmentedRadio from "@/src/components/SegmentedRadio";
 import Checkbox from "@/src/components/Checkbox";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormFieldI } from "../CarEvaluationForm/types";
@@ -354,31 +354,17 @@ const DynamicFormSection = ({
               {field.label}
               {requiredMark}
             </label>
-            <div className="flex flex-wrap gap-4">
-              {radioOptions.map(
-                (
-                  opt: {
-                    value: string | number | readonly string[] | undefined;
-                    label: string | undefined;
-                  },
-                  idx: number,
-                ) => (
-                  <RadioButton
-                    key={`${commonKey}_${opt.value}_${idx}`}
-                    id={`${commonKey}_${opt.value}_${idx}`}
-                    name={commonKey}
-                    label={opt.label}
-                    value={opt.value}
-                    checked={value === opt.value}
-                    onChange={(e) =>
-                      onChange({
-                        [commonKey]: (e.target as HTMLInputElement).value,
-                      })
-                    }
-                  />
-                ),
-              )}
-            </div>
+            <SegmentedRadio
+              name={commonKey}
+              options={radioOptions.map((opt) => ({
+                label: opt.label,
+                value: opt.value,
+              }))}
+              value={value}
+              onChange={(selectedValue) =>
+                onChange({ [commonKey]: selectedValue })
+              }
+            />
           </div>
         );
       }
