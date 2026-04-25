@@ -42,6 +42,7 @@ export type FormFieldI = {
   label: string;
   fieldKey: string;
   placeholder?: string;
+  subgroup?: string | null;
   defaultValue?: string;
   isRequired: boolean;
   order: number;
