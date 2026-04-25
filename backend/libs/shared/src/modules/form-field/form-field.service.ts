@@ -70,6 +70,7 @@ export class SharedFormFieldService {
         label: field.label,
         fieldKey: field.fieldKey,
         placeholder: field.placeholder,
+        subgroup: field.subgroup,
         defaultValue: field.defaultValue,
         isRequired: field.isRequired,
         order: field.order,
@@ -121,6 +122,7 @@ export class SharedFormFieldService {
     label: string;
     fieldKey: string;
     placeholder?: string;
+    subgroup?: string;
     defaultValue?: string;
     isRequired?: boolean;
     order?: number;
@@ -173,6 +175,7 @@ export class SharedFormFieldService {
       label: data.label,
       fieldKey: data.fieldKey,
       placeholder: data.placeholder || null,
+      subgroup: data.subgroup || null,
       defaultValue: data.defaultValue || null,
       isRequired: data.isRequired ?? false,
       order: data.order,
@@ -196,6 +199,7 @@ export class SharedFormFieldService {
       label?: string;
       fieldKey?: string;
       placeholder?: string;
+      subgroup?: string;
       defaultValue?: string;
       isRequired?: boolean;
       order?: number;
@@ -341,6 +345,7 @@ export class SharedFormFieldService {
           label: field.label,
           fieldKey: field.fieldKey,
           placeholder: field.placeholder,
+          subgroup: field.subgroup,
           defaultValue: field.defaultValue,
           isRequired: field.isRequired,
           order: field.order,

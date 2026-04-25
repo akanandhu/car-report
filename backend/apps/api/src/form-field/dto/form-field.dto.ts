@@ -61,6 +61,14 @@ export class CreateFormFieldDto {
     placeholder?: string;
 
     @ApiPropertyOptional({
+        description: 'Optional visual subgroup label used to group fields inside a step',
+        example: 'Seller Info',
+    })
+    @IsOptional()
+    @IsString()
+    subgroup?: string;
+
+    @ApiPropertyOptional({
         description: 'Default value for the field',
         example: '',
     })
@@ -155,6 +163,11 @@ export class UpdateFormFieldDto {
     @IsString()
     placeholder?: string;
 
+    @ApiPropertyOptional({ description: 'Optional visual subgroup label' })
+    @IsOptional()
+    @IsString()
+    subgroup?: string;
+
     @ApiPropertyOptional({ description: 'Default value' })
     @IsOptional()
     @IsString()
@@ -238,6 +251,7 @@ export class FormFieldResponseDto {
     @ApiProperty() label: string;
     @ApiProperty() fieldKey: string;
     @ApiPropertyOptional() placeholder?: string;
+    @ApiPropertyOptional() subgroup?: string;
     @ApiPropertyOptional() defaultValue?: string;
     @ApiProperty() isRequired: boolean;
     @ApiProperty() order: number;
