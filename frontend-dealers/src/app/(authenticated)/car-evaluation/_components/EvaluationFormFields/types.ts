@@ -2,6 +2,7 @@ import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
 import { OptionMap } from "../CarEvaluationForm/useHook";
 
 export type EvaluationFormFieldsPropsI = {
+    currentSection: number;
     isLoading: boolean;
     currentFields: FormFieldI[];
     formData: FormDataI;

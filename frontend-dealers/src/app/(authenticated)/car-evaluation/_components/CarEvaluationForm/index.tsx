@@ -51,6 +51,7 @@ const CarEvaluationForm = () => {
         />
 
         <EvaluationFormFields
+          currentSection={currentSection}
           isLoading={fieldsLoading}
           currentFields={currentFields}
           formData={formData}
