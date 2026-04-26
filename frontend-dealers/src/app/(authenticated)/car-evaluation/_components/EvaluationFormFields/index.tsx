@@ -13,7 +13,7 @@ const EvaluationFormFields = ({
   variantDerivedOptions,
 }: EvaluationFormFieldsPropsI) => {
   return (
-    <div className="w-full p-7 mb-20">
+    <div className="w-full flex-1 px-4 pb-28 pt-6 sm:px-8">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSection}
@@ -25,6 +25,7 @@ const EvaluationFormFields = ({
             duration: 0.16,
             ease: [0.4, 0, 0.2, 1],
           }}
+          className="mx-auto w-full max-w-screen-2xl"
         >
           {isLoading ? (
             <div className="space-y-5">

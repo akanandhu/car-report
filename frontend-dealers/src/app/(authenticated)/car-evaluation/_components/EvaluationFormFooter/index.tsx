@@ -12,13 +12,13 @@ const EvaluationFormFooter = ({
   handleSubmit,
 }: EvaluationFormFooterPropsI) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-      <div className="px-6 py-4">
+    <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur">
+      <div className="px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <Button
             variant="outlined"
             onClick={handlePrevious}
-            className="px-4"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 shadow-sm hover:border-slate-300 hover:bg-slate-50"
             disabled={submitting || currentSection === 0}
           >
             <div className="flex items-center gap-2">
@@ -27,20 +27,19 @@ const EvaluationFormFooter = ({
             </div>
           </Button>
 
-            <Button
-              variant="contained"
-              onClick={isLastSection ? handleSubmit : handleNext}
-              className="px-8"
-              disabled={submitting}
-            >
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">
-                  {isLastSection ? "Submit" : "Next Section"}
-                </span>
-                {!isLastSection && <ChevronRight className="w-5 h-5" />}
-              </div>
-            </Button>
-          
+          <Button
+            variant="contained"
+            onClick={isLastSection ? handleSubmit : handleNext}
+            className="rounded-xl bg-slate-950 px-8 py-2 text-sm font-semibold shadow-sm hover:bg-slate-800"
+            disabled={submitting}
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-semibold">
+                {isLastSection ? "Submit" : "Next Section"}
+              </span>
+              {!isLastSection && <ChevronRight className="w-5 h-5" />}
+            </div>
+          </Button>
         </div>
       </div>
     </div>

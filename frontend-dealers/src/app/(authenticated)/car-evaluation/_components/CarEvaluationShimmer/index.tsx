@@ -1,31 +1,31 @@
 
 const CarEvaluationShimmer = () => {
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse" />
-            <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse" />
-          </div>
-          <div className="h-4 w-full bg-gray-200 rounded-full animate-pulse mb-4" />
-          <div className="flex gap-4 overflow-hidden">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse shrink-0"
-              />
-            ))}
+    <div className="min-h-screen bg-slate-100 px-0 py-0 md:p-4">
+      <div className="mx-auto min-h-screen max-w-[1440px] overflow-hidden bg-white md:min-h-[calc(100vh-2rem)] md:rounded-[28px] md:border md:border-slate-200/70 md:shadow-sm">
+        <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
+          <div className="px-5 py-5 sm:px-8">
+            <div className="mb-3 h-3 w-28 rounded-full bg-gray-200 animate-pulse" />
+            <div className="mb-5 h-8 w-56 rounded-lg bg-gray-200 animate-pulse" />
+            <div className="mb-4 h-14 w-full rounded-2xl bg-gray-100 p-2">
+              <div className="flex gap-3 overflow-hidden">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-10 w-32 shrink-0 rounded-xl bg-gray-200 animate-pulse"
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="h-2 w-full rounded-full bg-gray-200 animate-pulse" />
           </div>
         </div>
-      </div>
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-          <div className="space-y-5">
+        <div className="px-4 pb-28 pt-6 sm:px-8">
+          <div className="mx-auto max-w-screen-2xl space-y-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i}>
-                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-                <div className="h-14 w-full bg-gray-200 rounded-xl animate-pulse" />
+                <div className="mb-2 h-4 w-32 rounded bg-gray-200 animate-pulse" />
+                <div className="h-14 w-full rounded-xl bg-gray-200 animate-pulse" />
               </div>
             ))}
           </div>

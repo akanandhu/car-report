@@ -9,7 +9,7 @@ const StepperTabs = ({
 }: StepperTabsProps) => {
   return (
     <div
-      className={`flex overflow-x-auto gap-3 rounded-2xl bg-gray-100 p-2 ${className}`}
+      className={`hide-scrollbar flex gap-1 overflow-x-auto rounded-2xl bg-slate-100 p-1.5 ${className}`}
     >
       {sections.map((section, index) => {
         const isActive = index === activeSection;
@@ -18,14 +18,14 @@ const StepperTabs = ({
           <button
             key={section.id}
             onClick={() => onSectionChange(index)}
-            className={`shrink-0 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-400  ${
+            className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
               isActive
-                ? "bg-white text-black shadow-md"
-                : "bg-transparent hover:bg-gray-200 text-gray-500 hover:text-gray-700"
+                ? "bg-white text-slate-950 shadow-sm"
+                : "bg-transparent text-slate-500 hover:bg-slate-200 hover:text-slate-700"
             }`}
           >
             <span
-              className={`mr-2 ${isActive ? "text-gray-600" : "text-gray-400"}`}
+              className={`mr-2 text-xs ${isActive ? "text-slate-500" : "text-slate-400"}`}
             >
               {index + 1}
             </span>

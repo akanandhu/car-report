@@ -39,8 +39,11 @@ const CarEvaluationForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div id="form-container" className="bg-white m-4">
+    <div className="min-h-screen bg-slate-100 px-0 py-0 md:p-4">
+      <div
+        id="form-container"
+        className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-white shadow-sm md:min-h-[calc(100vh-2rem)] md:rounded-[28px] md:border md:border-slate-200/70"
+      >
         <EvaluationFormHead
           currentSection={currentSection}
           sections={sections}
