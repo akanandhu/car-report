@@ -23,6 +23,7 @@ import {
   PaginationQueryDto,
   PaginatedResponseDto,
 } from '../common/dto/response.dto';
+import { EncryptResponse } from '../common/decorators/encrypt-response.decorator';
 
 @ApiTags('vehicles')
 @Controller('vehicles')
@@ -137,6 +138,7 @@ export class VehicleController {
   /**
    * Get vehicle by ID with documents
    */
+  @EncryptResponse()
   @Get(':id/with-documents')
   @ApiOperation({
     summary: 'Get vehicle by ID with documents',

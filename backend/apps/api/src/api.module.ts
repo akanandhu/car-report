@@ -12,9 +12,11 @@ import { VehicleDocumentModule } from './vehicle-document/vehicle-document.modul
 import { FormFieldModule } from './form-field/form-field.module';
 import { SeederModule } from './seeder/seeder.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
+    CommonModule,
     UserModule,
     RoleModule,
     BranchModule,

@@ -1,7 +1,9 @@
+import '@shared/config/env.config';
 import { NestFactory } from '@nestjs/core';
-import { ApiModule } from './api.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { ApiModule } from './api.module';
+import { EncryptionInterceptor } from './common/interceptors/encryption.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
@@ -17,6 +19,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  app.useGlobalInterceptors(app.get(EncryptionInterceptor));
 
   // Swagger configuration
   const config = new DocumentBuilder()

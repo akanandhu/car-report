@@ -15,6 +15,7 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
+import { EncryptResponse } from '../common/decorators/encrypt-response.decorator';
 import { SharedDocumentGroupService } from '@shared/modules/document-group/document-group.service';
 import {
   CreateDocumentGroupDto,
