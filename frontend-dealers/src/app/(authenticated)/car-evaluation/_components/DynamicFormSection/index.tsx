@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Input from "@/src/components/Input";
 import ConditionSelect from "@/src/components/Select";
 import SegmentedRadio from "@/src/components/SegmentedRadio";
@@ -13,10 +15,24 @@ import {
   resolveEndpoint,
 } from "./utils";
 import { fetchCatalogueOptions } from "@/src/networks/catalogue";
+import { FormFieldGroupI } from "@/src/networks/form-fields/types";
+
+const EXTERIOR_STATUS_FALLBACK = [
+  { label: "Good", value: "Good" },
+  { label: "Scratched", value: "Scratched" },
+  { label: "Dented", value: "Dented" },
+  { label: "Damaged", value: "Damaged" },
+  { label: "Repaired", value: "Repaired" },
+  { label: "Replaced", value: "Replaced" },
+  { label: "Rusted", value: "Rusted" },
+  { label: "Repainted", value: "Repainted" },
+  { label: "Other", value: "Other" },
+];
 
 const DynamicFormSection = ({
   fields,
   fieldGroups,
+  sectionLabel,
   data,
   onChange,
   configOptions = {},
@@ -34,6 +50,9 @@ const DynamicFormSection = ({
   const [loadingEndpoints, setLoadingEndpoints] = useState<
     Record<string, boolean>
   >({});
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [showPanelInfo, setShowPanelInfo] = useState(false);
+  const [isPortalMounted, setIsPortalMounted] = useState(false);
 
   // Track previous dependency values to detect changes and clear children
   const prevDepsRef = useRef<Record<string, string>>({});
@@ -71,6 +90,10 @@ const DynamicFormSection = ({
   );
 
   // Detect parent field changes and clear dependent child fields
+  useEffect(() => {
+    setIsPortalMounted(true);
+  }, []);
+
   useEffect(() => {
     const cascadingFields = fields.filter(
       (f) => f.endpoint && getEndpointDependencies(f.endpoint).length > 0,
@@ -433,12 +456,523 @@ const DynamicFormSection = ({
     }
   };
 
+  const hasValue = (value: unknown) => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (value instanceof File) return true;
+    if (value && typeof value === "object") {
+      return Object.keys(value).length > 0;
+    }
+
+    return value !== undefined && value !== null && value !== "";
+  };
+
+  const isFieldCompleted = (field: FormFieldI) => {
+    if (!isFieldVisible(field, data)) return true;
+    return hasValue(data[field.fieldKey]);
+  };
+
+  const getFieldOptions = (field: FormFieldI) => {
+    const hasInjectedOptions = !!injectedOptions[field.fieldKey];
+    if (hasInjectedOptions) return injectedOptions[field.fieldKey];
+
+    if (field.endpoint) {
+      const resolvedEndpoint = resolveEndpoint(field.endpoint, data);
+      if (resolvedEndpoint && endpointOptions[resolvedEndpoint]) {
+        return endpointOptions[resolvedEndpoint];
+      }
+    }
+
+    if (
+      sectionLabel?.toLowerCase().includes("exterior") &&
+      (field.label.toLowerCase().includes("condition") ||
+        field.fieldKey.toLowerCase().includes("condition") ||
+        field.fieldKey.toLowerCase().includes("status"))
+    ) {
+      return field.options?.length ? field.options : EXTERIOR_STATUS_FALLBACK;
+    }
+
+    return field.options || [];
+  };
+
+  const getFieldSummary = (field: FormFieldI) => {
+    const value = data[field.fieldKey];
+    const options = getFieldOptions(field);
+
+    if (Array.isArray(value)) {
+      return value
+        .map(
+          (item) =>
+            options.find((option) => option.value === item)?.label || String(item),
+        )
+        .join(", ");
+    }
+
+    if (value && typeof value === "object" && "label" in value) {
+      return String(value.label);
+    }
+
+    if (typeof value === "string" || typeof value === "number") {
+      return (
+        options.find((option) => option.value === String(value))?.label ||
+        String(value)
+      );
+    }
+
+    return "";
+  };
+
+  const updateExteriorChoice = (field: FormFieldI, nextValue: string) => {
+    const currentValue = data[field.fieldKey];
+
+    if (field.type === "checkbox") {
+      const currentValues = Array.isArray(currentValue) ? currentValue : [];
+      const updatedValues = currentValues.includes(nextValue)
+        ? currentValues.filter((value) => value !== nextValue)
+        : [...currentValues, nextValue];
+
+      onChange({ [field.fieldKey]: updatedValues });
+      return;
+    }
+
+    if (field.type === "select") {
+      onChange({ [field.fieldKey]: nextValue });
+      return;
+    }
+
+    onChange({ [field.fieldKey]: nextValue });
+  };
+
+  const renderExteriorField = (field: FormFieldI) => {
+    if (!isFieldVisible(field, data)) return null;
+
+    const commonKey = field.fieldKey;
+    const value = data[commonKey];
+
+    if (
+      (field.type === "radio" || field.type === "checkbox" || field.type === "select") &&
+      getFieldOptions(field).length > 0
+    ) {
+      const options = getFieldOptions(field);
+      const selectedValues = Array.isArray(value)
+        ? value.map(String)
+        : value !== undefined && value !== null && value !== ""
+          ? [String(value)]
+          : [];
+
+      return (
+        <div className="w-full">
+          <label className="mb-3 block text-xs font-bold uppercase tracking-[0.12em] text-[#5c78a3]">
+            {field.label}
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {options.map((option) => {
+              const isSelected = selectedValues.includes(String(option.value));
+
+              return (
+                <button
+                  key={`${commonKey}_${option.value}`}
+                  type="button"
+                  onClick={() => updateExteriorChoice(field, String(option.value))}
+                  className={`rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
+                    isSelected
+                      ? "border-[#2f73ff] bg-[#eef5ff] text-[#22416f]"
+                      : "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === "file") {
+      return (
+        <div className="w-full md:max-w-[320px]">
+          <ImageUpload
+            key={field.id}
+            label={field.label}
+            required={field.isRequired}
+            onFileSelect={(file) => onChange({ [commonKey]: file })}
+          />
+        </div>
+      );
+    }
+
+    return renderField(field);
+  };
+
+  const getGroupProgress = (group: FormFieldGroupI) => {
+    const visibleFields = group.fields.filter((field) =>
+      isFieldVisible(field, data),
+    );
+
+    if (visibleFields.length === 0) {
+      return { completed: 0, total: 0, isComplete: false };
+    }
+
+    const completed = visibleFields.filter(isFieldCompleted).length;
+
+    return {
+      completed,
+      total: visibleFields.length,
+      isComplete: completed === visibleFields.length,
+    };
+  };
+
+  const isGoodOption = (field: FormFieldI, value: string) => {
+    const options = field.options ?? injectedOptions[field.fieldKey] ?? [];
+
+    return options.some((option) => {
+      const normalizedLabel = option.label.trim().toLowerCase();
+      const normalizedValue = option.value.trim().toLowerCase();
+      const target = value.trim().toLowerCase();
+
+      return normalizedLabel === target || normalizedValue === target;
+    });
+  };
+
+  const markGroupedFieldsGood = () => {
+    const nextData: Record<string, unknown> = {};
+
+    fieldGroups.forEach((group) => {
+      if (!group.subgroup) return;
+
+      group.fields.forEach((field) => {
+        if (!isFieldVisible(field, data)) return;
+
+        if (
+          (field.type === "radio" || field.type === "select") &&
+          isGoodOption(field, "good")
+        ) {
+          nextData[field.fieldKey] = "Good";
+        }
+      });
+    });
+
+    if (Object.keys(nextData).length > 0) {
+      onChange(nextData);
+    }
+  };
+
+  const renderExteriorLayout = () => {
+    const groupedCards = fieldGroups.filter((group) => group.subgroup);
+    const standaloneGroups = fieldGroups.filter((group) => !group.subgroup);
+    const completedGroups = groupedCards.filter(
+      (group) => getGroupProgress(group).isComplete,
+    ).length;
+    const totalGroups = groupedCards.length;
+    const progress = totalGroups > 0 ? (completedGroups / totalGroups) * 100 : 0;
+
+    return (
+      <div className="flex flex-col gap-6 pb-12">
+        {groupedCards.length > 0 && (
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
+                  <svg
+                    className="h-5 w-5 shrink-0 text-blue-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M10 17h4" />
+                    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
+                    <path d="M5 11h14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+                    <circle cx="7.5" cy="14.5" r="1.5" />
+                    <circle cx="16.5" cy="14.5" r="1.5" />
+                  </svg>
+                  Exterior Panel Inspection
+                  <button
+                    type="button"
+                    onClick={() => setShowPanelInfo(true)}
+                    className="text-slate-400 transition-colors hover:text-blue-500"
+                    aria-label="Open exterior panel inspection info"
+                  >
+                    <svg
+                      className="h-[18px] w-[18px]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4" />
+                      <path d="M12 8h.01" />
+                    </svg>
+                  </button>
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Select condition for all {totalGroups} exterior points. (
+                  {completedGroups} completed)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={markGroupedFieldsGood}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700 transition-all hover:bg-emerald-200"
+              >
+                <svg
+                  className="h-[18px] w-[18px] shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+                Mark All 'Good'
+              </button>
+            </div>
+
+            <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+              <div
+                className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {groupedCards.map((group) => {
+                const title = group.subgroup || "Group";
+                const isExpanded = expandedGroup === title;
+                const groupProgress = getGroupProgress(group);
+                const summary = group.fields
+                  .map((field) => getFieldSummary(field))
+                  .filter(Boolean)
+                  .join(", ");
+
+                return (
+                  <div
+                    key={title}
+                    className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
+                      isExpanded
+                        ? "border-[#2f73ff] shadow-[0_6px_18px_rgba(47,115,255,0.16)] md:col-span-2 xl:col-span-3"
+                        : "border-[#d9e2ef] hover:border-[#c9d7ea]"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setExpandedGroup(isExpanded ? null : title)}
+                      className="flex w-full items-center justify-between gap-4 px-[22px] py-[18px] text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        {groupProgress.isComplete ? (
+                          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-[#00c98d] text-[#00c98d]">
+                            <svg
+                              className="h-3.5 w-3.5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.4"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div
+                            className={`h-[7px] w-[7px] rounded-full ${
+                              isExpanded ? "bg-[#2f73ff]" : "bg-[#d9e2ef]"
+                            }`}
+                          />
+                        )}
+                        <span className="text-[16px] font-semibold leading-6 text-[#1f3f6f]">
+                          {title}
+                        </span>
+                      </div>
+                      {!isExpanded && summary ? (
+                        <span className="max-w-[180px] truncate text-[14px] font-semibold leading-5 text-[#8ea2c6]">
+                          {summary}
+                        </span>
+                      ) : null}
+                    </button>
+
+                    <AnimatePresence initial={false} mode="wait">
+                      {isExpanded && (
+                        <motion.div
+                          key={`${title}-content`}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{
+                            height: { duration: 0.24, ease: [0.4, 0, 0.2, 1] },
+                            opacity: { duration: 0.16, ease: "easeOut" },
+                          }}
+                          className="overflow-hidden"
+                        >
+                          <div className="border-t border-[#edf2f8] bg-[#f7f9fc] px-[22px] py-5">
+                            <div className="grid grid-cols-1 gap-4">
+                              {group.fields.map((field) => (
+                                <div key={field.id}>{renderExteriorField(field)}</div>
+                              ))}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {isPortalMounted &&
+          createPortal(
+            <AnimatePresence>
+              {showPanelInfo && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="w-full max-w-[560px] overflow-hidden rounded-[22px] bg-white shadow-2xl"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5">
+                      <h4 className="flex items-center gap-2 text-[18px] font-bold leading-none text-[#18181b]">
+                        <svg
+                          className="h-5 w-5 shrink-0 text-blue-500"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4" />
+                          <path d="M12 8h.01" />
+                        </svg>
+                        Exterior Panel Inspection Info
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setShowPanelInfo(false)}
+                        className="rounded-full bg-[#f1f1f5] p-2 text-[#7a7a8c] transition-colors hover:text-slate-900"
+                        aria-label="Close exterior panel inspection info"
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M18 6L6 18" />
+                          <path d="M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="flex flex-col gap-4 p-5">
+                      <div className="h-48 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                        <img
+                          src="https://images.unsplash.com/photo-1769971361854-9e0927a2d8dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBwYXJ0cyUyMGRpYWdyYW18ZW58MXx8fHwxNzc2ODM5MDkxfDA&ixlib=rb-4.1.0&q=80&w=1080"
+                          alt="Exterior panel inspection reference"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <p className="text-sm leading-relaxed text-[#717182]">
+                        Carefully examine each panel for scratches, dents, and
+                        paint consistency. If multiple panels have been
+                        repainted or replaced, this is a strong indicator of a
+                        major accident. Remember to open the hood and trunk to
+                        inspect the inner apron and pillar conditions!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowPanelInfo(false)}
+                        className="mt-2 w-full rounded-md bg-[#030213] py-2.5 text-base font-bold text-white transition-all hover:bg-[#10101d]"
+                      >
+                        Got it!
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>,
+            document.body,
+          )}
+
+        {standaloneGroups.map((group, index) => {
+          const visibleFields = group.fields.filter((field) =>
+            isFieldVisible(field, data),
+          );
+          if (visibleFields.length === 0) return null;
+
+          const hasMedia = visibleFields.every(
+            (field) => field.type === "file",
+          );
+          const title =
+            visibleFields[0]?.subgroup ||
+            visibleFields[0]?.label ||
+            `${sectionLabel || "Exterior"} ${index + 1}`;
+
+          return (
+            <div
+              key={`${title}-${index}`}
+              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+            >
+              <div className="mb-5">
+                <h3 className="text-lg font-semibold text-slate-950 sm:text-xl">
+                  {title}
+                </h3>
+              </div>
+
+              <div
+                className={
+                  hasMedia
+                    ? "grid grid-cols-2 gap-4 md:grid-cols-4"
+                    : "grid grid-cols-1 gap-4 md:grid-cols-2"
+                }
+              >
+                {visibleFields.map((field) => (
+                  <div
+                    key={field.id}
+                    className={
+                      !hasMedia && field.type === "textarea" ? "md:col-span-2" : ""
+                    }
+                  >
+                    {renderField(field)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (fields.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-400">
         <p className="text-lg">No fields configured for this section.</p>
       </div>
     );
+  }
+
+  if (sectionLabel?.toLowerCase().includes("exterior")) {
+    return renderExteriorLayout();
   }
 
   return (

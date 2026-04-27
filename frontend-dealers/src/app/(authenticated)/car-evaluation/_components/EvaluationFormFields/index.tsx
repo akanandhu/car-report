@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import DynamicFormSection from "../DynamicFormSection";
+import ExteriorSection from "../ExteriorSection";
 import { EvaluationFormFieldsPropsI } from "./types";
 
 const EvaluationFormFields = ({
   currentSection,
+  currentSectionLabel,
   isLoading,
   currentFields,
   currentFieldGroups,
@@ -12,6 +14,8 @@ const EvaluationFormFields = ({
   configOptions,
   variantDerivedOptions,
 }: EvaluationFormFieldsPropsI) => {
+  const isExteriorSection = currentSectionLabel?.toLowerCase().includes("exterior");
+
   return (
     <div className="w-full flex-1 px-4 pb-28 pt-6 sm:px-8">
       <AnimatePresence mode="wait">
@@ -37,14 +41,25 @@ const EvaluationFormFields = ({
               ))}
             </div>
           ) : (
-            <DynamicFormSection
-              fields={currentFields}
-              fieldGroups={currentFieldGroups}
-              data={formData}
-              onChange={handleDataChange}
-              configOptions={configOptions}
-              variantDerivedOptions={variantDerivedOptions}
-            />
+            <>
+              {isExteriorSection ? (
+                <ExteriorSection
+                  fields={currentFields}
+                  data={formData}
+                  onChange={handleDataChange}
+                />
+              ) : (
+                <DynamicFormSection
+                  fields={currentFields}
+                  fieldGroups={currentFieldGroups}
+                  sectionLabel={currentSectionLabel}
+                  data={formData}
+                  onChange={handleDataChange}
+                  configOptions={configOptions}
+                  variantDerivedOptions={variantDerivedOptions}
+                />
+              )}
+            </>
           )}
         </motion.div>
       </AnimatePresence>
