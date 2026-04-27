@@ -16,7 +16,7 @@ export const interiorElectricalSchema = z.object({
   carElectrical: z.array(z.string()).optional(),
   secondKey: z.string().optional(),
   platform: z.array(z.string()).optional(),
-  interiorElectricalOtherDetails: z.record(z.string()).optional(),
+  interiorElectricalOtherDetails: z.record(z.string(), z.string()).optional(),
 });
 
 export type InteriorElectricalFormData = z.infer<
