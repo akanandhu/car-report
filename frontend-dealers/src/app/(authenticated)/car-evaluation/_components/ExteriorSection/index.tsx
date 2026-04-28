@@ -87,21 +87,106 @@ const getDisplayValue = (
 
 const getSelectedOptionClasses = (optionLabel: string) => {
   const normalized = optionLabel.trim().toLowerCase();
+  const isGood =
+    normalized === "good" ||
+    normalized === "normal" ||
+    normalized === "working";
+  const isBad = [
+    "damaged",
+    "leak",
+    "weak",
+    "noisy",
+    "dirty",
+    "not working",
+    "non-functional",
+  ].some((value) => normalized.includes(value));
 
-  if (normalized === "good") {
-    return "border-[#12c48b] bg-[#12c48b] text-white shadow-[0_0_0_3px_rgba(18,196,139,0.15)]";
+  if (isGood) {
+    return "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.2)]";
   }
 
-  if (
-    normalized === "damaged" ||
-    normalized === "not working" ||
-    normalized === "non-functional"
-  ) {
-    return "border-[#ff2f63] bg-[#ff2f63] text-white shadow-[0_0_0_3px_rgba(255,47,99,0.15)]";
+  if (isBad) {
+    return "bg-rose-500 text-white border-rose-500 shadow-[0_0_0_3px_rgba(244,63,94,0.2)]";
   }
 
-  return "border-[#2f66f3] bg-[#2f66f3] text-white shadow-[0_0_0_3px_rgba(47,102,243,0.15)]";
+  return "bg-blue-600 text-white border-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.2)]";
 };
+
+const getExteriorOptionClasses = (
+  optionLabel: string,
+  isSelected: boolean,
+) => {
+  if (isSelected) {
+    return getSelectedOptionClasses(optionLabel);
+  }
+
+  return "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]";
+};
+
+const getExclusiveExteriorOption = (
+  field: FormFieldI,
+  optionValue: string,
+) => {
+  const matchedOption = field.options?.find(
+    (option) => String(option.value) === optionValue,
+  );
+  const normalized = (
+    matchedOption?.label ??
+    matchedOption?.value ??
+    optionValue
+  )
+    .trim()
+    .toLowerCase();
+
+  if (normalized === "good" || normalized === "working") {
+    return optionValue;
+  }
+
+  return null;
+};
+
+const getBulkSelectionValue = (field: FormFieldI) => {
+  const matchedOption = field.options?.find((option) => {
+    const normalized = String(option.label ?? option.value).trim().toLowerCase();
+    return normalized === "good" || normalized === "working";
+  });
+
+  return matchedOption ? String(matchedOption.value) : null;
+};
+
+const isBulkSelectedValue = (field: FormFieldI, value: unknown) => {
+  const bulkValue = getBulkSelectionValue(field);
+  if (!bulkValue) return false;
+
+  if (field.type === "checkbox") {
+    return (
+      Array.isArray(value) &&
+      value.length === 1 &&
+      String(value[0]) === bulkValue
+    );
+  }
+
+  return String(value ?? "") === bulkValue;
+};
+
+const ExteriorPanelIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M10 17h4" />
+    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
+    <path d="M5 11h14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+    <circle cx="7.5" cy="14.5" r="1.5" />
+    <circle cx="16.5" cy="14.5" r="1.5" />
+  </svg>
+);
 
 const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
@@ -142,14 +227,32 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
     [fields],
   );
 
+  const bulkSelectableItems = useMemo(
+    () =>
+      items.filter(({ field }) => getBulkSelectionValue(field) !== null),
+    [items],
+  );
+
+  const areAllItemsMarkedGood = bulkSelectableItems.length > 0 &&
+    bulkSelectableItems.every(({ field }) =>
+      isBulkSelectedValue(field, data[field.fieldKey]),
+    );
+
   const markAllGood = () => {
     const nextData: Record<string, unknown> = {};
+    const shouldReset = areAllItemsMarkedGood;
 
-    items.forEach(({ field }) => {
-      const hasGood = field.options?.some((option) => option.value === "Good");
-      if (!hasGood) return;
+    bulkSelectableItems.forEach(({ field }) => {
+      const bulkValue = getBulkSelectionValue(field);
+      if (!bulkValue) return;
 
-      nextData[field.fieldKey] = field.type === "checkbox" ? ["Good"] : "Good";
+      nextData[field.fieldKey] = shouldReset
+        ? field.type === "checkbox"
+          ? []
+          : ""
+        : field.type === "checkbox"
+          ? [bulkValue]
+          : bulkValue;
     });
 
     if (Object.keys(nextData).length > 0) {
@@ -162,9 +265,22 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
 
     if (field.type === "checkbox") {
       const currentValues = Array.isArray(currentValue) ? currentValue : [];
-      const nextValues = currentValues.includes(optionValue)
-        ? currentValues.filter((value) => value !== optionValue)
-        : [...currentValues, optionValue];
+      const exclusiveValue = getExclusiveExteriorOption(field, optionValue);
+      const currentExclusiveValue = currentValues.find((value) =>
+        getExclusiveExteriorOption(field, String(value)),
+      );
+
+      let nextValues: string[];
+
+      if (currentValues.includes(optionValue)) {
+        nextValues = currentValues.filter((value) => value !== optionValue);
+      } else if (exclusiveValue) {
+        nextValues = [exclusiveValue];
+      } else {
+        nextValues = currentExclusiveValue
+          ? [...currentValues.filter((value) => value !== currentExclusiveValue), optionValue]
+          : [...currentValues, optionValue];
+      }
 
       onChange({ [field.fieldKey]: nextValues });
       return;
@@ -201,6 +317,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
     field: FormFieldI,
     labelOverride?: string,
     compact = false,
+    useFigmaSegmented = false,
   ) => {
     const value = data[field.fieldKey];
     const options = field.options || [];
@@ -227,7 +344,13 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
         >
           {labelOverride || field.label}
         </label>
-        <div className="flex flex-wrap gap-3">
+        <div
+          className={
+            useFigmaSegmented
+              ? `flex flex-wrap gap-1 rounded-md bg-[#ececf0] p-1 ${compact ? "inline-flex" : "w-full"}`
+              : "flex flex-wrap gap-3"
+          }
+        >
           {options.map((option) => {
             const isSelected = selectedValues.includes(option.value);
 
@@ -236,11 +359,17 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                 key={`${field.fieldKey}_${option.value}`}
                 type="button"
                 onClick={() => toggleOption(field, String(option.value))}
-                className={`rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
-                  isSelected
-                    ? getSelectedOptionClasses(option.label)
-                    : "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]"
-                }`}
+                className={
+                  useFigmaSegmented
+                    ? `inline-flex min-w-9 flex-1 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${
+                        isSelected
+                          ? "bg-white text-[#030213] shadow-sm"
+                          : "text-[#717182] hover:bg-white/50 hover:text-[#030213]"
+                      }`
+                    : `rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
+                        getExteriorOptionClasses(option.label, isSelected)
+                      }`
+                }
               >
                 {option.label}
               </button>
@@ -257,22 +386,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
         <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
-              <svg
-                className="h-5 w-5 shrink-0 text-blue-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M10 17h4" />
-                <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
-                <path d="M5 11h14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
-                <circle cx="7.5" cy="14.5" r="1.5" />
-                <circle cx="16.5" cy="14.5" r="1.5" />
-              </svg>
+              <ExteriorPanelIcon className="h-5 w-5 shrink-0 text-blue-500" />
               Exterior Panel Inspection
               {renderInfoButton({
                 title: "Exterior Panel Inspection Info",
@@ -289,7 +403,11 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
           <button
             type="button"
             onClick={markAllGood}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700 transition-all hover:bg-emerald-200"
+            className={`inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-all ${
+              areAllItemsMarkedGood
+                ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+            }`}
           >
             <svg
               className="h-[18px] w-[18px] shrink-0"
@@ -301,9 +419,16 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M20 6L9 17l-5-5" />
+              {areAllItemsMarkedGood ? (
+                <>
+                  <path d="M18 6L6 18" />
+                  <path d="M6 6l12 12" />
+                </>
+              ) : (
+                <path d="M20 6L9 17l-5-5" />
+              )}
             </svg>
-            Mark All 'Good'
+            {areAllItemsMarkedGood ? "Reset All" : "Mark All Good"}
           </button>
         </div>
 
@@ -414,9 +539,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                                 toggleOption(field, String(option.value))
                               }
                               className={`rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
-                                isSelected
-                                  ? "border-[#2f73ff] bg-[#eef5ff] text-[#22416f]"
-                                  : "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]"
+                                getExteriorOptionClasses(option.label, isSelected)
                               }`}
                             >
                               {option.label}
@@ -449,7 +572,9 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {tyreFields.map((field) => (
-              <div key={field.fieldKey}>{renderChoiceField(field, field.label, true)}</div>
+              <div key={field.fieldKey}>
+                {renderChoiceField(field, field.label, true, true)}
+              </div>
             ))}
           </div>
         </div>
@@ -474,7 +599,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
               if (field.type === "radio" || field.type === "checkbox") {
                 return (
                   <div key={field.fieldKey}>
-                    {renderChoiceField(field, field.label, false)}
+                    {renderChoiceField(field, field.label, false, true)}
                   </div>
                 );
               }
@@ -512,20 +637,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                 >
                   <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5">
                     <h4 className="flex items-center gap-2 text-[18px] font-bold leading-none text-[#18181b]">
-                      <svg
-                        className="h-5 w-5 shrink-0 text-blue-500"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                      </svg>
+                      <ExteriorPanelIcon className="h-5 w-5 shrink-0 text-blue-500" />
                       {infoModal.title}
                     </h4>
                     <button

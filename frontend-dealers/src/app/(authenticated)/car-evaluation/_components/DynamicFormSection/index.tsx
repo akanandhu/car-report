@@ -29,6 +29,120 @@ const EXTERIOR_STATUS_FALLBACK = [
   { label: "Other", value: "Other" },
 ];
 
+const getExteriorOptionClasses = (
+  optionLabel: string,
+  isSelected: boolean,
+) => {
+  if (isSelected) {
+    const normalized = optionLabel.trim().toLowerCase();
+    const isGood =
+      normalized === "good" ||
+      normalized === "normal" ||
+      normalized === "working";
+    const isBad = [
+      "damaged",
+      "leak",
+      "weak",
+      "noisy",
+      "dirty",
+      "not working",
+      "non-functional",
+    ].some((value) => normalized.includes(value));
+
+    if (isGood) {
+      return "bg-emerald-500 text-white border-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.2)]";
+    }
+
+    if (isBad) {
+      return "bg-rose-500 text-white border-rose-500 shadow-[0_0_0_3px_rgba(244,63,94,0.2)]";
+    }
+
+    return "bg-blue-600 text-white border-blue-600 shadow-[0_0_0_3px_rgba(37,99,235,0.2)]";
+  }
+
+  return "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]";
+};
+
+const getExclusiveExteriorOption = (
+  field: FormFieldI,
+  optionValue: string,
+  injectedOptions: Record<string, { label: string; value: string }[]>,
+) => {
+  const options = injectedOptions[field.fieldKey] ?? field.options ?? [];
+  const matchedOption = options.find(
+    (option) => String(option.value) === optionValue,
+  );
+  const normalized = (
+    matchedOption?.label ??
+    matchedOption?.value ??
+    optionValue
+  )
+    .trim()
+    .toLowerCase();
+
+  if (normalized === "good" || normalized === "working") {
+    return optionValue;
+  }
+
+  return null;
+};
+
+const getBulkSelectionValue = (
+  field: FormFieldI,
+  injectedOptions: Record<string, { label: string; value: string }[]>,
+) => {
+  const options = injectedOptions[field.fieldKey] ?? field.options ?? [];
+  const matchedOption = options.find((option) => {
+    const normalized = String(option.label ?? option.value).trim().toLowerCase();
+    return normalized === "good" || normalized === "working";
+  });
+
+  return matchedOption ? String(matchedOption.value) : null;
+};
+
+const isBulkSelectedValue = (
+  field: FormFieldI,
+  value: unknown,
+  injectedOptions: Record<string, { label: string; value: string }[]>,
+) => {
+  const bulkValue = getBulkSelectionValue(field, injectedOptions);
+  if (!bulkValue) return false;
+
+  if (field.type === "checkbox") {
+    return (
+      Array.isArray(value) &&
+      value.length === 1 &&
+      String(value[0]) === bulkValue
+    );
+  }
+
+  return String(value ?? "") === bulkValue;
+};
+
+const ExteriorPanelIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M10 17h4" />
+    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
+    <path d="M5 11h14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
+    <circle cx="7.5" cy="14.5" r="1.5" />
+    <circle cx="16.5" cy="14.5" r="1.5" />
+  </svg>
+);
+
+const EXTERIOR_BULK_EXCLUDED_SUBGROUPS = new Set([
+  "Tyre Condition (Tread Remaining)",
+  "Macro Status",
+]);
+
 const DynamicFormSection = ({
   fields,
   fieldGroups,
@@ -526,9 +640,26 @@ const DynamicFormSection = ({
 
     if (field.type === "checkbox") {
       const currentValues = Array.isArray(currentValue) ? currentValue : [];
-      const updatedValues = currentValues.includes(nextValue)
-        ? currentValues.filter((value) => value !== nextValue)
-        : [...currentValues, nextValue];
+      const exclusiveValue = getExclusiveExteriorOption(
+        field,
+        nextValue,
+        injectedOptions,
+      );
+      const currentExclusiveValue = currentValues.find((value) =>
+        getExclusiveExteriorOption(field, String(value), injectedOptions),
+      );
+
+      let updatedValues: string[];
+
+      if (currentValues.includes(nextValue)) {
+        updatedValues = currentValues.filter((value) => value !== nextValue);
+      } else if (exclusiveValue) {
+        updatedValues = [exclusiveValue];
+      } else {
+        updatedValues = currentExclusiveValue
+          ? [...currentValues.filter((value) => value !== currentExclusiveValue), nextValue]
+          : [...currentValues, nextValue];
+      }
 
       onChange({ [field.fieldKey]: updatedValues });
       return;
@@ -574,9 +705,7 @@ const DynamicFormSection = ({
                   type="button"
                   onClick={() => updateExteriorChoice(field, String(option.value))}
                   className={`rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
-                    isSelected
-                      ? "border-[#2f73ff] bg-[#eef5ff] text-[#22416f]"
-                      : "border-[#d7deea] bg-white text-[#22416f] hover:bg-[#f8fbff]"
+                    getExteriorOptionClasses(option.label, isSelected)
                   }`}
                 >
                   {option.label}
@@ -622,34 +751,34 @@ const DynamicFormSection = ({
     };
   };
 
-  const isGoodOption = (field: FormFieldI, value: string) => {
-    const options = field.options ?? injectedOptions[field.fieldKey] ?? [];
-
-    return options.some((option) => {
-      const normalizedLabel = option.label.trim().toLowerCase();
-      const normalizedValue = option.value.trim().toLowerCase();
-      const target = value.trim().toLowerCase();
-
-      return normalizedLabel === target || normalizedValue === target;
-    });
-  };
-
   const markGroupedFieldsGood = () => {
+    const eligibleFields = fieldGroups.flatMap((group) =>
+      EXTERIOR_BULK_EXCLUDED_SUBGROUPS.has(group.subgroup ?? "")
+        ? []
+        : group.fields.filter(
+            (field) =>
+              isFieldVisible(field, data) &&
+              getBulkSelectionValue(field, injectedOptions) !== null,
+          ),
+    );
+    const shouldReset =
+      eligibleFields.length > 0 &&
+      eligibleFields.every((field) =>
+        isBulkSelectedValue(field, data[field.fieldKey], injectedOptions),
+      );
     const nextData: Record<string, unknown> = {};
 
-    fieldGroups.forEach((group) => {
-      if (!group.subgroup) return;
+    eligibleFields.forEach((field) => {
+      const bulkValue = getBulkSelectionValue(field, injectedOptions);
+      if (!bulkValue) return;
 
-      group.fields.forEach((field) => {
-        if (!isFieldVisible(field, data)) return;
-
-        if (
-          (field.type === "radio" || field.type === "select") &&
-          isGoodOption(field, "good")
-        ) {
-          nextData[field.fieldKey] = "Good";
-        }
-      });
+      nextData[field.fieldKey] = shouldReset
+        ? field.type === "checkbox"
+          ? []
+          : ""
+        : field.type === "checkbox"
+          ? [bulkValue]
+          : bulkValue;
     });
 
     if (Object.keys(nextData).length > 0) {
@@ -665,6 +794,20 @@ const DynamicFormSection = ({
     ).length;
     const totalGroups = groupedCards.length;
     const progress = totalGroups > 0 ? (completedGroups / totalGroups) * 100 : 0;
+    const eligibleFields = fieldGroups.flatMap((group) =>
+      EXTERIOR_BULK_EXCLUDED_SUBGROUPS.has(group.subgroup ?? "")
+        ? []
+        : group.fields.filter(
+            (field) =>
+              isFieldVisible(field, data) &&
+              getBulkSelectionValue(field, injectedOptions) !== null,
+          ),
+    );
+    const areAllItemsMarkedGood =
+      eligibleFields.length > 0 &&
+      eligibleFields.every((field) =>
+        isBulkSelectedValue(field, data[field.fieldKey], injectedOptions),
+      );
 
     return (
       <div className="flex flex-col gap-6 pb-12">
@@ -673,22 +816,7 @@ const DynamicFormSection = ({
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
-                  <svg
-                    className="h-5 w-5 shrink-0 text-blue-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M10 17h4" />
-                    <path d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11" />
-                    <path d="M5 11h14v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z" />
-                    <circle cx="7.5" cy="14.5" r="1.5" />
-                    <circle cx="16.5" cy="14.5" r="1.5" />
-                  </svg>
+                  <ExteriorPanelIcon className="h-5 w-5 shrink-0 text-blue-500" />
                   Exterior Panel Inspection
                   <button
                     type="button"
@@ -720,7 +848,11 @@ const DynamicFormSection = ({
               <button
                 type="button"
                 onClick={markGroupedFieldsGood}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700 transition-all hover:bg-emerald-200"
+                className={`inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-all ${
+                  areAllItemsMarkedGood
+                    ? "bg-slate-200 text-slate-700 hover:bg-slate-300"
+                    : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                }`}
               >
                 <svg
                   className="h-[18px] w-[18px] shrink-0"
@@ -732,9 +864,16 @@ const DynamicFormSection = ({
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="M20 6L9 17l-5-5" />
+                  {areAllItemsMarkedGood ? (
+                    <>
+                      <path d="M18 6L6 18" />
+                      <path d="M6 6l12 12" />
+                    </>
+                  ) : (
+                    <path d="M20 6L9 17l-5-5" />
+                  )}
                 </svg>
-                Mark All 'Good'
+                {areAllItemsMarkedGood ? "Reset All" : "Mark All Good"}
               </button>
             </div>
 
@@ -846,20 +985,7 @@ const DynamicFormSection = ({
                   >
                     <div className="flex items-center justify-between border-b border-slate-200 px-5 py-5">
                       <h4 className="flex items-center gap-2 text-[18px] font-bold leading-none text-[#18181b]">
-                        <svg
-                          className="h-5 w-5 shrink-0 text-blue-500"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 16v-4" />
-                          <path d="M12 8h.01" />
-                        </svg>
+                        <ExteriorPanelIcon className="h-5 w-5 shrink-0 text-blue-500" />
                         Exterior Panel Inspection Info
                       </h4>
                       <button
