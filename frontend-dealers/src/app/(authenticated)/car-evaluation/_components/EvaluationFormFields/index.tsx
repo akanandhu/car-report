@@ -17,7 +17,7 @@ const EvaluationFormFields = ({
   const isExteriorSection = currentSectionLabel?.toLowerCase().includes("exterior");
 
   return (
-    <div className="w-full flex-1 px-4 pb-32 pt-6 sm:px-8 sm:pb-36">
+    <div className="w-full flex-1 px-4 pb-40 pt-6 sm:px-8 sm:pb-44">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSection}

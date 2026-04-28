@@ -154,7 +154,53 @@ const BASIC_DETAILS_DESCRIPTIONS: Record<string, string> = {
     "Record the asking price and key ownership or condition disclosures.",
 };
 
+const DOCUMENTS_DESCRIPTIONS: Record<string, string> = {
+  "Registration Certificate (RC)":
+    "Upload the RC images and capture any transfer or mismatch details.",
+  "Insurance Policy":
+    "Verify the insurance type, validity, policy details, and mismatch status.",
+  "Finance & RTO Details":
+    "Record hypothecation, NOC, Form 35, and related finance information.",
+  "Document Remarks (Select all that apply)":
+    "Tag any document-side concerns or exceptions noticed during evaluation.",
+};
+
+const ENGINE_DESCRIPTIONS: Record<string, string> = {
+  "Engine & Mechanical Overview":
+    "Capture engine bay media and assess major mechanical systems.",
+  "Final Notes & Gearbox":
+    "Document gearbox-specific observations and any final engine remarks.",
+};
+
 const OBJECT_VALUE_FIELDS = new Set(["car_brand", "car_model", "car_variant"]);
+
+const ENGINE_OVERVIEW_KEYS = new Set([
+  "engine_compartment_image",
+  "engine_idle_start_video",
+  "engine_sound",
+  "smoke",
+]);
+
+const ENGINE_FINAL_NOTE_KEYS = new Set([
+  "gearbox_leakage",
+  "engine_comments",
+]);
+
+const ENGINE_SYSTEM_ORDER = [
+  "engine_condition",
+  "battery",
+  "radiator",
+  "starting_motor",
+  "coolant",
+  "blowby_back_compression",
+  "silencer",
+  "clutch_operations",
+  "gearbox",
+  "engine_oil",
+  "turbo_charger",
+  "engine_mount",
+  "sump",
+];
 
 const DynamicFormSection = ({
   fields,
@@ -1306,15 +1352,15 @@ const DynamicFormSection = ({
   const renderBasicDetailsLayout = () => {
     const groupsToRender =
       fieldGroups.length > 0
-        ? fieldGroups
+        ? [...fieldGroups].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         : [{ subgroup: null, order: 0, fields }];
 
     return (
       <div className="flex flex-col gap-4 pb-8">
         {groupsToRender.map((group, index) => {
-          const visibleFields = group.fields.filter((field) =>
-            isFieldVisible(field, data),
-          );
+          const visibleFields = [...group.fields]
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .filter((field) => isFieldVisible(field, data));
 
           if (visibleFields.length === 0) return null;
 
@@ -1352,6 +1398,326 @@ const DynamicFormSection = ({
     );
   };
 
+  const renderCompactCheckboxField = (field: FormFieldI) => {
+    const value = data[field.fieldKey];
+    const currentValues: string[] = Array.isArray(value) ? value : [];
+
+    return (
+      <div className="w-full">
+        <label className="mb-3 block text-sm font-medium leading-none text-slate-800">
+          {field.isRequired ? `${field.label} *` : field.label}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {(field.options || []).map((opt, idx) => {
+            const isSelected = currentValues.includes(opt.value);
+
+            return (
+              <button
+                key={`${field.fieldKey}_${opt.value}_${idx}`}
+                type="button"
+                onClick={() => {
+                  const newValues = isSelected
+                    ? currentValues.filter((v) => v !== opt.value)
+                    : [...currentValues, opt.value];
+                  onChange({ [field.fieldKey]: newValues });
+                }}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isSelected
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderCompactSingleChoiceField = (field: FormFieldI) => {
+    const value = data[field.fieldKey];
+    const selectedValue = String(value ?? "");
+
+    return (
+      <div className="w-full">
+        <label className="mb-3 block text-sm font-medium leading-none text-slate-800">
+          {field.isRequired ? `${field.label} *` : field.label}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {(field.options || []).map((opt, idx) => {
+            const isSelected = selectedValue === String(opt.value);
+
+            return (
+              <button
+                key={`${field.fieldKey}_${opt.value}_${idx}`}
+                type="button"
+                onClick={() => onChange({ [field.fieldKey]: opt.value })}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isSelected
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderDocumentsLayout = () => {
+    const groupsToRender =
+      fieldGroups.length > 0
+        ? [...fieldGroups].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        : [{ subgroup: null, order: 0, fields }];
+
+    return (
+      <div className="flex flex-col gap-5 pb-8">
+        {groupsToRender.map((group, index) => {
+          const visibleFields = [...group.fields]
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .filter((field) => isFieldVisible(field, data));
+
+          if (visibleFields.length === 0) return null;
+
+          const title =
+            group.subgroup || `${sectionLabel || "Documents"} ${index + 1}`;
+          const description = DOCUMENTS_DESCRIPTIONS[title];
+          const fileFields = visibleFields.filter((field) => field.type === "file");
+          const nonFileFields = visibleFields.filter((field) => field.type !== "file");
+          const isRemarksGroup = title === "Document Remarks (Select all that apply)";
+
+          return (
+            <section
+              key={`${title}_${index}`}
+              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
+              {title ? (
+                <div className="mb-4 border-b border-slate-200 pb-3">
+                  <h3 className="text-base font-semibold tracking-tight text-slate-950">
+                    {title}
+                  </h3>
+                  {description ? (
+                    <p className="mt-1 text-sm text-slate-500">{description}</p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {fileFields.length > 0 ? (
+                <div
+                  className={`grid gap-4 ${
+                    title === "Registration Certificate (RC)"
+                      ? "grid-cols-1 md:grid-cols-2"
+                      : "grid-cols-1 md:grid-cols-2"
+                  }`}
+                >
+                  {fileFields.map((field) => (
+                    <div
+                      key={field.id}
+                      className={
+                        title === "Insurance Policy" &&
+                        field.fieldKey === "insurance_image"
+                          ? "md:max-w-[320px]"
+                          : title === "Finance & RTO Details" &&
+                              (field.fieldKey === "chassis_impression_image" ||
+                                field.fieldKey === "loan_noc_image" ||
+                                field.fieldKey === "form_35_image")
+                            ? "md:max-w-[320px]"
+                            : ""
+                      }
+                    >
+                      {renderField(field)}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {fileFields.length > 0 && nonFileFields.length > 0 ? (
+                <div className="mt-4" />
+              ) : null}
+
+              {isRemarksGroup ? (
+                nonFileFields.map((field) => (
+                  <div key={field.id}>
+                    {field.type === "checkbox"
+                      ? renderCompactCheckboxField(field)
+                      : renderBasicField(field)}
+                  </div>
+                ))
+              ) : (
+                <div
+                  className={`grid gap-4 ${
+                    title === "Finance & RTO Details"
+                      ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3"
+                      : "grid-cols-1 md:grid-cols-2"
+                  }`}
+                >
+                  {nonFileFields.map((field) => {
+                    const isWideRadio =
+                      title === "Insurance Policy" &&
+                      field.fieldKey === "insurance_type";
+                    const isWideText =
+                      title === "Registration Certificate (RC)" &&
+                      field.fieldKey === "rc_mismatch_remarks";
+
+                    return (
+                      <div
+                        key={field.id}
+                        className={
+                          isWideRadio || isWideText || field.type === "textarea"
+                            ? "md:col-span-2 xl:col-span-3"
+                            : ""
+                        }
+                      >
+                        {field.type === "checkbox"
+                          ? renderCompactCheckboxField(field)
+                          : renderBasicField(field)}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderEngineSystemCard = (
+    field: FormFieldI,
+    imageField?: FormFieldI,
+  ) => {
+    const visibleImageField =
+      imageField && isFieldVisible(imageField, data) ? imageField : null;
+
+    return (
+      <div
+        key={field.id}
+        className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4"
+      >
+        <h4 className="text-sm font-bold text-slate-800">{field.label}</h4>
+        {field.type === "checkbox"
+          ? renderCompactCheckboxField(field)
+          : renderBasicField(field)}
+        {visibleImageField ? (
+          <div className="mt-1 w-full md:w-2/3">{renderField(visibleImageField)}</div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderEngineLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const overviewFields = sortedFields.filter((field) =>
+      ENGINE_OVERVIEW_KEYS.has(field.fieldKey),
+    );
+    const finalNoteFields = sortedFields.filter((field) =>
+      ENGINE_FINAL_NOTE_KEYS.has(field.fieldKey),
+    );
+    const systemCards = ENGINE_SYSTEM_ORDER.map((baseKey) => {
+      const field = fieldMap.get(baseKey);
+      if (!field) return null;
+
+      return {
+        field,
+        imageField: fieldMap.get(`${baseKey}_image`),
+      };
+    }).filter(Boolean) as { field: FormFieldI; imageField?: FormFieldI }[];
+
+    const overviewMediaFields = overviewFields.filter(
+      (field) =>
+        field.fieldKey === "engine_compartment_image" ||
+        field.fieldKey === "engine_idle_start_video",
+    );
+    const overviewControlFields = overviewFields.filter(
+      (field) =>
+        field.fieldKey !== "engine_compartment_image" &&
+        field.fieldKey !== "engine_idle_start_video",
+    );
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-200 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Engine & Mechanical Overview
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {ENGINE_DESCRIPTIONS["Engine & Mechanical Overview"]}
+            </p>
+          </div>
+
+          {overviewMediaFields.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {overviewMediaFields.map((field) => (
+                <div key={field.id}>{renderField(field)}</div>
+              ))}
+            </div>
+          ) : null}
+
+          {overviewMediaFields.length > 0 && overviewControlFields.length > 0 ? (
+            <div className="mt-4" />
+          ) : null}
+
+          {overviewControlFields.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {overviewControlFields.map((field) => (
+                <div
+                  key={field.id}
+                  className={field.fieldKey === "smoke" ? "md:col-span-2" : ""}
+                >
+                  {field.fieldKey === "engine_sound" || field.fieldKey === "smoke"
+                    ? renderCompactSingleChoiceField(field)
+                    : field.type === "checkbox"
+                    ? renderCompactCheckboxField(field)
+                    : renderBasicField(field)}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
+        {systemCards.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {systemCards.map(({ field, imageField }) =>
+              renderEngineSystemCard(field, imageField),
+            )}
+          </div>
+        ) : null}
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-200 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Final Notes & Gearbox
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {ENGINE_DESCRIPTIONS["Final Notes & Gearbox"]}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {finalNoteFields.map((field) => (
+              <div key={field.id}>
+                {field.type === "checkbox"
+                  ? renderCompactCheckboxField(field)
+                  : renderBasicField(field)}
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  };
+
   if (fields.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-400">
@@ -1366,6 +1732,14 @@ const DynamicFormSection = ({
 
   if (sectionLabel?.toLowerCase().includes("basic")) {
     return renderBasicDetailsLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("document")) {
+    return renderDocumentsLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("engine")) {
+    return renderEngineLayout();
   }
 
   return (
