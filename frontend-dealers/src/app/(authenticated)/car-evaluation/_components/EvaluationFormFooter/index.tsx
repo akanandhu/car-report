@@ -12,7 +12,7 @@ const EvaluationFormFooter = ({
   handleSubmit,
 }: EvaluationFormFooterPropsI) => {
   return (
-    <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur">
+    <div className="sticky bottom-0 z-30 shrink-0 border-t border-slate-200 bg-white/95 backdrop-blur">
       <div className="px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-4">
           <Button

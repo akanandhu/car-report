@@ -143,6 +143,19 @@ const EXTERIOR_BULK_EXCLUDED_SUBGROUPS = new Set([
   "Macro Status",
 ]);
 
+const BASIC_DETAILS_DESCRIPTIONS: Record<string, string> = {
+  "Seller Info":
+    "Collect the seller's core contact details for ownership verification.",
+  "Registration Details":
+    "Capture the vehicle's registration and RC ownership information.",
+  "Vehicle Specs & Dates":
+    "Document model details, technical specs, and registration timelines.",
+  "Condition & Pricing":
+    "Record the asking price and key ownership or condition disclosures.",
+};
+
+const OBJECT_VALUE_FIELDS = new Set(["car_brand", "car_model", "car_variant"]);
+
 const DynamicFormSection = ({
   fields,
   fieldGroups,
@@ -1089,6 +1102,256 @@ const DynamicFormSection = ({
     );
   };
 
+  const renderBasicField = (field: FormFieldI) => {
+    if (!isFieldVisible(field, data)) return null;
+
+    const commonKey = field.fieldKey;
+    const value = data[commonKey];
+    const label = field.isRequired ? `${field.label} *` : field.label;
+    const baseLabelClass =
+      "mb-2 flex items-center text-sm font-medium leading-none text-slate-800";
+    const baseInputClass =
+      "h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200";
+
+    switch (field.type) {
+      case "textfield":
+      case "text":
+      case "number":
+      case "email":
+      case "phone":
+      case "date":
+      case "datepicker": {
+        const typeMap: Record<string, string> = {
+          textfield: "text",
+          text: "text",
+          number: "number",
+          email: "email",
+          phone: "tel",
+          date: "date",
+          datepicker: "date",
+        };
+
+        return (
+          <div key={field.id} className="w-full">
+            <label className={baseLabelClass}>{label}</label>
+            <input
+              type={typeMap[field.type] ?? "text"}
+              name={commonKey}
+              value={value || ""}
+              min={field.validation?.min}
+              max={field.validation?.max}
+              placeholder={
+                field.placeholder || `Enter ${field.label.toLowerCase()}`
+              }
+              onChange={(e) => onChange({ [commonKey]: e.target.value })}
+              className={baseInputClass}
+            />
+          </div>
+        );
+      }
+
+      case "textarea":
+        return (
+          <div key={field.id} className="w-full">
+            <label className={baseLabelClass}>{label}</label>
+            <textarea
+              name={commonKey}
+              rows={4}
+              value={value || ""}
+              placeholder={
+                field.placeholder || `Enter ${field.label.toLowerCase()}`
+              }
+              onChange={(e) => onChange({ [commonKey]: e.target.value })}
+              className="min-h-20 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+            />
+          </div>
+        );
+
+      case "select": {
+        const hasInjectedOptions = !!injectedOptions[commonKey];
+        const isEndpointField = !hasInjectedOptions && !!field.endpoint;
+        const resolvedEndpoint = isEndpointField
+          ? resolveEndpoint(field.endpoint!, data)
+          : null;
+        const selectOptions = hasInjectedOptions
+          ? injectedOptions[commonKey]
+          : isEndpointField
+            ? resolvedEndpoint
+              ? endpointOptions[resolvedEndpoint] || []
+              : []
+            : field.options || [];
+        const isLoading =
+          isEndpointField &&
+          (resolvedEndpoint ? loadingEndpoints[resolvedEndpoint] : true);
+        const selectedValue =
+          OBJECT_VALUE_FIELDS.has(commonKey) &&
+          value &&
+          typeof value === "object" &&
+          value.id
+            ? String(value.id)
+            : String(value ?? "");
+
+        return (
+          <div key={field.id} className="w-full">
+            <label className={baseLabelClass}>{label}</label>
+            <select
+              name={commonKey}
+              value={selectedValue}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+
+                if (!selectedId) {
+                  onChange({ [commonKey]: "" });
+                  return;
+                }
+
+                if (OBJECT_VALUE_FIELDS.has(commonKey)) {
+                  const selectedOption = selectOptions.find(
+                    (option) => option.value === selectedId,
+                  );
+                  onChange({
+                    [commonKey]: {
+                      id: selectedId,
+                      label: selectedOption?.label || selectedId,
+                    },
+                  });
+                  return;
+                }
+
+                onChange({ [commonKey]: selectedId });
+              }}
+              className={baseInputClass}
+            >
+              <option value="">
+                {isLoading
+                  ? "Loading options..."
+                  : field.placeholder || `Select ${field.label}`}
+              </option>
+              {selectOptions.map((option) => (
+                <option key={`${commonKey}_${option.value}`} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+      }
+
+      case "radio": {
+        const hasInjectedRadioOptions = !!injectedOptions[commonKey];
+        let radioOptions = hasInjectedRadioOptions
+          ? injectedOptions[commonKey]
+          : field.options || [];
+
+        if (!hasInjectedRadioOptions && field.endpoint) {
+          const resolvedEp = resolveEndpoint(field.endpoint, data);
+          if (resolvedEp && endpointOptions[resolvedEp]) {
+            radioOptions = endpointOptions[resolvedEp];
+          }
+        }
+
+        return (
+          <div key={field.id} className="w-full">
+            <label className={baseLabelClass}>{label}</label>
+            <SegmentedRadio
+              name={commonKey}
+              options={radioOptions.map((opt) => ({
+                label: opt.label,
+                value: opt.value,
+              }))}
+              value={value}
+              onChange={(selectedValue) =>
+                onChange({ [commonKey]: selectedValue })
+              }
+              className="!rounded-md !bg-slate-100 !p-1"
+              optionClassName="!rounded-sm !px-3 !py-1.5 !text-sm !font-medium sm:!text-sm"
+            />
+          </div>
+        );
+      }
+
+      case "checkbox":
+        return (
+          <div key={field.id} className="w-full">
+            <label className={baseLabelClass}>{label}</label>
+            <div className="flex flex-wrap gap-4 rounded-md border border-slate-200 bg-white p-3">
+              {(field.options || []).map((opt, idx) => {
+                const currentValues: string[] = Array.isArray(value) ? value : [];
+                const isChecked = currentValues.includes(opt.value);
+
+                return (
+                  <Checkbox
+                    key={`${commonKey}_${opt.value}_${idx}`}
+                    id={`${commonKey}_${opt.value}_${idx}`}
+                    label={opt.label}
+                    checked={isChecked}
+                    onChange={() => {
+                      const newValues = isChecked
+                        ? currentValues.filter((v) => v !== opt.value)
+                        : [...currentValues, opt.value];
+                      onChange({ [commonKey]: newValues });
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      default:
+        return renderField(field);
+    }
+  };
+
+  const renderBasicDetailsLayout = () => {
+    const groupsToRender =
+      fieldGroups.length > 0
+        ? fieldGroups
+        : [{ subgroup: null, order: 0, fields }];
+
+    return (
+      <div className="flex flex-col gap-4 pb-8">
+        {groupsToRender.map((group, index) => {
+          const visibleFields = group.fields.filter((field) =>
+            isFieldVisible(field, data),
+          );
+
+          if (visibleFields.length === 0) return null;
+
+          const title = group.subgroup || `${sectionLabel || "Basic Details"} ${index + 1}`;
+          const description = BASIC_DETAILS_DESCRIPTIONS[title];
+
+          return (
+            <section
+              key={`${title}_${index}`}
+              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
+              <div className="mb-4 border-b border-slate-200 pb-3">
+                <h3 className="text-base font-semibold tracking-tight text-slate-950">
+                  {title}
+                </h3>
+                {description ? (
+                  <p className="mt-1 text-sm text-slate-500">{description}</p>
+                ) : null}
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {visibleFields.map((field) => (
+                  <div
+                    key={field.id}
+                    className={field.type === "textarea" ? "md:col-span-2" : ""}
+                  >
+                    {renderBasicField(field)}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
+  };
+
   if (fields.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-400">
@@ -1099,6 +1362,10 @@ const DynamicFormSection = ({
 
   if (sectionLabel?.toLowerCase().includes("exterior")) {
     return renderExteriorLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("basic")) {
+    return renderBasicDetailsLayout();
   }
 
   return (
