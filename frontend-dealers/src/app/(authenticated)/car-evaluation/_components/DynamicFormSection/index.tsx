@@ -202,6 +202,108 @@ const ENGINE_SYSTEM_ORDER = [
   "sump",
 ];
 
+const INTERIOR_OVERVIEW_MEDIA_ORDER = [
+  "interior_rear_to_dash_image",
+  "power_window_panel_image",
+  "cng_lpg_kit_image",
+];
+
+const INTERIOR_SYSTEM_ORDER = [
+  "cluster_panel",
+  "dashboard",
+  "front_seat",
+  "rear_seat",
+  "roof_lining",
+  "inside_rear_view_mirror",
+  "dashboard_switches",
+  "power_window_lock",
+  "hand_brake",
+  "car_electrical",
+  "second_key",
+  "platform",
+];
+
+const TEST_DRIVE_CONFIGURATION_ORDER = [
+  "steering_system",
+  "steering_adjustment",
+  "steering_audio_control",
+  "cruise_control",
+  "seat_adjustment",
+];
+
+const TEST_DRIVE_PERFORMANCE_ORDER = [
+  "steering_wheel",
+  "suspension_system",
+  "brakes",
+  "clutch_system",
+  "transmission_automatic",
+  "vehicle_horn",
+];
+
+const FEATURES_SEGMENTED_ORDER = [
+  "rear_parking_sensor",
+  "gps_navigation",
+  "fog_lamps_feature",
+  "seat_belt",
+];
+
+const FEATURES_MEDIA_ORDER = [
+  "keyless_entry",
+  "stereo",
+  "sunroof",
+  "alloy_wheels",
+  "air_bag",
+  "abs_ebd",
+  "glove_box",
+];
+
+const MANUAL_RATING_ORDER = [
+  "rating_exterior",
+  "rating_interior",
+  "rating_engine",
+  "rating_electrical",
+  "rating_test_drive",
+];
+
+const REVIEW_SECTION_SUMMARY = [
+  {
+    label: "Basic",
+    keys: ["registered", "registration_number", "car_brand", "car_model"],
+  },
+  {
+    label: "Documents",
+    keys: ["rc_front_image", "insurance_type", "under_hypothecation"],
+  },
+  {
+    label: "Exterior",
+    keys: ["bonnet", "front_bumper", "roof", "rear_bumper"],
+  },
+  {
+    label: "Engine",
+    keys: ["engine_condition", "battery", "gearbox", "engine_comments"],
+  },
+  {
+    label: "Interior & Electrical",
+    keys: ["cluster_panel", "dashboard", "push_button", "car_electrical"],
+  },
+  {
+    label: "Test Drive",
+    keys: ["steering_system", "steering_wheel", "brakes", "vehicle_horn"],
+  },
+  {
+    label: "Features",
+    keys: ["keyless_entry", "rear_parking_sensor", "sunroof", "air_bag"],
+  },
+  {
+    label: "Air Conditioning",
+    keys: ["ac_working", "ac_cooling", "heater", "rear_defogger"],
+  },
+  {
+    label: "Special Comments",
+    keys: ["special_comments"],
+  },
+];
+
 const DynamicFormSection = ({
   fields,
   fieldGroups,
@@ -1469,6 +1571,199 @@ const DynamicFormSection = ({
     );
   };
 
+  const getInteriorOptionClasses = (
+    optionLabel: string,
+    isSelected: boolean,
+  ) => {
+    if (!isSelected) {
+      return "bg-white text-slate-600 border-slate-200 hover:border-slate-300";
+    }
+
+    const normalized = optionLabel.trim().toLowerCase();
+    const isGood =
+      normalized === "good" ||
+      normalized === "normal" ||
+      normalized === "working";
+    const isBad = [
+      "damaged",
+      "leak",
+      "weak",
+      "noisy",
+      "dirty",
+      "not working",
+      "non-functioning",
+      "not functioning",
+    ].some((value) => normalized.includes(value));
+
+    if (isGood) {
+      return "bg-emerald-500 text-white border-emerald-500 ring-2 ring-emerald-500/20";
+    }
+
+    if (isBad) {
+      return "bg-rose-500 text-white border-rose-500 ring-2 ring-rose-500/20";
+    }
+
+    return "bg-blue-600 text-white border-blue-600";
+  };
+
+  const renderInteriorChoiceField = (field: FormFieldI) => {
+    const value = data[field.fieldKey];
+    const selectedValues = Array.isArray(value)
+      ? value.map(String)
+      : value !== undefined && value !== null && value !== ""
+        ? [String(value)]
+        : [];
+
+    return (
+      <div className="w-full">
+        <div className="flex flex-wrap gap-2">
+          {(field.options || []).map((opt, idx) => {
+            const optionValue = String(opt.value);
+            const isSelected = selectedValues.includes(optionValue);
+
+            return (
+              <button
+                key={`${field.fieldKey}_${opt.value}_${idx}`}
+                type="button"
+                onClick={() => {
+                  if (field.type === "checkbox") {
+                    applyExclusiveChoiceUpdate(field, String(opt.value));
+                    return;
+                  }
+
+                  onChange({ [field.fieldKey]: opt.value });
+                }}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${getInteriorOptionClasses(
+                  opt.label,
+                  isSelected,
+                )}`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderInteriorSegmentedField = (
+    field: FormFieldI,
+    labelOverride?: string,
+  ) => {
+    const value = String(data[field.fieldKey] ?? "");
+
+    return (
+      <div className="w-full">
+        <label className="mb-2 block text-sm font-bold text-slate-700">
+          {labelOverride || field.label}
+        </label>
+        <div className="flex w-full flex-wrap rounded-md bg-[#ececf0] p-1 md:w-1/2">
+          {(field.options || []).map((opt, idx) => {
+            const isSelected = value === String(opt.value);
+
+            return (
+              <button
+                key={`${field.fieldKey}_${opt.value}_${idx}`}
+                type="button"
+                onClick={() => onChange({ [field.fieldKey]: opt.value })}
+                className={`inline-flex min-w-9 flex-1 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${
+                  isSelected
+                    ? "bg-white text-[#030213] shadow-sm"
+                    : "text-[#717182] hover:bg-white/50 hover:text-[#030213]"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const getSingleChoiceValue = (value: unknown) => {
+    if (Array.isArray(value)) {
+      return value.length > 0 ? String(value[0]) : "";
+    }
+
+    return String(value ?? "");
+  };
+
+  const applyExclusiveChoiceUpdate = (
+    field: FormFieldI,
+    optionValue: string,
+  ) => {
+    const normalized = optionValue.trim().toLowerCase();
+    const currentValue = data[field.fieldKey];
+
+    if (field.type !== "checkbox") {
+      onChange({ [field.fieldKey]: optionValue });
+      return;
+    }
+
+    const currentValues = Array.isArray(currentValue) ? currentValue : [];
+    const isExclusive = normalized === "good" || normalized === "working";
+    const existingExclusiveValue = currentValues.find((value) => {
+      const currentNormalized = String(value).trim().toLowerCase();
+      return currentNormalized === "good" || currentNormalized === "working";
+    });
+
+    let nextValues: string[];
+
+    if (currentValues.includes(optionValue)) {
+      nextValues = currentValues.filter((value) => value !== optionValue);
+    } else if (isExclusive) {
+      nextValues = [optionValue];
+    } else {
+      nextValues = existingExclusiveValue
+        ? [...currentValues.filter((value) => value !== existingExclusiveValue), optionValue]
+        : [...currentValues, optionValue];
+    }
+
+    onChange({ [field.fieldKey]: nextValues });
+  };
+
+  const renderTestDriveSegmentedField = (
+    field: FormFieldI,
+    labelOverride?: string,
+  ) => {
+    const selectedValue = getSingleChoiceValue(data[field.fieldKey]);
+
+    return (
+      <div className="w-full">
+        <label className="mb-2 block text-sm font-bold text-slate-700">
+          {labelOverride || field.label}
+        </label>
+        <div className="flex w-full flex-wrap rounded-md bg-[#ececf0] p-1">
+          {(field.options || []).map((opt, idx) => {
+            const isSelected = selectedValue === String(opt.value);
+
+            return (
+              <button
+                key={`${field.fieldKey}_${opt.value}_${idx}`}
+                type="button"
+                onClick={() =>
+                  onChange({
+                    [field.fieldKey]:
+                      field.type === "checkbox" ? [opt.value] : opt.value,
+                  })
+                }
+                className={`inline-flex min-w-9 flex-1 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${
+                  isSelected
+                    ? "bg-white text-[#030213] shadow-sm"
+                    : "text-[#717182] hover:bg-white/50 hover:text-[#030213]"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderDocumentsLayout = () => {
     const groupsToRender =
       fieldGroups.length > 0
@@ -1718,6 +2013,642 @@ const DynamicFormSection = ({
     );
   };
 
+  const renderInteriorSystemCard = (
+    field: FormFieldI,
+    imageField?: FormFieldI,
+    extraField?: FormFieldI,
+  ) => {
+    const visibleImageField =
+      imageField && isFieldVisible(imageField, data) ? imageField : null;
+    const visibleExtraField =
+      extraField && isFieldVisible(extraField, data) ? extraField : null;
+    const showElectricalAccent = field.fieldKey.includes("electrical");
+
+    return (
+      <div
+        key={field.id}
+        className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4"
+      >
+        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800">
+          {showElectricalAccent ? (
+            <svg
+              className="h-4 w-4 shrink-0 text-amber-500"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />
+            </svg>
+          ) : null}
+          {field.label}
+        </h4>
+        {renderInteriorChoiceField(field)}
+        {visibleExtraField ? <div>{renderBasicField(visibleExtraField)}</div> : null}
+        {visibleImageField ? (
+          <div className="mt-2 w-full lg:w-2/3">{renderField(visibleImageField)}</div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderInteriorElectricalLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const overviewMediaFields = INTERIOR_OVERVIEW_MEDIA_ORDER.map((fieldKey) =>
+      fieldMap.get(fieldKey),
+    ).filter(Boolean) as FormFieldI[];
+    const pushButtonField = fieldMap.get("push_button");
+    const systemCards = INTERIOR_SYSTEM_ORDER.map((baseKey) => {
+      const field = fieldMap.get(baseKey);
+      if (!field) return null;
+
+      return {
+        field,
+        imageField: fieldMap.get(`${baseKey}_image`),
+        extraField: baseKey === "cluster_panel" ? fieldMap.get("warning_details") : undefined,
+      };
+    }).filter(Boolean) as {
+      field: FormFieldI;
+      imageField?: FormFieldI;
+      extraField?: FormFieldI;
+    }[];
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
+              <svg
+                className="h-5 w-5 shrink-0 text-purple-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 11V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" />
+                <path d="M4 11h16" />
+                <path d="M6 11v7" />
+                <path d="M18 11v7" />
+                <path d="M6 18h12" />
+              </svg>
+              Cabin Overview Media
+            </h3>
+          </div>
+
+          {overviewMediaFields.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {overviewMediaFields.map((field) => {
+                const labelOverride =
+                  field.fieldKey === "cng_lpg_kit_image"
+                    ? "CNG/LPG Kit Image (If any)"
+                    : field.label;
+
+                return <div key={field.id}>{renderField({ ...field, label: labelOverride })}</div>;
+              })}
+            </div>
+          ) : null}
+
+          {pushButtonField ? (
+            <div className="mt-4">
+              {renderInteriorSegmentedField(pushButtonField, "Push Button (On/Off)")}
+            </div>
+          ) : null}
+        </section>
+
+        {systemCards.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {systemCards.map(({ field, imageField, extraField }) =>
+              renderInteriorSystemCard(field, imageField, extraField),
+            )}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderTestDrivePerformanceCard = (field: FormFieldI) => {
+    return (
+      <div
+        key={field.id}
+        className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+      >
+        <h4 className="text-sm font-bold text-slate-800">{field.label}</h4>
+        {renderInteriorChoiceField(field)}
+      </div>
+    );
+  };
+
+  const renderTestDriveLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const configurationFields = TEST_DRIVE_CONFIGURATION_ORDER.map((fieldKey) =>
+      fieldMap.get(fieldKey),
+    ).filter(Boolean) as FormFieldI[];
+    const performanceFields = TEST_DRIVE_PERFORMANCE_ORDER.map((fieldKey) =>
+      fieldMap.get(fieldKey),
+    ).filter(Boolean) as FormFieldI[];
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
+              <svg
+                className="h-5 w-5 shrink-0 text-blue-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+              Driving Configuration
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {configurationFields.map((field) => {
+              const labelOverride =
+                field.fieldKey === "steering_audio_control"
+                  ? "Steering Audio Controls"
+                  : field.label;
+
+              return (
+                <div key={field.id}>
+                  {renderTestDriveSegmentedField(field, labelOverride)}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
+              <svg
+                className="h-5 w-5 shrink-0 text-emerald-500"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 14 8 10" />
+                <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+                <path d="M12 14V6" />
+              </svg>
+              Dynamic Performance
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {performanceFields.map((field) => renderTestDrivePerformanceCard(field))}
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  const renderFeaturesMediaCard = (
+    field: FormFieldI,
+    imageField?: FormFieldI,
+  ) => {
+    const visibleImageField =
+      imageField && isFieldVisible(imageField, data) ? imageField : null;
+
+    return (
+      <div
+        key={field.id}
+        className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4"
+      >
+        <h4 className="text-sm font-bold text-slate-800">
+          {field.label === "Stereo Image" ? "Stereo" : field.label}
+        </h4>
+        {renderInteriorChoiceField(field)}
+        {visibleImageField ? (
+          <div className="mt-2 w-full lg:w-2/3">{renderField(visibleImageField)}</div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderFeaturesLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const segmentedFields = FEATURES_SEGMENTED_ORDER.map((fieldKey) =>
+      fieldMap.get(fieldKey),
+    ).filter(Boolean) as FormFieldI[];
+    const mediaCards = FEATURES_MEDIA_ORDER.map((baseKey) => {
+      const field = fieldMap.get(baseKey);
+      if (!field) return null;
+
+      return {
+        field,
+        imageField: fieldMap.get(`${baseKey}_image`),
+      };
+    }).filter(Boolean) as { field: FormFieldI; imageField?: FormFieldI }[];
+    const stereoBrandField = fieldMap.get("stereo_brand");
+    const interiorModsField = fieldMap.get("interior_modifications");
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Amenities & Safety
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Check if all critical safety systems like airbags and ABS are functioning properly. Note any aftermarket modifications to the stereo or dashboard.
+            </p>
+          </div>
+
+          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {segmentedFields.map((field) => {
+              let labelOverride = field.label;
+              if (field.fieldKey === "fog_lamps_feature") labelOverride = "Fog Lamps";
+              if (field.fieldKey === "gps_navigation") labelOverride = "GPS Navigation";
+              if (field.fieldKey === "rear_parking_sensor") labelOverride = "Rear Parking Sensor";
+
+              return (
+                <div key={field.id}>
+                  {renderTestDriveSegmentedField(field, labelOverride)}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {stereoBrandField ? <div>{renderBasicField(stereoBrandField)}</div> : null}
+            {interiorModsField ? <div>{renderBasicField(interiorModsField)}</div> : null}
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {mediaCards.map(({ field, imageField }) =>
+            renderFeaturesMediaCard(field, imageField),
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderAirConditioningLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const topFields = [
+      fieldMap.get("ac_working"),
+      fieldMap.get("heater"),
+      fieldMap.get("climate_control"),
+      fieldMap.get("ac_filter_damaged"),
+    ].filter(Boolean) as FormFieldI[];
+    const coolingField = fieldMap.get("ac_cooling");
+    const compressorField = fieldMap.get("ac_condenser_compressor");
+    const blowerField = fieldMap.get("ac_blower_grill");
+    const rearDefoggerField = fieldMap.get("rear_defogger");
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              HVAC System Status
+            </h3>
+          </div>
+
+          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {topFields.map((field) => {
+              let labelOverride = field.label;
+              if (field.fieldKey === "heater") labelOverride = "Heater Status";
+              if (field.fieldKey === "climate_control") {
+                labelOverride = "Climate Control (Auto AC)";
+              }
+
+              return (
+                <div key={field.id}>
+                  {renderTestDriveSegmentedField(field, labelOverride)}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col gap-6">
+            {coolingField ? (
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h4 className="text-sm font-bold text-slate-800">Cooling Effectiveness</h4>
+                {renderInteriorChoiceField(coolingField)}
+              </div>
+            ) : null}
+
+            {compressorField ? (
+              <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h4 className="text-sm font-bold text-slate-800">AC Condenser Compressor</h4>
+                {renderInteriorChoiceField(compressorField)}
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {blowerField ? (
+                <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <h4 className="text-sm font-bold text-slate-800">AC Blower Grill</h4>
+                  {renderInteriorChoiceField(blowerField)}
+                </div>
+              ) : null}
+
+              {rearDefoggerField ? (
+                <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <h4 className="text-sm font-bold text-slate-800">Rear Defogger</h4>
+                  {renderInteriorChoiceField(rearDefoggerField)}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  const renderSpecialCommentsLayout = () => {
+    const specialCommentsField = fields.find(
+      (field) =>
+        field.fieldKey === "special_comments" && isFieldVisible(field, data),
+    );
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Critical Macro-Status Flags
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Select any critical flags that apply to this vehicle. These flags carry significant weight in the final vehicle evaluation and valuation.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-rose-100 bg-rose-50/50 p-6">
+            {specialCommentsField ? renderInteriorChoiceField(specialCommentsField) : null}
+          </div>
+        </section>
+      </div>
+    );
+  };
+
+  const renderManualRatingField = (field: FormFieldI) => {
+    const selectedValue = String(data[field.fieldKey] ?? "");
+
+    return (
+      <div
+        key={field.id}
+        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+      >
+        <label className="mb-3 block text-sm font-bold text-slate-800">
+          {field.label}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {["1", "2", "3", "4", "5"].map((value) => {
+            const isSelected = selectedValue === value;
+
+            return (
+              <button
+                key={`${field.fieldKey}_${value}`}
+                type="button"
+                onClick={() => onChange({ [field.fieldKey]: value })}
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                  isSelected
+                    ? "border-amber-500 bg-amber-500 text-white shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                }`}
+              >
+                <svg
+                  className="h-3.5 w-3.5 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+                {value}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const renderManualRatingsLayout = () => {
+    const sortedFields = [...fields]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .filter((field) => isFieldVisible(field, data));
+    const fieldMap = new Map(sortedFields.map((field) => [field.fieldKey, field]));
+    const ratingFields = MANUAL_RATING_ORDER.map((fieldKey) =>
+      fieldMap.get(fieldKey),
+    ).filter(Boolean) as FormFieldI[];
+    const voiceNoteField = fieldMap.get("evaluator_voice_note");
+    const selfieField = fieldMap.get("selfie_with_car");
+
+    return (
+      <div className="flex flex-col gap-5 pb-12">
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Manual Ratings
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Rate each major area from 1 to 5, then attach the evaluator voice note and final selfie with the car.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {ratingFields.map((field) => renderManualRatingField(field))}
+          </div>
+        </section>
+
+        {(voiceNoteField || selfieField) ? (
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 border-b border-slate-100 pb-3">
+              <h3 className="text-base font-semibold tracking-tight text-slate-950">
+                Evaluator Media
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {voiceNoteField ? <div>{renderField(voiceNoteField)}</div> : null}
+              {selfieField ? <div>{renderField(selfieField)}</div> : null}
+            </div>
+          </section>
+        ) : null}
+      </div>
+    );
+  };
+
+  const renderReviewSubmitLayout = () => {
+    const summary = REVIEW_SECTION_SUMMARY.map((section) => {
+      const hasData = section.keys.some((key) => hasValue(data[key]));
+
+      return {
+        ...section,
+        hasData,
+      };
+    });
+    const completedSteps = summary.filter((section) => section.hasData).length;
+    const totalSteps = summary.length;
+    const completeness = Math.round((completedSteps / totalSteps) * 100);
+    const isComplete = completeness === 100;
+
+    return (
+      <div className="flex flex-col gap-6 pb-12">
+        <section className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-slate-200 bg-white p-8 text-center">
+          <div
+            className={`mb-2 flex h-20 w-20 items-center justify-center rounded-full ${
+              isComplete
+                ? "bg-emerald-100 text-emerald-600"
+                : "bg-amber-100 text-amber-600"
+            }`}
+          >
+            <svg
+              className="h-10 w-10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {isComplete ? (
+                <path d="M20 6L9 17l-5-5" />
+              ) : (
+                <>
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <path d="M12 9v4" />
+                  <path d="M12 17h.01" />
+                </>
+              )}
+            </svg>
+          </div>
+
+          <h2 className="text-2xl font-extrabold text-slate-800">
+            Evaluation {isComplete ? "Ready for Submission" : "Incomplete"}
+          </h2>
+          <p className="max-w-sm text-sm text-slate-500">
+            {isComplete
+              ? "Great job! All sections have been visited. You can now submit this evaluation to the main database."
+              : `You have started ${completedSteps} out of ${totalSteps} sections. For a full evaluation, make sure to complete all required data.`}
+          </p>
+
+          <div className="mt-4 h-3 w-full max-w-xs overflow-hidden rounded-full bg-slate-100">
+            <div
+              className={`h-full transition-all duration-1000 ${
+                isComplete ? "bg-emerald-500" : "bg-amber-500"
+              }`}
+              style={{ width: `${completeness}%` }}
+            />
+          </div>
+          <div className="text-xs font-bold text-slate-400">
+            {completeness}% Data Gathered
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-4 border-b border-slate-100 pb-3">
+            <h3 className="text-base font-semibold tracking-tight text-slate-950">
+              Section Summary
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {summary.map((section, index) => (
+              <div
+                key={section.label}
+                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3"
+              >
+                <span className="text-sm font-semibold text-slate-700">
+                  Step {index + 1}: {section.label}
+                </span>
+                {section.hasData ? (
+                  <span className="flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-600">
+                    <svg
+                      className="h-3 w-3"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Data Present
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 rounded-md bg-rose-100 px-2 py-1 text-xs font-bold text-rose-600">
+                    <svg
+                      className="h-3 w-3"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <path d="M12 9v4" />
+                      <path d="M12 17h.01" />
+                    </svg>
+                    Missing
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex items-start gap-4 rounded-2xl border border-blue-200 bg-blue-50 p-6">
+          <svg
+            className="h-6 w-6 shrink-0 text-blue-500"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" x2="12" y1="3" y2="15" />
+          </svg>
+          <div>
+            <h4 className="mb-1 font-bold text-slate-800">Final Submission</h4>
+            <p className="text-xs leading-relaxed text-slate-600">
+              Upon submission, all images, videos, and condition statuses will be permanently saved. A unique Evaluation ID will be generated.
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  };
+
   if (fields.length === 0) {
     return (
       <div className="flex items-center justify-center py-16 text-gray-400">
@@ -1740,6 +2671,33 @@ const DynamicFormSection = ({
 
   if (sectionLabel?.toLowerCase().includes("engine")) {
     return renderEngineLayout();
+  }
+
+  if (
+    sectionLabel?.toLowerCase().includes("interior") ||
+    sectionLabel?.toLowerCase().includes("electrical")
+  ) {
+    return renderInteriorElectricalLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("test drive")) {
+    return renderTestDriveLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("feature")) {
+    return renderFeaturesLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("air conditioning")) {
+    return renderAirConditioningLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("special")) {
+    return renderSpecialCommentsLayout();
+  }
+
+  if (sectionLabel?.toLowerCase().includes("manual rating")) {
+    return renderReviewSubmitLayout();
   }
 
   return (
