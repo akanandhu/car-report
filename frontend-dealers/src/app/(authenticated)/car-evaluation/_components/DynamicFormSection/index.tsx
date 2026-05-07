@@ -337,12 +337,6 @@ const DynamicFormSection = ({
    */
   const fetchOptionsForEndpoint = useCallback(
     async (resolvedEndpoint: string) => {
-      if (
-        endpointOptions[resolvedEndpoint] ||
-        loadingEndpoints[resolvedEndpoint]
-      )
-        return;
-
       setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: true }));
 
       try {
@@ -352,8 +346,12 @@ const DynamicFormSection = ({
           [resolvedEndpoint]: options,
         }));
       } catch (error) {
-        console.error(
-          `Failed to fetch options from endpoint: ${resolvedEndpoint}`,
+        const detail =
+          error && typeof error === "object" && "status" in error
+            ? `(${(error as { status: number }).status})`
+            : "";
+        console.warn(
+          `Could not load options for "${resolvedEndpoint}" ${detail}`.trim(),
           error,
         );
         setEndpointOptions((prev) => ({ ...prev, [resolvedEndpoint]: [] }));
@@ -361,7 +359,7 @@ const DynamicFormSection = ({
         setLoadingEndpoints((prev) => ({ ...prev, [resolvedEndpoint]: false }));
       }
     },
-    [endpointOptions, loadingEndpoints],
+    [],
   );
 
   // Detect parent field changes and clear dependent child fields

@@ -3,6 +3,7 @@ import StepperTabs from "@/src/components/StepperTabs";
 import { CarFormHeadPropsI } from "./types";
 import Button from "@/src/components/Button";
 import Draft from "@/public/assets/svg/Draft";
+import { X } from "lucide-react";
 
 const EvaluationFormHead = ({
   currentSection,
@@ -10,6 +11,7 @@ const EvaluationFormHead = ({
   progress,
   handleSectionChange,
   handleSaveDraft,
+  handleBack,
   submitting,
 }: CarFormHeadPropsI) => {
   return (
@@ -25,19 +27,31 @@ const EvaluationFormHead = ({
               {sections[currentSection]?.label}
             </span>
           </div>
-          <Button
-            variant="outlined"
-            onClick={handleSaveDraft}
-            disabled={submitting}
-            className="shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm hover:border-slate-300 hover:bg-slate-50"
-          >
-            <div className="flex items-center gap-2">
-              <Draft className="w-4 h-4" />
-              <span className="hidden text-sm font-semibold sm:inline">
-                Save Draft
-              </span>
-            </div>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outlined"
+              onClick={handleSaveDraft}
+              disabled={submitting}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm hover:border-slate-300 hover:bg-slate-50"
+            >
+              <div className="flex items-center gap-2">
+                <Draft className="w-4 h-4" />
+                <span className="hidden text-sm font-semibold sm:inline">
+                  Save Draft
+                </span>
+              </div>
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleBack}
+              disabled={submitting}
+              className="bg-white px-4 py-2 shadow-none text-sm hover:border-slate-300 hover:bg-slate-50"
+            >
+              <div className="flex items-center gap-2">
+                <X className="w-4 h-4" />
+              </div>
+            </Button>
+          </div>
         </div>
 
         <StepperTabs

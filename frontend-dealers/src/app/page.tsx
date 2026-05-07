@@ -1,5 +1,7 @@
+import DashboardOverview from "@/src/components/DashboardOverview";
+
 const Home = () => {
-  return <div></div>;
+  return <DashboardOverview />;
 };
 
 export default Home;
