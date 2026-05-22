@@ -36,7 +36,7 @@ const DraftsDirectory = () => {
               <h1 className="text-2xl font-bold text-slate-900">
                 Saved Drafts
               </h1>
-              <p className="text-sm text-slate-500 mt-1 font-medium">
+              <p className="text-sm text-slate-500 mt-1">
                 Continue working on your incomplete car evaluations.
               </p>
             </div>
