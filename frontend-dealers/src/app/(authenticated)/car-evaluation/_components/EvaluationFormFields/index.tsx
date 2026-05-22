@@ -13,6 +13,7 @@ const EvaluationFormFields = ({
   handleDataChange,
   configOptions,
   variantDerivedOptions,
+  validationErrors,
 }: EvaluationFormFieldsPropsI) => {
   const isExteriorSection = currentSectionLabel?.toLowerCase().includes("exterior");
 
@@ -47,6 +48,7 @@ const EvaluationFormFields = ({
                   fields={currentFields}
                   data={formData}
                   onChange={handleDataChange}
+                  validationErrors={validationErrors}
                 />
               ) : (
                 <DynamicFormSection
@@ -57,6 +59,7 @@ const EvaluationFormFields = ({
                   onChange={handleDataChange}
                   configOptions={configOptions}
                   variantDerivedOptions={variantDerivedOptions}
+                  validationErrors={validationErrors}
                 />
               )}
             </>

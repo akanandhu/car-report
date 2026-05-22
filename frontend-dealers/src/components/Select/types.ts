@@ -11,4 +11,5 @@ type ConditionSelectProps = {
   isMulti?: boolean;
   placeholder?: string;
   exclusiveValue?: string;
+  error?: string;
 };

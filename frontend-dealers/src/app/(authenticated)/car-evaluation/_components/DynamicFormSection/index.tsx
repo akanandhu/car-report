@@ -301,6 +301,7 @@ const DynamicFormSection = ({
   onChange,
   configOptions = {},
   variantDerivedOptions = {},
+  validationErrors = {},
 }: DynamicFormSectionProps) => {
   const injectedOptions: Record<string, { label: string; value: string }[]> = {
     ...configOptions,
@@ -320,6 +321,16 @@ const DynamicFormSection = ({
 
   // Track previous dependency values to detect changes and clear children
   const prevDepsRef = useRef<Record<string, string>>({});
+
+  const getFieldError = (field: FormFieldI) =>
+    validationErrors[field.fieldKey] || "";
+
+  const renderError = (field: FormFieldI) => {
+    const error = getFieldError(field);
+    return error ? (
+      <p className="mt-2 text-sm font-medium text-red-600">{error}</p>
+    ) : null;
+  };
 
   /**
    * Fetch options for a resolved endpoint URL
@@ -438,6 +449,7 @@ const DynamicFormSection = ({
 
     const commonKey = field.fieldKey;
     const value = data[commonKey];
+    const error = getFieldError(field);
     const requiredMark = field.isRequired ? (
       <span className="text-red-500 ml-1">*</span>
     ) : null;
@@ -455,6 +467,7 @@ const DynamicFormSection = ({
               field.placeholder || `Enter ${field.label.toLowerCase()}`
             }
             value={value || ""}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -474,8 +487,13 @@ const DynamicFormSection = ({
               value={value || ""}
               onChange={(e) => onChange({ [commonKey]: e.target.value })}
               rows={4}
-              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-slate-700 focus:ring-2 focus:ring-slate-200 text-base transition-all duration-200 bg-white text-black resize-none"
+              className={`w-full px-5 py-4 border-2 rounded-xl focus:outline-none focus:ring-2 text-base transition-all duration-200 bg-white text-black resize-none ${
+                error
+                  ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+                  : "border-gray-300 focus:border-slate-700 focus:ring-slate-200"
+              }`}
             />
+            {renderError(field)}
           </div>
         );
 
@@ -492,6 +510,7 @@ const DynamicFormSection = ({
             value={value || ""}
             min={field.validation?.min}
             max={field.validation?.max}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -505,6 +524,7 @@ const DynamicFormSection = ({
             name={commonKey}
             placeholder={field.placeholder || "Enter email address"}
             value={value || ""}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -518,6 +538,7 @@ const DynamicFormSection = ({
             name={commonKey}
             placeholder={field.placeholder || "Enter phone number"}
             value={value || ""}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -531,6 +552,7 @@ const DynamicFormSection = ({
             type="date"
             name={commonKey}
             value={value || ""}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -602,6 +624,7 @@ const DynamicFormSection = ({
                   ? "Loading options..."
                   : field.placeholder || `Select ${field.label.toLowerCase()}`
               }
+              error={error}
             />
           </div>
         );
@@ -650,6 +673,7 @@ const DynamicFormSection = ({
                 onChange({ [commonKey]: selectedValue })
               }
             />
+            {renderError(field)}
           </div>
         );
       }
@@ -689,6 +713,7 @@ const DynamicFormSection = ({
                 },
               )}
             </div>
+            {renderError(field)}
           </div>
         );
 
@@ -698,6 +723,7 @@ const DynamicFormSection = ({
             key={field.id}
             label={field.label}
             required={field.isRequired}
+            error={error}
             onFileSelect={(file) => onChange({ [commonKey]: file })}
           />
         );
@@ -712,6 +738,7 @@ const DynamicFormSection = ({
             name={commonKey}
             placeholder={field.placeholder || ""}
             value={value || ""}
+            error={error}
             onChange={(e) => onChange({ [commonKey]: e.target.value })}
           />
         );
@@ -1242,11 +1269,15 @@ const DynamicFormSection = ({
 
     const commonKey = field.fieldKey;
     const value = data[commonKey];
+    const error = getFieldError(field);
     const label = field.isRequired ? `${field.label} *` : field.label;
     const baseLabelClass =
       "mb-2 flex items-center text-sm font-medium leading-none text-slate-800";
     const baseInputClass =
-      "h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200";
+      "h-10 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:ring-2";
+    const inputStateClass = error
+      ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+      : "border-slate-200 focus:border-slate-400 focus:ring-slate-200";
 
     switch (field.type) {
       case "textfield":
@@ -1279,8 +1310,9 @@ const DynamicFormSection = ({
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
               onChange={(e) => onChange({ [commonKey]: e.target.value })}
-              className={baseInputClass}
+              className={`${baseInputClass} ${inputStateClass}`}
             />
+            {renderError(field)}
           </div>
         );
       }
@@ -1297,8 +1329,13 @@ const DynamicFormSection = ({
                 field.placeholder || `Enter ${field.label.toLowerCase()}`
               }
               onChange={(e) => onChange({ [commonKey]: e.target.value })}
-              className="min-h-20 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              className={`min-h-20 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 transition-colors outline-none placeholder:text-slate-400 focus:ring-2 ${
+                error
+                  ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+                  : "border-slate-200 focus:border-slate-400 focus:ring-slate-200"
+              }`}
             />
+            {renderError(field)}
           </div>
         );
 
@@ -1355,7 +1392,7 @@ const DynamicFormSection = ({
 
                 onChange({ [commonKey]: selectedId });
               }}
-              className={baseInputClass}
+              className={`${baseInputClass} ${inputStateClass}`}
             >
               <option value="">
                 {isLoading
@@ -1368,6 +1405,7 @@ const DynamicFormSection = ({
                 </option>
               ))}
             </select>
+            {renderError(field)}
           </div>
         );
       }
@@ -1401,6 +1439,7 @@ const DynamicFormSection = ({
               className="!rounded-md !bg-slate-100 !p-1"
               optionClassName="!rounded-sm !px-3 !py-1.5 !text-sm !font-medium sm:!text-sm"
             />
+            {renderError(field)}
           </div>
         );
       }
@@ -1409,7 +1448,11 @@ const DynamicFormSection = ({
         return (
           <div key={field.id} className="w-full">
             <label className={baseLabelClass}>{label}</label>
-            <div className="flex flex-wrap gap-4 rounded-md border border-slate-200 bg-white p-3">
+            <div
+              className={`flex flex-wrap gap-4 rounded-md border bg-white p-3 ${
+                error ? "border-red-500" : "border-slate-200"
+              }`}
+            >
               {(field.options || []).map((opt, idx) => {
                 const currentValues: string[] = Array.isArray(value) ? value : [];
                 const isChecked = currentValues.includes(opt.value);
@@ -1430,6 +1473,7 @@ const DynamicFormSection = ({
                 );
               })}
             </div>
+            {renderError(field)}
           </div>
         );
 
@@ -1486,13 +1530,18 @@ const DynamicFormSection = ({
   const renderCompactCheckboxField = (field: FormFieldI) => {
     const value = data[field.fieldKey];
     const currentValues: string[] = Array.isArray(value) ? value : [];
+    const error = getFieldError(field);
 
     return (
       <div className="w-full">
         <label className="mb-3 block text-sm font-medium leading-none text-slate-800">
           {field.isRequired ? `${field.label} *` : field.label}
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div
+          className={`flex flex-wrap gap-2 rounded-md ${
+            error ? "border border-red-500 p-2" : ""
+          }`}
+        >
           {(field.options || []).map((opt, idx) => {
             const isSelected = currentValues.includes(opt.value);
 
@@ -1517,6 +1566,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -1524,13 +1574,18 @@ const DynamicFormSection = ({
   const renderCompactSingleChoiceField = (field: FormFieldI) => {
     const value = data[field.fieldKey];
     const selectedValue = String(value ?? "");
+    const error = getFieldError(field);
 
     return (
       <div className="w-full">
         <label className="mb-3 block text-sm font-medium leading-none text-slate-800">
           {field.isRequired ? `${field.label} *` : field.label}
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div
+          className={`flex flex-wrap gap-2 rounded-md ${
+            error ? "border border-red-500 p-2" : ""
+          }`}
+        >
           {(field.options || []).map((opt, idx) => {
             const isSelected = selectedValue === String(opt.value);
 
@@ -1550,6 +1605,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -1591,6 +1647,7 @@ const DynamicFormSection = ({
 
   const renderInteriorChoiceField = (field: FormFieldI) => {
     const value = data[field.fieldKey];
+    const error = getFieldError(field);
     const selectedValues = Array.isArray(value)
       ? value.map(String)
       : value !== undefined && value !== null && value !== ""
@@ -1599,7 +1656,11 @@ const DynamicFormSection = ({
 
     return (
       <div className="w-full">
-        <div className="flex flex-wrap gap-2">
+        <div
+          className={`flex flex-wrap gap-2 rounded-md ${
+            error ? "border border-red-500 p-2" : ""
+          }`}
+        >
           {(field.options || []).map((opt, idx) => {
             const optionValue = String(opt.value);
             const isSelected = selectedValues.includes(optionValue);
@@ -1626,6 +1687,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -1635,13 +1697,19 @@ const DynamicFormSection = ({
     labelOverride?: string,
   ) => {
     const value = String(data[field.fieldKey] ?? "");
+    const error = getFieldError(field);
 
     return (
       <div className="w-full">
         <label className="mb-2 block text-sm font-bold text-slate-700">
           {labelOverride || field.label}
+          {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
         </label>
-        <div className="flex w-full flex-wrap rounded-md bg-[#ececf0] p-1 md:w-1/2">
+        <div
+          className={`flex w-full flex-wrap rounded-md bg-[#ececf0] p-1 md:w-1/2 ${
+            error ? "border border-red-500" : ""
+          }`}
+        >
           {(field.options || []).map((opt, idx) => {
             const isSelected = value === String(opt.value);
 
@@ -1661,6 +1729,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -1712,13 +1781,19 @@ const DynamicFormSection = ({
     labelOverride?: string,
   ) => {
     const selectedValue = getSingleChoiceValue(data[field.fieldKey]);
+    const error = getFieldError(field);
 
     return (
       <div className="w-full">
         <label className="mb-2 block text-sm font-bold text-slate-700">
           {labelOverride || field.label}
+          {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
         </label>
-        <div className="flex w-full flex-wrap rounded-md bg-[#ececf0] p-1">
+        <div
+          className={`flex w-full flex-wrap rounded-md bg-[#ececf0] p-1 ${
+            error ? "border border-red-500" : ""
+          }`}
+        >
           {(field.options || []).map((opt, idx) => {
             const isSelected = selectedValue === String(opt.value);
 
@@ -1743,6 +1818,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -2395,14 +2471,18 @@ const DynamicFormSection = ({
 
   const renderManualRatingField = (field: FormFieldI) => {
     const selectedValue = String(data[field.fieldKey] ?? "");
+    const error = getFieldError(field);
 
     return (
       <div
         key={field.id}
-        className="rounded-xl border border-slate-200 bg-white p-4"
+        className={`rounded-xl border bg-white p-4 ${
+          error ? "border-red-500" : "border-slate-200"
+        }`}
       >
         <label className="mb-3 block text-sm font-bold text-slate-800">
           {field.label}
+          {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
         </label>
         <div className="flex flex-wrap gap-2">
           {["1", "2", "3", "4", "5"].map((value) => {
@@ -2432,6 +2512,7 @@ const DynamicFormSection = ({
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };

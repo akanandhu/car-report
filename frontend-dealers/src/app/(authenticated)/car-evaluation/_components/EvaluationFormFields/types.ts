@@ -12,4 +12,5 @@ export type EvaluationFormFieldsPropsI = {
   handleDataChange: (newData: Partial<FormDataI>) => void;
   configOptions: OptionMap;
   variantDerivedOptions: OptionMap;
+  validationErrors: Record<string, string>;
 };

@@ -6,6 +6,8 @@ export type SectionI = {
   label: string;
 }
 
+// Dynamic API-driven fields can carry primitives, arrays, files, and option objects.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FormDataI = Record<string, any>;
 
 /**

@@ -1,6 +1,6 @@
 export interface SaveStepDataPayload {
   documentGroupId: string;
-  documentSpec: Record<string, any>;
+  documentSpec: Record<string, unknown>;
   submittedBy?: string;
 }
 
@@ -12,7 +12,7 @@ export interface VehicleDocumentResponse {
   id: string;
   documentGroupId: string;
   vehicleId: string;
-  documentSpec: Record<string, any> | null;
+  documentSpec: Record<string, unknown> | null;
   status: "DRAFT" | "SUBMITTED" | "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED";
   submittedBy: string | null;
   createdAt: string;

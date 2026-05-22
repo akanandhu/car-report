@@ -19,6 +19,7 @@ import {
   submitAllSteps,
 } from "@/src/networks/vehicle-documents";
 import { FormDataI, SectionI } from "./types";
+import { isFieldVisible } from "../DynamicFormSection/utils";
 
 export type OptionMap = Record<string, CatalogueOption[]>;
 
@@ -31,6 +32,14 @@ const getValue = (value: unknown) => {
   }
 
   return String(value ?? "");
+};
+
+const getLabelValue = (value: unknown) => {
+  if (value && typeof value === "object" && "label" in value) {
+    return String(value.label);
+  }
+
+  return getValue(value);
 };
 
 const getTransmissionOptions = (
@@ -135,6 +144,9 @@ const useCarEvaluationForm = () => {
   const [fieldsLoading, setFieldsLoading] = useState(false);
   const [variantsLoading, setVariantsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
   const initialVehicleIdRef = useRef(vehicleIdFromUrl);
@@ -306,6 +318,41 @@ const useCarEvaluationForm = () => {
     }, {});
   };
 
+  const hasValue = (value: unknown) => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (value instanceof File) return true;
+    if (value && typeof value === "object") {
+      return Object.keys(value).length > 0;
+    }
+
+    return value !== undefined && value !== null && value !== "";
+  };
+
+  const validateCurrentFields = () => {
+    const currentSectionLabel = sections[currentSection]?.label ?? "";
+    const isExteriorSection = currentSectionLabel
+      .toLowerCase()
+      .includes("exterior");
+    const errors = currentFields.reduce<Record<string, string>>(
+      (nextErrors, field) => {
+        const isRequiredVisible =
+          field.isRequired &&
+          isFieldVisible(field, formData) &&
+          !(isExteriorSection && field.type === "file");
+
+        if (isRequiredVisible && !hasValue(formData[field.fieldKey])) {
+          nextErrors[field.fieldKey] = `${field.label} is required`;
+        }
+
+        return nextErrors;
+      },
+      {},
+    );
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const saveCurrentStepData = async (id: string, sectionIndex: number) => {
     const group = documentGroups[sectionIndex];
     if (!group) return;
@@ -317,15 +364,15 @@ const useCarEvaluationForm = () => {
   };
 
   const createDraftVehicle = async () => {
-    const brand = formData.car_brand?.label || getValue(formData.car_brand);
-    const model = formData.car_model?.label || getValue(formData.car_model);
+    const brand = getLabelValue(formData.car_brand);
+    const model = getLabelValue(formData.car_model);
     const name =
       [brand, model, formData.manufacturing_year].filter(Boolean).join(" ") ||
       "New Vehicle";
 
     const vehicle = await createVehicle({
       name,
-      vehicleNumber: formData.registration_number || `TEMP-${Date.now()}`,
+      vehicleNumber: getValue(formData.registration_number) || `TEMP-${Date.now()}`,
       status: "draft",
       model: model || "unknown",
     });
@@ -340,12 +387,17 @@ const useCarEvaluationForm = () => {
 
   const handleNext = async () => {
     if (currentSection >= sections.length - 1) return;
+    if (!validateCurrentFields()) {
+      scrollToTop();
+      return;
+    }
 
     try {
       setSubmitting(true);
       const currentVehicleId = vehicleId || (await createDraftVehicle());
 
       await saveCurrentStepData(currentVehicleId, currentSection);
+      setValidationErrors({});
       setCurrentSection(currentSection + 1);
       loadFields(currentSection + 1);
       scrollToTop();
@@ -360,12 +412,14 @@ const useCarEvaluationForm = () => {
   const handlePrevious = () => {
     if (currentSection === 0) return;
 
+    setValidationErrors({});
     setCurrentSection(currentSection - 1);
     loadFields(currentSection - 1);
     scrollToTop();
   };
 
   const handleSectionChange = (index: number) => {
+    setValidationErrors({});
     setCurrentSection(index);
     loadFields(index);
     scrollToTop();
@@ -373,6 +427,18 @@ const useCarEvaluationForm = () => {
 
   const handleDataChange = async (newData: Partial<FormDataI>) => {
     const nextData = { ...formData, ...newData };
+    const changedKeys = Object.keys(newData);
+
+    if (changedKeys.length > 0) {
+      setValidationErrors((errors) => {
+        const nextErrors = { ...errors };
+        changedKeys.forEach((key) => {
+          delete nextErrors[key];
+        });
+        return nextErrors;
+      });
+    }
+
     const chain = [
       "car_brand",
       "manufacturing_year",
@@ -458,6 +524,11 @@ const useCarEvaluationForm = () => {
       return;
     }
 
+    if (!validateCurrentFields()) {
+      scrollToTop();
+      return;
+    }
+
     try {
       setSubmitting(true);
       await saveCurrentStepData(vehicleId, currentSection);
@@ -490,6 +561,7 @@ const useCarEvaluationForm = () => {
     variantsLoading,
     configOptions,
     variantDerivedOptions,
+    validationErrors,
     handleNext,
     handlePrevious,
     handleSectionChange,

@@ -7,12 +7,14 @@ type UploadBoxProps = {
   label?: string;
   onFileSelect?: (file: File) => void;
   required?: boolean;
+  error?: string;
 };
 
 export default function ImageUpload({
   label,
   onFileSelect,
   required,
+  error,
 }: UploadBoxProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -56,9 +58,13 @@ export default function ImageUpload({
       {/* Upload Box */}
       <div
         onClick={() => inputRef.current?.click()}
-        className="relative border-2 border-dashed rounded-xl 
+        className={`relative border-2 border-dashed rounded-xl
         flex items-center justify-center cursor-pointer transition
-        border-gray-300 hover:border-blue-500 h-36 w-full"
+        h-36 w-full ${
+          error
+            ? "border-red-500 hover:border-red-600"
+            : "border-gray-300 hover:border-blue-500"
+        }`}
       >
         {/* Preview */}
         {preview ? (
@@ -100,6 +106,9 @@ export default function ImageUpload({
           onChange={handleChange}
         />
       </div>
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600">{error}</p>
+      ) : null}
     </div>
   );
 }

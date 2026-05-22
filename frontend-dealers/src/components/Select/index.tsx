@@ -12,6 +12,7 @@ export default function ConditionSelect({
   isMulti = true,
   placeholder = "Select condition",
   exclusiveValue = "Good",
+  error,
 }: ConditionSelectProps) {
   const [open, setOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
@@ -109,8 +110,12 @@ export default function ConditionSelect({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl 
-        flex justify-between items-center text-left bg-white"
+        className={`w-full px-5 py-4 border-2 rounded-xl
+        flex justify-between items-center text-left bg-white ${
+          error
+            ? "border-red-500 focus:ring-2 focus:ring-red-200"
+            : "border-gray-300"
+        }`}
       >
         <span className="text-gray-700 truncate">
           {getDisplayText()}
@@ -164,7 +169,9 @@ export default function ConditionSelect({
           })}
         </div>
       )}
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600">{error}</p>
+      ) : null}
     </div>
   );
 }
-

@@ -11,4 +11,5 @@ export type DynamicFormSectionProps = {
   configOptions?: Record<string, { label: string; value: string }[]>;
   /** Options derived from variant data, keyed by fieldKey (e.g. fuel_type, transmission_type, car_variant) */
   variantDerivedOptions?: Record<string, { label: string; value: string }[]>;
+  validationErrors?: Record<string, string>;
 };

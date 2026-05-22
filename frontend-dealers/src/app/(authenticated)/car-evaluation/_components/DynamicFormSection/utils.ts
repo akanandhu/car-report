@@ -1,6 +1,15 @@
 import { FormFieldComplexConditionI, FormFieldConditionI, FormFieldI } from "@/src/networks/form-fields/types";
 import { FormDataI } from "../CarEvaluationForm/types";
 
+export function normalizeConditionValue(value: unknown): unknown {
+  if (value && typeof value === "object") {
+    if ("id" in value) return (value as { id: unknown }).id;
+    if ("value" in value) return (value as { value: unknown }).value;
+  }
+
+  return value;
+}
+
 export function resolveEndpoint(
   endpointTemplate: string,
   data: FormDataI,
@@ -15,10 +24,7 @@ export function resolveEndpoint(
     if (rawValue === undefined || rawValue === null || rawValue === "") {
       return null; // Can't resolve — dependency not yet filled
     }
-    // Support object-valued fields like { id: "11", label: "Audi" }
-    const value = typeof rawValue === "object" && rawValue.id !== undefined
-      ? rawValue.id
-      : rawValue;
+    const value = normalizeConditionValue(rawValue);
     resolved = resolved.replace(match[0], String(value));
   }
 
@@ -39,7 +45,7 @@ export function evaluateSimpleCondition(
   condition: Omit<FormFieldConditionI, "action">,
   data: FormDataI,
 ): boolean {
-  const fieldValue = data[condition.dependsOn];
+  const fieldValue = normalizeConditionValue(data[condition.dependsOn]);
 
   switch (condition.operator) {
     case "equals":
@@ -54,7 +60,7 @@ export function evaluateSimpleCondition(
       );
     case "contains":
       if (Array.isArray(fieldValue)) {
-        return fieldValue.includes(condition.value);
+        return fieldValue.map(String).includes(String(condition.value ?? ""));
       }
       return String(fieldValue ?? "").includes(String(condition.value ?? ""));
     case "not_empty":

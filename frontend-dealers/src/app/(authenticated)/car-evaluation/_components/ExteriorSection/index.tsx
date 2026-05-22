@@ -9,6 +9,7 @@ type ExteriorSectionProps = {
   fields: FormFieldI[];
   data: FormDataI;
   onChange: (newData: Partial<FormDataI>) => void;
+  validationErrors?: Record<string, string>;
 };
 
 type ExteriorItem = {
@@ -188,13 +189,19 @@ const ExteriorPanelIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
+const ExteriorSection = ({
+  fields,
+  data,
+  onChange,
+  validationErrors = {},
+}: ExteriorSectionProps) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [infoModal, setInfoModal] = useState<InfoModalContent | null>(null);
   const [portalMounted, setPortalMounted] = useState(false);
 
   useEffect(() => {
-    setPortalMounted(true);
+    const timeout = window.setTimeout(() => setPortalMounted(true), 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const items = useMemo<ExteriorItem[]>(() => {
@@ -260,6 +267,16 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
     }
   };
 
+  const getFieldError = (field: FormFieldI) =>
+    validationErrors[field.fieldKey] || "";
+
+  const renderError = (field: FormFieldI) => {
+    const error = getFieldError(field);
+    return error ? (
+      <p className="mt-2 text-sm font-medium text-red-600">{error}</p>
+    ) : null;
+  };
+
   const toggleOption = (field: FormFieldI, optionValue: string) => {
     const currentValue = data[field.fieldKey];
 
@@ -320,6 +337,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
     useFigmaSegmented = false,
   ) => {
     const value = data[field.fieldKey];
+    const error = getFieldError(field);
     const options = field.options || [];
     const selectedValues = Array.isArray(value)
       ? value.map(String)
@@ -343,12 +361,17 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
           }
         >
           {labelOverride || field.label}
+          {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
         </label>
         <div
           className={
             useFigmaSegmented
-              ? `flex flex-wrap gap-1 rounded-md bg-[#ececf0] p-1 ${compact ? "inline-flex" : "w-full"}`
-              : "flex flex-wrap gap-3"
+              ? `flex flex-wrap gap-1 rounded-md bg-[#ececf0] p-1 ${compact ? "inline-flex" : "w-full"} ${
+                  error ? "border border-red-500" : ""
+                }`
+              : `flex flex-wrap gap-3 rounded-md ${
+                  error ? "border border-red-500 p-2" : ""
+                }`
           }
         >
           {options.map((option) => {
@@ -376,6 +399,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
             );
           })}
         </div>
+        {renderError(field)}
       </div>
     );
   };
@@ -462,7 +486,9 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
             <div
               key={field.fieldKey}
               className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
-                isExpanded
+                getFieldError(field)
+                  ? "border-red-500"
+                  : isExpanded
                   ? "border-[#2f73ff] md:col-span-2 xl:col-span-3"
                   : "border-[#d9e2ef] hover:border-[#c9d7ea]"
               }`}
@@ -499,6 +525,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                   )}
                   <span className="text-[16px] font-semibold leading-6 text-[#1f3f6f]">
                     {field.label}
+                    {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
                   </span>
                 </div>
                 {!isExpanded && summary ? (
@@ -547,6 +574,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                           );
                         })}
                       </div>
+                      {renderError(field)}
                     </div>
                   </motion.div>
                 )}
@@ -608,6 +636,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                 <div key={field.fieldKey} className="space-y-2">
                   <label className="block text-sm font-semibold text-slate-800">
                     {field.label}
+                    {field.isRequired ? <span className="text-red-500 ml-1">*</span> : null}
                   </label>
                   <input
                     value={String(data[field.fieldKey] || "")}
@@ -615,8 +644,13 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
                       onChange({ [field.fieldKey]: event.target.value })
                     }
                     placeholder={field.placeholder || ""}
-                    className="flex h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 transition-colors outline-none focus:border-[#2f73ff] focus:ring-2 focus:ring-[#dce9ff]"
+                    className={`flex h-11 w-full rounded-xl border bg-white px-4 py-2 text-sm text-slate-900 transition-colors outline-none focus:ring-2 ${
+                      getFieldError(field)
+                        ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+                        : "border-slate-200 focus:border-[#2f73ff] focus:ring-[#dce9ff]"
+                    }`}
                   />
+                  {renderError(field)}
                 </div>
               );
             })}

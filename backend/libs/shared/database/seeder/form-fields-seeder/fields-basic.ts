@@ -70,6 +70,12 @@ export const BASIC_FIELDS = [
     placeholder: 'Enter Chassis Number if Reg Number is not available',
     isRequired: true,
     order: 6,
+    conditions: {
+      dependsOn: 'registered',
+      operator: 'equals',
+      value: 'yes',
+      action: 'show',
+    },
   },
 
   // ── Vehicle identity (cascading dropdowns via endpoints) ─────
