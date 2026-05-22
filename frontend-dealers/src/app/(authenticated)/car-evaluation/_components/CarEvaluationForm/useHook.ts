@@ -329,16 +329,11 @@ const useCarEvaluationForm = () => {
   };
 
   const validateCurrentFields = () => {
-    const currentSectionLabel = sections[currentSection]?.label ?? "";
-    const isExteriorSection = currentSectionLabel
-      .toLowerCase()
-      .includes("exterior");
     const errors = currentFields.reduce<Record<string, string>>(
       (nextErrors, field) => {
         const isRequiredVisible =
           field.isRequired &&
-          isFieldVisible(field, formData) &&
-          !(isExteriorSection && field.type === "file");
+          isFieldVisible(field, formData);
 
         if (isRequiredVisible && !hasValue(formData[field.fieldKey])) {
           nextErrors[field.fieldKey] = `${field.label} is required`;

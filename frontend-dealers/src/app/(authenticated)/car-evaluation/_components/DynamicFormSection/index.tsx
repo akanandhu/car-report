@@ -724,7 +724,10 @@ const DynamicFormSection = ({
             label={field.label}
             required={field.isRequired}
             error={error}
+            allowedFileTypes={field.validation?.allowedFileTypes}
+            maxFileSize={field.validation?.maxFileSize}
             onFileSelect={(file) => onChange({ [commonKey]: file })}
+            onFileRemove={() => onChange({ [commonKey]: "" })}
           />
         );
 
@@ -899,7 +902,11 @@ const DynamicFormSection = ({
             key={field.id}
             label={field.label}
             required={field.isRequired}
+            error={validationErrors[field.fieldKey]}
+            allowedFileTypes={field.validation?.allowedFileTypes}
+            maxFileSize={field.validation?.maxFileSize}
             onFileSelect={(file) => onChange({ [commonKey]: file })}
+            onFileRemove={() => onChange({ [commonKey]: "" })}
           />
         </div>
       );

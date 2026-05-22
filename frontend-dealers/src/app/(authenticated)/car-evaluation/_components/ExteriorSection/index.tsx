@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import ImageUpload from "@/src/components/ImageUpload";
 import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
 
 type ExteriorSectionProps = {
@@ -14,6 +15,7 @@ type ExteriorSectionProps = {
 
 type ExteriorItem = {
   field: FormFieldI;
+  imageField?: FormFieldI;
 };
 
 const INFO_IMAGE =
@@ -170,6 +172,16 @@ const isBulkSelectedValue = (field: FormFieldI, value: unknown) => {
   return String(value ?? "") === bulkValue;
 };
 
+const hasValue = (value: unknown) => {
+  if (Array.isArray(value)) return value.length > 0;
+  if (value instanceof File) return true;
+  if (value && typeof value === "object") {
+    return Object.keys(value).length > 0;
+  }
+
+  return value !== undefined && value !== null && value !== "";
+};
+
 const ExteriorPanelIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
@@ -205,16 +217,54 @@ const ExteriorSection = ({
   }, []);
 
   const items = useMemo<ExteriorItem[]>(() => {
+    const fieldsByKey = new Map(fields.map((field) => [field.fieldKey, field]));
+
     return fields
       .filter((field) => field.type !== "file")
       .filter((field) => !EXCLUDED_FIELD_KEYS.has(field.fieldKey))
-      .map((field) => ({ field }));
+      .map((field) => {
+        const imageField = fieldsByKey.get(`${field.fieldKey}_image`);
+
+        return {
+          field,
+          imageField: imageField?.type === "file" ? imageField : undefined,
+        };
+      });
   }, [fields]);
 
-  const completedCount = items.filter((item) => {
-    const value = data[item.field.fieldKey];
-    return Array.isArray(value) ? value.length > 0 : Boolean(value);
-  }).length;
+  const pairedImageKeys = useMemo(
+    () =>
+      new Set(
+        items
+          .map((item) => item.imageField?.fieldKey)
+          .filter(Boolean) as string[],
+      ),
+    [items],
+  );
+
+  const standaloneMediaFields = useMemo(
+    () =>
+      fields.filter(
+        (field) => field.type === "file" && !pairedImageKeys.has(field.fieldKey),
+      ),
+    [fields, pairedImageKeys],
+  );
+
+  const isItemComplete = (item: ExteriorItem) => {
+    const conditionComplete = hasValue(data[item.field.fieldKey]);
+    const requiredImageComplete =
+      !item.imageField?.isRequired || hasValue(data[item.imageField.fieldKey]);
+
+    return conditionComplete && requiredImageComplete;
+  };
+
+  const hasItemError = (item: ExteriorItem) =>
+    Boolean(
+      getFieldError(item.field) ||
+        (item.imageField ? getFieldError(item.imageField) : ""),
+    );
+
+  const completedCount = items.filter(isItemComplete).length;
 
   const progress = items.length > 0 ? (completedCount / items.length) * 100 : 0;
 
@@ -404,6 +454,19 @@ const ExteriorSection = ({
     );
   };
 
+  const renderImageField = (field: FormFieldI, labelOverride?: string) => (
+    <ImageUpload
+      key={field.id}
+      label={labelOverride || field.label}
+      required={field.isRequired}
+      error={getFieldError(field)}
+      allowedFileTypes={field.validation?.allowedFileTypes}
+      maxFileSize={field.validation?.maxFileSize}
+      onFileSelect={(file) => onChange({ [field.fieldKey]: file })}
+      onFileRemove={() => onChange({ [field.fieldKey]: "" })}
+    />
+  );
+
   return (
     <>
       <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
@@ -465,16 +528,15 @@ const ExteriorSection = ({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 mt-5">
-        {items.map(({ field }) => {
+        {items.map((item) => {
+          const { field, imageField } = item;
           const isExpanded = expandedKey === field.fieldKey;
           const summary = getDisplayValue(
             data[field.fieldKey],
             field.options || [],
           );
           const value = data[field.fieldKey];
-          const isComplete = Array.isArray(value)
-            ? value.length > 0
-            : Boolean(value);
+          const isComplete = isItemComplete(item);
           const options = field.options || [];
           const selectedValues = Array.isArray(value)
             ? value.map(String)
@@ -486,7 +548,7 @@ const ExteriorSection = ({
             <div
               key={field.fieldKey}
               className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
-                getFieldError(field)
+                hasItemError(item)
                   ? "border-red-500"
                   : isExpanded
                   ? "border-[#2f73ff] md:col-span-2 xl:col-span-3"
@@ -575,6 +637,14 @@ const ExteriorSection = ({
                         })}
                       </div>
                       {renderError(field)}
+                      {imageField ? (
+                        <div className="mt-6 max-w-[640px]">
+                          {renderImageField(
+                            imageField,
+                            imageField.label || `${field.label} Image`,
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   </motion.div>
                 )}
@@ -583,6 +653,28 @@ const ExteriorSection = ({
           );
         })}
       </div>
+
+      {standaloneMediaFields.length > 0 && (
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className="mb-5 border-b border-slate-200 pb-4">
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-950 sm:text-xl">
+              Full Vehicle Media ({standaloneMediaFields.length} Angles)
+              {renderInfoButton({
+                title: "Full Vehicle Media",
+                image: INFO_IMAGE,
+                body:
+                  "Upload all required exterior angle photos so the complete vehicle profile is available with the panel inspection.",
+              })}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {standaloneMediaFields.map((field) => (
+              <div key={field.fieldKey}>{renderImageField(field)}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {tyreFields.length > 0 && (
         <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
