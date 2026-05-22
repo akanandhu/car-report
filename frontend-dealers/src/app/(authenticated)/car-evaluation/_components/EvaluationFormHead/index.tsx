@@ -15,9 +15,9 @@ const EvaluationFormHead = ({
   submitting,
 }: CarFormHeadPropsI) => {
   return (
-    <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="space-y-4 px-5 py-5 sm:px-8">
-        <span className="text-xs font-semibold tracking-[0.18em] text-slate-500">
+    <div className="sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white">
+      <div className="space-y-5 px-5 py-6 sm:px-8">
+        <span className="text-xs sm:text-sm font-semibold text-[#717182] mb-1 tracking-wider uppercase">
           STEP {currentSection + 1} OF {sections.length}
         </span>
 
@@ -32,7 +32,7 @@ const EvaluationFormHead = ({
               variant="outlined"
               onClick={handleSaveDraft}
               disabled={submitting}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm hover:border-slate-300 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-none hover:border-slate-400 hover:bg-slate-50"
             >
               <div className="flex items-center gap-2">
                 <Draft className="w-4 h-4" />
@@ -41,17 +41,11 @@ const EvaluationFormHead = ({
                 </span>
               </div>
             </Button>
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              disabled={submitting}
-              className="bg-white px-4 py-2 shadow-none text-sm hover:border-slate-300 hover:bg-slate-50"
-            >
-              <div className="flex items-center gap-2">
-                <X className="w-4 h-4" />
-              </div>
-            </Button>
-          </div>
+
+            <button onClick={handleBack} className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring border border-transparent hover:bg-muted text-muted-foreground hover:text-foreground h-9 w-9 p-0">
+              <X size={20} />
+            </button>
+          </div>  
         </div>
 
         <StepperTabs

@@ -382,7 +382,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
 
   return (
     <>
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
         <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
@@ -463,7 +463,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
               key={field.fieldKey}
               className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
                 isExpanded
-                  ? "border-[#2f73ff] shadow-[0_6px_18px_rgba(47,115,255,0.16)] md:col-span-2 xl:col-span-3"
+                  ? "border-[#2f73ff] md:col-span-2 xl:col-span-3"
                   : "border-[#d9e2ef] hover:border-[#c9d7ea]"
               }`}
             >
@@ -557,7 +557,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
       </div>
 
       {tyreFields.length > 0 && (
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
           <div className="mb-5">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-950 sm:text-xl">
               Tyre Condition (Tread Remaining)
@@ -581,7 +581,7 @@ const ExteriorSection = ({ fields, data, onChange }: ExteriorSectionProps) => {
       )}
 
       {macroFields.length > 0 && (
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
           <div className="mb-5">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-950 sm:text-xl">
               Macro Status

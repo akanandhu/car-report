@@ -39,10 +39,10 @@ const CarEvaluationForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 px-0 py-0 md:p-4">
+    <div className="h-screen overflow-hidden bg-slate-100 p-3">
       <div
         id="form-container"
-        className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col overflow-hidden bg-white shadow-sm md:min-h-[calc(100vh-2rem)] md:rounded-[28px] md:border md:border-slate-200/70"
+        className="mx-auto flex h-[calc(100vh-1.5rem)] w-full max-w-[1440px] flex-col overflow-hidden bg-white"
       >
         <EvaluationFormHead
           currentSection={currentSection}

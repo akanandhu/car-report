@@ -143,17 +143,6 @@ const EXTERIOR_BULK_EXCLUDED_SUBGROUPS = new Set([
   "Macro Status",
 ]);
 
-const BASIC_DETAILS_DESCRIPTIONS: Record<string, string> = {
-  "Seller Info":
-    "Collect the seller's core contact details for ownership verification.",
-  "Registration Details":
-    "Capture the vehicle's registration and RC ownership information.",
-  "Vehicle Specs & Dates":
-    "Document model details, technical specs, and registration timelines.",
-  "Condition & Pricing":
-    "Record the asking price and key ownership or condition disclosures.",
-};
-
 const DOCUMENTS_DESCRIPTIONS: Record<string, string> = {
   "Registration Certificate (RC)":
     "Upload the RC images and capture any transfer or mismatch details.",
@@ -971,7 +960,7 @@ const DynamicFormSection = ({
     return (
       <div className="flex flex-col gap-6 pb-12">
         {groupedCards.length > 0 && (
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-950">
@@ -1058,7 +1047,7 @@ const DynamicFormSection = ({
                     key={title}
                     className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
                       isExpanded
-                        ? "border-[#2f73ff] shadow-[0_6px_18px_rgba(47,115,255,0.16)] md:col-span-2 xl:col-span-3"
+                        ? "border-[#2f73ff] md:col-span-2 xl:col-span-3"
                         : "border-[#d9e2ef] hover:border-[#c9d7ea]"
                     }`}
                   >
@@ -1215,7 +1204,7 @@ const DynamicFormSection = ({
           return (
             <div
               key={`${title}-${index}`}
-              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+              className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6"
             >
               <div className="mb-5">
                 <h3 className="text-lg font-semibold text-slate-950 sm:text-xl">
@@ -1465,20 +1454,16 @@ const DynamicFormSection = ({
           if (visibleFields.length === 0) return null;
 
           const title = group.subgroup || `${sectionLabel || "Basic Details"} ${index + 1}`;
-          const description = BASIC_DETAILS_DESCRIPTIONS[title];
 
           return (
             <section
               key={`${title}_${index}`}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="rounded-xl border border-slate-200 bg-white p-5"
             >
               <div className="mb-4 border-b border-slate-200 pb-3">
                 <h3 className="text-base font-semibold tracking-tight text-slate-950">
                   {title}
                 </h3>
-                {description ? (
-                  <p className="mt-1 text-sm text-slate-500">{description}</p>
-                ) : null}
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -1787,7 +1772,7 @@ const DynamicFormSection = ({
           return (
             <section
               key={`${title}_${index}`}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="rounded-xl border border-slate-200 bg-white p-5"
             >
               {title ? (
                 <div className="mb-4 border-b border-slate-200 pb-3">
@@ -1939,7 +1924,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-200 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Engine & Mechanical Overview
@@ -1987,7 +1972,7 @@ const DynamicFormSection = ({
           </div>
         ) : null}
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-200 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Final Notes & Gearbox
@@ -2075,7 +2060,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
               <svg
@@ -2155,7 +2140,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
               <svg
@@ -2191,7 +2176,7 @@ const DynamicFormSection = ({
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
               <svg
@@ -2265,7 +2250,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Amenities & Safety
@@ -2323,7 +2308,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               HVAC System Status
@@ -2390,7 +2375,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Critical Macro-Status Flags
@@ -2414,7 +2399,7 @@ const DynamicFormSection = ({
     return (
       <div
         key={field.id}
-        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        className="rounded-xl border border-slate-200 bg-white p-4"
       >
         <label className="mb-3 block text-sm font-bold text-slate-800">
           {field.label}
@@ -2464,7 +2449,7 @@ const DynamicFormSection = ({
 
     return (
       <div className="flex flex-col gap-5 pb-12">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Manual Ratings
@@ -2480,7 +2465,7 @@ const DynamicFormSection = ({
         </section>
 
         {(voiceNoteField || selfieField) ? (
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="rounded-xl border border-slate-200 bg-white p-5">
             <div className="mb-4 border-b border-slate-100 pb-3">
               <h3 className="text-base font-semibold tracking-tight text-slate-950">
                 Evaluator Media
@@ -2565,7 +2550,7 @@ const DynamicFormSection = ({
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-slate-200 bg-white p-5">
           <div className="mb-4 border-b border-slate-100 pb-3">
             <h3 className="text-base font-semibold tracking-tight text-slate-950">
               Section Summary
