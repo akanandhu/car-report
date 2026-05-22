@@ -77,7 +77,7 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="border-t border-slate-200 py-1">
+      <div className="border-t border-slate-200 py-1 px-2">
         <Link
           href="/settings"
           className={`flex items-center gap-3 rounded-2xl px-4 py-4 text-[15px] font-semibold transition-colors ${

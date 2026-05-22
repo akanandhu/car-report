@@ -1,4 +1,4 @@
-import AllCarsDirectory from "@/src/components/AllCarsDirectory";
+import AllCarsDirectory from "@/src/app/(authenticated)/all-cars/_components/AllCarsDirectory";
 
 const AllCarsPage = () => {
   return <AllCarsDirectory />;

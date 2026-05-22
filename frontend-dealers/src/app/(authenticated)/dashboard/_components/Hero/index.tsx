@@ -4,8 +4,8 @@ import Link from "next/link";
 
 const Hero = () => {
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="w-full px-4 py-10 sm:px-8">
+    <header>
+      <div className="w-full px-4 pt-10 sm:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
@@ -18,9 +18,9 @@ const Hero = () => {
           <Link href="/car-evaluation">
             <Button
               variant="filled"
-              size="sm"
-              className="rounded-[18px] bg-[#06081d] font-semibold"
+              size="md"
               startAdornment={<Plus className="h-4 w-4" />}
+              className="font-semibold"
             >
               Create Car Evaluation
             </Button>
