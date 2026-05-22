@@ -11,26 +11,28 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SharedVehicleService } from '@shared/modules/vehicle/vehicle.service';
 import {
   CreateVehicleDto,
   UpdateVehicleDto,
+  VEHICLE_LIST_STATUSES,
+  VehicleListQueryDto,
   VehicleResponseDto,
 } from './dto/vehicle.dto';
-import {
-  ResponseDto,
-  PaginationQueryDto,
-  PaginatedResponseDto,
-} from '../common/dto/response.dto';
+import { ResponseDto, PaginatedResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('vehicles')
 @Controller('vehicles')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class VehicleController {
-  constructor(
-    private readonly sharedVehicleService: SharedVehicleService,
-  ) { }
+  constructor(private readonly sharedVehicleService: SharedVehicleService) {}
 
   /**
    * Create a new vehicle
@@ -53,7 +55,9 @@ export class VehicleController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
   })
-  async create(@Body() createDto: CreateVehicleDto): Promise<ResponseDto<VehicleResponseDto>> {
+  async create(
+    @Body() createDto: CreateVehicleDto,
+  ): Promise<ResponseDto<VehicleResponseDto>> {
     const vehicle = await this.sharedVehicleService.create(createDto);
 
     return {
@@ -69,7 +73,8 @@ export class VehicleController {
   @Put(':id')
   @ApiOperation({
     summary: 'Update vehicle information',
-    description: 'Update vehicle details such as name, status, model, or vehicle number',
+    description:
+      'Update vehicle details such as name, status, model, or vehicle number',
   })
   @ApiParam({
     name: 'id',
@@ -124,7 +129,9 @@ export class VehicleController {
     status: HttpStatus.NOT_FOUND,
     description: 'Vehicle not found',
   })
-  async findById(@Param('id') id: string): Promise<ResponseDto<VehicleResponseDto>> {
+  async findById(
+    @Param('id') id: string,
+  ): Promise<ResponseDto<VehicleResponseDto>> {
     const vehicle = await this.sharedVehicleService.findById(id);
 
     return {
@@ -140,7 +147,8 @@ export class VehicleController {
   @Get(':id/with-documents')
   @ApiOperation({
     summary: 'Get vehicle by ID with documents',
-    description: 'Retrieve a single vehicle by its unique identifier along with its documents',
+    description:
+      'Retrieve a single vehicle by its unique identifier along with its documents',
   })
   @ApiParam({
     name: 'id',
@@ -194,20 +202,28 @@ export class VehicleController {
     description: 'Search term for name, vehicle number, model, or status',
     example: 'Toyota',
   })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: VEHICLE_LIST_STATUSES,
+    description: 'Exact vehicle status filter',
+    example: 'draft',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Vehicles retrieved successfully',
     type: PaginatedResponseDto,
   })
   async list(
-    @Query() paginationQuery: PaginationQueryDto,
+    @Query() paginationQuery: VehicleListQueryDto,
   ): Promise<PaginatedResponseDto<VehicleResponseDto>> {
-    const { page = 1, limit = 10, search } = paginationQuery;
+    const { page = 1, limit = 10, search, status } = paginationQuery;
 
     const result = await this.sharedVehicleService.list({
       page,
       limit,
       search,
+      status,
     });
 
     return {
@@ -239,7 +255,9 @@ export class VehicleController {
     status: HttpStatus.NOT_FOUND,
     description: 'Vehicle not found',
   })
-  async delete(@Param('id') id: string): Promise<ResponseDto<{ message: string }>> {
+  async delete(
+    @Param('id') id: string,
+  ): Promise<ResponseDto<{ message: string }>> {
     const result = await this.sharedVehicleService.delete(id);
 
     return {

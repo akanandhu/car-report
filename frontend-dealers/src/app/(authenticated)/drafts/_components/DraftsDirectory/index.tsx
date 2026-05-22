@@ -1,3 +1,5 @@
+import { Calendar, ChevronRight, Clock3, FilePen, Trash2 } from "lucide-react";
+
 type DraftCard = {
   title: string;
   progress: number;
@@ -26,155 +28,70 @@ const drafts: DraftCard[] = [
   },
 ];
 
-const DraftIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-5 w-5"
-    aria-hidden="true"
-  >
-    <path d="M14 3H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Z" />
-    <path d="M14 3v4h4" />
-    <path d="m9 15 2 2 4-4" />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-4 w-4"
-    aria-hidden="true"
-  >
-    <circle cx="12" cy="12" r="8" />
-    <path d="M12 8v5l3 2" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-4 w-4"
-    aria-hidden="true"
-  >
-    <path d="M8 3v3" />
-    <path d="M16 3v3" />
-    <rect x="4" y="5" width="16" height="15" rx="2" />
-    <path d="M4 10h16" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-4 w-4"
-    aria-hidden="true"
-  >
-    <path d="M3 6h18" />
-    <path d="M8 6V4h8v2" />
-    <path d="M19 6l-1 14H6L5 6" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-4 w-4"
-    aria-hidden="true"
-  >
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
-
 const DraftsDirectory = () => {
   return (
     <>
-          <section className="border-b border-slate-200 bg-white">
+          <section>
             <div className="w-full px-4 py-10 sm:px-8">
-              <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
+              <h1 className="text-2xl font-bold text-slate-900">
                 Saved Drafts
               </h1>
-              <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
+              <p className="text-sm text-slate-500 mt-1 font-medium">
                 Continue working on your incomplete car evaluations.
               </p>
             </div>
           </section>
 
-          <section className="w-full px-4 py-10 sm:px-8">
+          <section className="w-full px-4 sm:px-8">
             <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
               {drafts.map((draft) => (
                 <article
                   key={draft.title}
-                  className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
+                  className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col transition-colors hover:border-primary/30 group"
                 >
-                  <div className="px-7 py-8">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f7f9fc] text-[#64748b]">
-                        <DraftIcon />
+                  <div className="p-6 flex-1">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
+                        <FilePen size={20} strokeWidth={2.2} />
                       </div>
-                      <span className="inline-flex rounded-[12px] bg-[#f0f2f6] px-4 py-2 text-[13px] font-semibold text-[#081a43]">
+                      <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md">
                         {draft.progress}% Complete
                       </span>
                     </div>
 
-                    <h3 className="mt-8 text-[22px] font-semibold tracking-[-0.04em] text-[#081a43]">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
                       {draft.title}
                     </h3>
 
-                    <div className="mt-8 flex flex-wrap items-center gap-6 text-[13px] text-[#5973a9]">
-                      <div className="inline-flex items-center gap-2">
-                        <ClockIcon />
+                    <div className="flex items-center gap-4 text-sm text-slate-500 mt-4">
+                      <div className="flex items-center gap-1.5">
+                        <Clock3 size={18} strokeWidth={2} />
                         <span>{draft.lastSaved}</span>
                       </div>
-                      <div className="inline-flex items-center gap-2">
-                        <CalendarIcon />
+                      <div className="flex items-center gap-1.5">
+                        <Calendar size={18} strokeWidth={2} />
                         <span>{draft.step}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 border-t border-[#e7edf5] bg-[#fbfcfe] px-5 py-5 sm:flex-row">
+                  <div className="bg-slate-50 border-t border-slate-100 p-4 flex gap-3">
                     <button
                       type="button"
-                      className="inline-flex h-12 flex-1 items-center justify-center gap-3 rounded-2xl border border-[#d7e2ef] bg-white text-[15px] font-semibold text-[#21355b] transition hover:bg-slate-50"
+                      className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors"
                     >
-                      <span className="text-[#ff5c63]">
-                        <TrashIcon />
+                      <span className="text-[#ff5d66]">
+                        <Trash2 size={17} strokeWidth={2.2} />
                       </span>
                       Discard
                     </button>
 
                     <button
                       type="button"
-                      className="inline-flex h-12 flex-1 items-center justify-center gap-3 rounded-2xl bg-[#06081d] text-[15px] font-semibold text-white transition hover:bg-[#101534]"
+                      className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
                     >
                       Resume
-                      <ChevronRightIcon />
+                      <ChevronRight size={18} strokeWidth={2.4} />
                     </button>
                   </div>
                 </article>

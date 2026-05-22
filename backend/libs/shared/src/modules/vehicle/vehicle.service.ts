@@ -123,14 +123,18 @@ export class SharedVehicleService {
   /**
    * List vehicles with pagination
    */
-  async list(params: { page: number; limit: number; search?: string }) {
-    const { page, limit, search } = params;
+  async list(params: { page: number; limit: number; search?: string; status?: string }) {
+    const { page, limit, search, status } = params;
     const skip = (page - 1) * limit;
 
     // Build where clause
     const where: any = {
       deletedAt: null, // Only non-deleted vehicles
     };
+
+    if (status) {
+      where.status = status;
+    }
 
     if (search) {
       where.OR = [
