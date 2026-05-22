@@ -26,7 +26,7 @@ const Button = ({
 
   const sizeStyles = {
     sm: "py-2 px-4 text-sm gap-2",
-    md: "py-3 px-5 text-base gap-3",
+    md: "py-2.5 px-5 text-base gap-3",
     lg: "py-4 px-6 text-lg gap-4",
     xs: "py-1 px-2 text-xs gap-1",
   };

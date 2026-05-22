@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Car, ArrowUpRight, ArrowDownRight, TrendingUp, MousePointerClick, Mouse, Activity } from "lucide-react";
 
 type MetricCard = {
   title: string;
@@ -29,23 +30,7 @@ const metrics: MetricCard[] = [
     subtitle: "Active evaluators this month",
     change: "+12%",
     changeTone: "positive",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <circle cx="9" cy="8" r="3.25" />
-        <path d="M4.5 18a4.5 4.5 0 0 1 9 0" />
-        <path d="M16.5 8.5A2.5 2.5 0 0 1 19 11" />
-        <path d="M15.5 18a3.7 3.7 0 0 1 4-3.5" />
-      </svg>
-    ),
+    icon: <Car width={20} />,
   },
   {
     title: "Total Sales",
@@ -53,21 +38,7 @@ const metrics: MetricCard[] = [
     subtitle: "Completed deals",
     change: "+8.2%",
     changeTone: "positive",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <path d="m4 16 5-5 3.2 3.2L20 6.5" />
-        <path d="M14 6.5h6v6" />
-      </svg>
-    ),
+    icon: <TrendingUp width={20} />,
   },
   {
     title: "Link Clicks",
@@ -75,22 +46,7 @@ const metrics: MetricCard[] = [
     subtitle: "Traffic from shared reports",
     change: "+24.5%",
     changeTone: "positive",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <path d="m12 3 1.5 4.2L18 8.5l-3.7 2.7 1.3 4.3L12 13l-3.6 2.5 1.3-4.3L6 8.5l4.5-1.3Z" />
-        <path d="M5 5h.01" />
-        <path d="M19 19h.01" />
-      </svg>
-    ),
+    icon: <MousePointerClick width={20} />,
   },
   {
     title: "Evaluations",
@@ -98,20 +54,7 @@ const metrics: MetricCard[] = [
     subtitle: "Forms completed",
     change: "-2.1%",
     changeTone: "negative",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <path d="m4 12 3-7 4 14 4-10 3 3 2-8" />
-      </svg>
-    ),
+    icon: <Activity width={20} />,
   },
 ];
 
@@ -214,53 +157,39 @@ const WeeklyActivity = () => (
 const Evaluations = () => {
   return (
     <div className="w-full space-y-10 px-4 py-10 sm:px-8">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric) => (
           <article
             key={metric.title}
-            className="rounded-[22px] border border-[#dbe4f0] bg-white px-7 py-8 shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
+            className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col gap-4"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f7f9fc] text-[#475569]">
+            <div className="flex items-center justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f9fc] text-[#475569]">
                 {metric.icon}
               </div>
-              <div
-                className={`flex items-center gap-2 text-[13px] font-semibold ${
-                  metric.changeTone === "positive"
-                    ? "text-[#00a76f]"
-                    : "text-[#ff2f2f]"
-                }`}
-              >
-                <svg
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                  aria-hidden="true"
-                >
-                  {metric.changeTone === "positive" ? (
-                    <path d="m3 11 10-6M7 5h6v6" />
-                  ) : (
-                    <path d="m3 5 10 6M13 11H7V5" />
-                  )}
-                </svg>
-                <span>{metric.change}</span>
+              <div className="font-semibold text-sm">
+                {metric.changeTone === "negative" ? (
+                  <div className="flex gap-1 items-center ">
+                    <ArrowDownRight color="#ef4444" size={16} />
+                    <span className="text-[#ef4444]">{metric.change}</span>
+                  </div>
+                ) : (
+                  <div className="flex gap-1 items-center text-emerald-600">
+                    <ArrowUpRight size={16} />
+                    <span>{metric.change}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="mt-7">
-              <h3 className="text-[22px] font-bold tracking-[-0.03em] text-[#081a43] sm:text-[28px]">
+            <div>
+              <h3 className="text-3xl font-bold text-slate-900">
                 {metric.value}
               </h3>
-              <p className="mt-1 text-[15px] font-semibold text-[#21355b]">
+              <p className="text-sm font-semibold text-slate-600">
                 {metric.title}
               </p>
-              <p className="mt-2 max-w-[180px] text-[13px] leading-6 text-[#8b9abb]">
-                {metric.subtitle}
-              </p>
+              <p className="text-xs font-medium text-slate-400 mt-1">{metric.subtitle}</p>
             </div>
           </article>
         ))}
