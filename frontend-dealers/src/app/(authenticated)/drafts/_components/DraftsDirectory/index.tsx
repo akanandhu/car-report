@@ -1,4 +1,4 @@
-import { Calendar, ChevronRight, Clock3, FilePen, Trash2 } from "lucide-react";
+import { Calendar, ChevronRight, Clock3, FilePen, Trash2, SquarePen, ClockIcon } from "lucide-react";
 
 type DraftCard = {
   title: string;
@@ -32,8 +32,8 @@ const DraftsDirectory = () => {
   return (
     <>
           <section>
-            <div className="w-full px-4 py-10 sm:px-8">
-              <h1 className="text-2xl font-bold text-slate-900">
+            <div className="w-full px-4 py-6 sm:px-8">
+              <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
                 Saved Drafts
               </h1>
               <p className="text-sm text-slate-500 mt-1 font-medium">
@@ -42,30 +42,30 @@ const DraftsDirectory = () => {
             </div>
           </section>
 
-          <section className="w-full px-4 sm:px-8">
+          <section className="w-full px-4 sm:px-8 py-1">
             <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
               {drafts.map((draft) => (
                 <article
                   key={draft.title}
-                  className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col transition-colors hover:border-primary/30 group"
+                  className="overflow-hidden rounded-2xl border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
                 >
-                  <div className="p-6 flex-1">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
-                        <FilePen size={20} strokeWidth={2.2} />
+                  <div className="px-5 py-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f9fc] text-[#64748b]">
+                        <SquarePen size={19}/>
                       </div>
-                      <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md">
+                      <span className="inline-flex rounded-[12px] bg-[#f0f2f6] px-4 py-1 text-[12px] font-semibold text-[#081a43]">
                         {draft.progress}% Complete
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                    <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.04em] text-[#081a43]">
                       {draft.title}
                     </h3>
 
-                    <div className="flex items-center gap-4 text-sm text-slate-500 mt-4">
-                      <div className="flex items-center gap-1.5">
-                        <Clock3 size={18} strokeWidth={2} />
+                    <div className="mt-4 flex flex-wrap items-center gap-6 text-[13px] text-[#5973a9]">
+                      <div className="inline-flex items-center gap-2">
+                        <ClockIcon />
                         <span>{draft.lastSaved}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -75,10 +75,10 @@ const DraftsDirectory = () => {
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 border-t border-slate-100 p-4 flex gap-3">
+                  <div className="flex flex-col gap-3 border-t border-[#e7edf5] bg-[#fbfcfe] px-5 py-4 sm:flex-row">
                     <button
                       type="button"
-                      className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      className="inline-flex h-10 md:flex-1 items-center justify-center gap-3 rounded-xl border border-[#d7e2ef] bg-white text-[14px] font-semibold text-[#21355b] transition hover:bg-slate-50"
                     >
                       <span className="text-[#ff5d66]">
                         <Trash2 size={17} strokeWidth={2.2} />
@@ -88,7 +88,7 @@ const DraftsDirectory = () => {
 
                     <button
                       type="button"
-                      className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                      className="inline-flex h-10 md:flex-1 items-center justify-center gap-3 rounded-xl bg-[#06081d] text-[14px] font-semibold text-white transition hover:bg-[#101534]"
                     >
                       Resume
                       <ChevronRight size={18} strokeWidth={2.4} />
