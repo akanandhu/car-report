@@ -14,6 +14,12 @@ export interface UpdateVehiclePayload {
   lastModifiedBy?: string;
 }
 
+export interface VehicleUserSummary {
+  id: string;
+  name: string | null;
+  email: string | null;
+}
+
 export interface VehicleResponse {
   id: string;
   name: string;
@@ -22,7 +28,23 @@ export interface VehicleResponse {
   model: string;
   createdBy: string | null;
   lastModifiedBy: string | null;
+  creator?: VehicleUserSummary | null;
+  modifier?: VehicleUserSummary | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+}
+
+export interface PaginatedApiResponse<T> {
+  data: T[];
+  pagination: {
+    currentPage: number;
+    perPage: number;
+    total: number;
+    totalPages: number;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  };
+  message: string;
+  statusCode: number;
 }

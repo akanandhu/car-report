@@ -138,6 +138,7 @@ export class SharedVehicleService {
 
     if (search) {
       where.OR = [
+        { id: { contains: search, mode: 'insensitive' } },
         { name: { contains: search, mode: 'insensitive' } },
         { vehicleNumber: { contains: search, mode: 'insensitive' } },
         { model: { contains: search, mode: 'insensitive' } },

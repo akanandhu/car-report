@@ -1,26 +1,13 @@
 import { apiClient } from "../client";
 import {
   CreateVehiclePayload,
+  PaginatedApiResponse,
   UpdateVehiclePayload,
   VehicleResponse,
 } from "./types";
 
 interface ApiResponse<T> {
   data: T;
-  message: string;
-  statusCode: number;
-}
-
-interface PaginatedApiResponse<T> {
-  data: T[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
   message: string;
   statusCode: number;
 }
