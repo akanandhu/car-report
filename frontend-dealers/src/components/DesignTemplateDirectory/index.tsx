@@ -1,5 +1,3 @@
-import AppSidebar from "@/src/components/AppSidebar";
-import Navbar from "@/src/components/Navbar";
 import Button from "../Button";
 
 type TemplateCard = {
@@ -144,14 +142,9 @@ const TemplatePreview = ({ accent }: { accent: TemplateCard["accent"] }) => (
 
 const DesignTemplateDirectory = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <AppSidebar />
-      <div className="flex min-h-screen flex-1 flex-col md:pl-[280px]">
-        <Navbar />
-
-        <main className="flex-1">
+    <>
           <section className="border-b border-slate-200 bg-white">
-            <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-10 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex w-full flex-col gap-5 px-4 py-10 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
                   Report Templates
@@ -172,7 +165,7 @@ const DesignTemplateDirectory = () => {
             </div>
           </section>
 
-          <section className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+          <section className="w-full px-4 py-10 sm:px-8">
             <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
               {templates.map((template) => (
                 <article
@@ -220,9 +213,7 @@ const DesignTemplateDirectory = () => {
               ))}
             </div>
           </section>
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

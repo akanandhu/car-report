@@ -1,7 +1,7 @@
-import DashboardOverview from "@/src/components/DashboardOverview";
+import { redirect } from "next/navigation";
 
 const Home = () => {
-  return <DashboardOverview />;
+  redirect("/dashboard");
 };
 
 export default Home;

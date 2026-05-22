@@ -1,6 +1,3 @@
-import AppSidebar from "@/src/components/AppSidebar";
-import Navbar from "@/src/components/Navbar";
-
 type DraftCard = {
   title: string;
   progress: number;
@@ -116,14 +113,9 @@ const ChevronRightIcon = () => (
 
 const DraftsDirectory = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <AppSidebar />
-      <div className="flex min-h-screen flex-1 flex-col md:pl-[280px]">
-        <Navbar />
-
-        <main className="flex-1">
+    <>
           <section className="border-b border-slate-200 bg-white">
-            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+            <div className="w-full px-4 py-10 sm:px-8">
               <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
                 Saved Drafts
               </h1>
@@ -133,7 +125,7 @@ const DraftsDirectory = () => {
             </div>
           </section>
 
-          <section className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+          <section className="w-full px-4 py-10 sm:px-8">
             <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
               {drafts.map((draft) => (
                 <article
@@ -189,9 +181,7 @@ const DraftsDirectory = () => {
               ))}
             </div>
           </section>
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

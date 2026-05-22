@@ -213,7 +213,7 @@ const WeeklyActivity = () => (
 
 const Evaluations = () => {
   return (
-    <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-8">
+    <div className="w-full space-y-10 px-4 py-10 sm:px-8">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <article
