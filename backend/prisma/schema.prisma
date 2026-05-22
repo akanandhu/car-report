@@ -172,6 +172,7 @@ model FormField {
   label           String
   fieldKey        String    @map("field_key")
   placeholder     String?
+  subgroup        String?
   defaultValue    String?   @map("default_value")
   isRequired      Boolean   @default(false) @map("is_required")
   order           Int       @default(0)

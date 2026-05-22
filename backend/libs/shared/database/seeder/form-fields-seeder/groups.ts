@@ -4,7 +4,7 @@
  */
 export const DOCUMENT_GROUPS = [
     {
-        name: 'Basic',
+        name: 'Basic Details',
         identifier: 'basic',
         description: 'Basic vehicle and seller information',
         type: 'FORM_STEP',

@@ -61,6 +61,14 @@ export class CreateFormFieldDto {
     placeholder?: string;
 
     @ApiPropertyOptional({
+        description: 'Optional visual subgroup label used to group fields inside a step',
+        example: 'Seller Info',
+    })
+    @IsOptional()
+    @IsString()
+    subgroup?: string;
+
+    @ApiPropertyOptional({
         description: 'Default value for the field',
         example: '',
     })
@@ -155,6 +163,11 @@ export class UpdateFormFieldDto {
     @IsString()
     placeholder?: string;
 
+    @ApiPropertyOptional({ description: 'Optional visual subgroup label' })
+    @IsOptional()
+    @IsString()
+    subgroup?: string;
+
     @ApiPropertyOptional({ description: 'Default value' })
     @IsOptional()
     @IsString()
@@ -238,6 +251,7 @@ export class FormFieldResponseDto {
     @ApiProperty() label: string;
     @ApiProperty() fieldKey: string;
     @ApiPropertyOptional() placeholder?: string;
+    @ApiPropertyOptional() subgroup?: string;
     @ApiPropertyOptional() defaultValue?: string;
     @ApiProperty() isRequired: boolean;
     @ApiProperty() order: number;
@@ -249,6 +263,12 @@ export class FormFieldResponseDto {
     @ApiProperty() documentGroupId: string;
     @ApiProperty() createdAt: Date;
     @ApiProperty() updatedAt: Date;
+}
+
+export class FormFieldGroupResponseDto {
+    @ApiPropertyOptional() subgroup?: string | null;
+    @ApiProperty() order: number;
+    @ApiProperty({ type: [FormFieldResponseDto] }) fields: FormFieldResponseDto[];
 }
 
 export class StepInfoDto {
@@ -265,7 +285,7 @@ export class FormConfigResponseDto {
     @ApiProperty() stepName: string;
     @ApiPropertyOptional() stepDescription?: string;
     @ApiProperty() totalSteps: number;
-    @ApiProperty({ type: [FormFieldResponseDto] }) fields: FormFieldResponseDto[];
+    @ApiProperty({ type: [FormFieldGroupResponseDto] }) fieldGroups: FormFieldGroupResponseDto[];
 }
 
 export class TypeStepsResponseDto {

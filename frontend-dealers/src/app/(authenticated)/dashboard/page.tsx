@@ -1,18 +1,7 @@
-import Navbar from '@/src/components/Navbar'
-import React from 'react'
-import Hero from './_components/Hero'
-import Evaluations from './_components/Evaluations'
-import Footer from './_components/Footer'
+import DashboardOverview from "@/src/components/DashboardOverview";
 
-const page = () => {
-  return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <Navbar/>
-      <Hero/>  
-      <Evaluations/>
-      <Footer/>
-    </div>
-  )
-}
+const Page = () => {
+  return <DashboardOverview />;
+};
 
-export default page
+export default Page;

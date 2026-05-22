@@ -53,6 +53,10 @@ EXPOSE 3000
 
 # Start the application
 COPY start.sh ./
+
+# 🔥 FIX for Windows line endings
+RUN sed -i 's/\r$//' start.sh
+
 RUN chmod +x start.sh
 CMD ["sh", "start.sh"]
 

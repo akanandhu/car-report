@@ -1,16 +1,20 @@
 import { apiClient } from "../client";
 import { DocumentGroupI } from "../document-groups/types";
-import { FormFieldI } from "./types";
+import { FormFieldGroupI, FormFieldI } from "./types";
 
-type FetchFormFieldsResponse = {
-  fields: FormFieldI[];
+type FetchFormFieldsApiResponse = {
+  fieldGroups: FormFieldGroupI[];
   documentGroup: DocumentGroupI;
+};
+
+type FetchFormFieldsResponse = FetchFormFieldsApiResponse & {
+  fields: FormFieldI[];
 };
 
 export const fetchFormFields = async (
   documentGroupId: string,
 ): Promise<FetchFormFieldsResponse> => {
-  const res = await apiClient<{ data: FetchFormFieldsResponse }>(
+  const res = await apiClient<{ data: FetchFormFieldsApiResponse }>(
     "form-config/fields",
     {
       params: {
@@ -19,8 +23,11 @@ export const fetchFormFields = async (
     },
   );
   const data = res.data;
+  const fieldGroups = data.fieldGroups ?? [];
+
   return {
-    fields: data.fields ?? [],
+    fields: fieldGroups.flatMap((group) => group.fields),
+    fieldGroups,
     documentGroup: data.documentGroup,
   };
 };

@@ -1,7 +1,10 @@
+import { FormFieldGroupI } from "@/src/networks/form-fields/types";
 import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
 
 export type DynamicFormSectionProps = {
   fields: FormFieldI[];
+  fieldGroups: FormFieldGroupI[];
+  sectionLabel?: string;
   data: FormDataI;
   onChange: (newData: Partial<FormDataI>) => void;
   /** Options from cached config API, keyed by fieldKey (e.g. manufacturing_year, ownership_number) */
