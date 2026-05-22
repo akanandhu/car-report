@@ -192,3 +192,33 @@ model FormField {
   @@unique([documentGroupId, fieldKey])
   @@map("form_fields")
 }
+
+model IndianState {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  name      String
+  isEnabled Boolean   @default(true) @map("is_enabled")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  rtos Rto[]
+
+  @@map("indian_states")
+}
+
+model Rto {
+  id        String    @id @default(uuid())
+  stateId   String    @map("state_id")
+  code      String    @unique
+  name      String
+  isEnabled Boolean   @default(true) @map("is_enabled")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  state IndianState @relation(fields: [stateId], references: [id], onDelete: Cascade)
+
+  @@index([stateId])
+  @@map("rtos")
+}

@@ -12,6 +12,7 @@ import { VehicleDocumentModule } from './vehicle-document/vehicle-document.modul
 import { FormFieldModule } from './form-field/form-field.module';
 import { SeederModule } from './seeder/seeder.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
+import { RtoModule } from './rto/rto.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CatalogueModule } from './catalogue/catalogue.module';
     FormFieldModule,
     SeederModule,
     CatalogueModule,
+    RtoModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],
