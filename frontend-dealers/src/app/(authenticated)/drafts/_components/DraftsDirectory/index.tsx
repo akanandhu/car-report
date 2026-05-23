@@ -114,11 +114,11 @@ const DraftsDirectory = () => {
   return (
     <>
       <section>
-        <div className="w-full px-4 py-6 sm:px-8">
+        <div className="w-full px-4 pt-7 pb-5 sm:px-8">
           <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
             Saved Drafts
           </h1>
-          <p className="mt-1 text-sm font-medium text-slate-500">
+          <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
             Continue working on your incomplete car evaluations.
           </p>
         </div>

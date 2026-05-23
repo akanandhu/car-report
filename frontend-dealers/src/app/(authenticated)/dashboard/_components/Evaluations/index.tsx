@@ -60,7 +60,7 @@ const metrics: MetricCard[] = [
 
 const Evaluations = () => {
   return (
-    <div className="w-full space-y-10 px-4 py-10 sm:px-8">
+    <div className="w-full space-y-10 px-4 py-1 sm:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric) => (
           <article

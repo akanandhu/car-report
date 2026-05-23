@@ -170,8 +170,8 @@ const AllCarsDirectory = () => {
 
   return (
     <>
-      <section className="border-b border-slate-200 bg-white">
-        <div className="w-full px-4 py-10 sm:px-8">
+      <section >
+        <div className="w-full px-4 pt-7 pb-5 sm:px-8">
           <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
             All Cars Directory
           </h1>
@@ -181,8 +181,8 @@ const AllCarsDirectory = () => {
         </div>
       </section>
 
-      <section className="w-full px-4 py-10 sm:px-8">
-        <div className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+      <section className="w-full px-4 py-1 sm:px-8">
+        <div className="overflow-hidden rounded-2xl border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
           <div className="flex flex-col gap-4 border-b border-[#dbe4f0] px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex w-full flex-col gap-4 lg:flex-row">
               <div className="relative w-full max-w-[560px]">
