@@ -532,14 +532,10 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSubmit = async () => {
-    console.log("submit handler test")
     if (!validateCurrentFields()) {
       scrollToTop();
-    console.log("submit handler test2")
       return;
     }
-    console.log("submit handler test3")
-
     try {
       flushSync(() => setSubmitting(true));
       const currentVehicleId = vehicleId || (await createDraftVehicle());
@@ -563,6 +559,15 @@ const useCarEvaluationForm = () => {
     router.push("/");
   };
 
+  const sectionsWithErrors = sections.reduce<Record<number, boolean>>(
+    (acc, _, index) => {
+      const keys = sectionFieldKeysRef.current[index] ?? [];
+      if (keys.some((k) => k in validationErrors)) acc[index] = true;
+      return acc;
+    },
+    {},
+  );
+
   return {
     sections,
     methods,
@@ -578,6 +583,7 @@ const useCarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    sectionsWithErrors,
     handleNext,
     handlePrevious,
     handleSectionChange,

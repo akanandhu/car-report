@@ -20,6 +20,7 @@ const CarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    sectionsWithErrors,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -53,6 +54,7 @@ const CarEvaluationForm = () => {
           handleSectionChange={handleSectionChange}
           handleSaveDraft={handleSaveDraft}
           submitting={submitting}
+          sectionsWithErrors={sectionsWithErrors}
         />
 
         <EvaluationFormFields

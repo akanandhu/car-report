@@ -184,7 +184,7 @@ const AllCarsDirectory = () => {
       <section className="w-full px-4 py-1 sm:px-8">
         <div className="overflow-hidden rounded-2xl border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
           <div className="flex flex-col gap-4 border-b border-[#dbe4f0] px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex w-full flex-col gap-4 lg:flex-row">
+            <div className="flex w-full flex-col gap-4 lg:flex-row justify-between">
               <div className="relative w-full max-w-[560px]">
                 <input
                   type="search"
@@ -213,9 +213,9 @@ const AllCarsDirectory = () => {
                     </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
+                {/* <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
                   <ChevronRight className="h-4 w-4 rotate-90" />
-                </span>
+                </span> */}
               </div>
             </div>
           </div>

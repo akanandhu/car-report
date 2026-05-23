@@ -5,6 +5,7 @@ const StepperTabs = ({
   sections,
   activeSection,
   onSectionChange,
+  sectionsWithErrors = {},
   className = "",
 }: StepperTabsProps) => {
   return (
@@ -13,12 +14,13 @@ const StepperTabs = ({
     >
       {sections.map((section, index) => {
         const isActive = index === activeSection;
+        const hasError = !!sectionsWithErrors[index];
 
         return (
           <button
             key={section.id}
             onClick={() => onSectionChange(index)}
-            className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
+            className={`relative shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
               isActive
                 ? "bg-white text-slate-950 shadow-sm"
                 : "bg-transparent text-slate-500 hover:bg-slate-200 hover:text-slate-700"
@@ -30,6 +32,9 @@ const StepperTabs = ({
               {index + 1}
             </span>
             {section.label}
+            {hasError && (
+              <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
+            )}
           </button>
         );
       })}

@@ -291,6 +291,10 @@ const REVIEW_SECTION_SUMMARY = [
     label: "Special Comments",
     keys: ["special_comments"],
   },
+  {
+    label: "Review & Submit",
+    keys: ["rating_exterior", "rating_interior", "rating_engine", "rating_electrical", "rating_test_drive", "selfie_with_car"],
+  },
 ];
 
 const DynamicFormSection = ({
@@ -2575,10 +2579,14 @@ const DynamicFormSection = ({
   const renderReviewSubmitLayout = () => {
     const summary = REVIEW_SECTION_SUMMARY.map((section) => {
       const hasData = section.keys.some((key) => hasValue(data[key]));
+      const missingErrors = section.keys
+        .filter((key) => key in validationErrors)
+        .map((key) => validationErrors[key]);
 
       return {
         ...section,
         hasData,
+        missingErrors,
       };
     });
     const completedSteps = summary.filter((section) => section.hasData).length;
@@ -2651,45 +2659,57 @@ const DynamicFormSection = ({
             {summary.map((section, index) => (
               <div
                 key={section.label}
-                className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3"
+                className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3"
               >
-                <span className="text-sm font-semibold text-slate-700">
-                  Step {index + 1}: {section.label}
-                </span>
-                {section.hasData ? (
-                  <span className="flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-600">
-                    <svg
-                      className="h-3 w-3"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M20 6L9 17l-5-5" />
-                    </svg>
-                    Data Present
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-slate-700">
+                    Step {index + 1}: {section.label}
                   </span>
-                ) : (
-                  <span className="flex items-center gap-1 rounded-md bg-rose-100 px-2 py-1 text-xs font-bold text-rose-600">
-                    <svg
-                      className="h-3 w-3"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                      <path d="M12 9v4" />
-                      <path d="M12 17h.01" />
-                    </svg>
-                    Missing
-                  </span>
+                  {section.hasData ? (
+                    <span className="flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-600">
+                      <svg
+                        className="h-3 w-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                      Data Present
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 rounded-md bg-rose-100 px-2 py-1 text-xs font-bold text-rose-600">
+                      <svg
+                        className="h-3 w-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        <path d="M12 9v4" />
+                        <path d="M12 17h.01" />
+                      </svg>
+                      Missing
+                    </span>
+                  )}
+                </div>
+                {section.missingErrors.length > 0 && (
+                  <ul className="space-y-0.5 pl-1">
+                    {section.missingErrors.map((err) => (
+                      <li key={err} className="flex items-center gap-1.5 text-xs text-rose-600">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                        {err}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
             ))}
@@ -2770,7 +2790,12 @@ const DynamicFormSection = ({
   }
 
   if (sectionLabel?.toLowerCase().includes("manual rating")) {
-    return renderReviewSubmitLayout();
+    return (
+      <div className="flex flex-col gap-5">
+        {renderManualRatingsLayout()}
+        {renderReviewSubmitLayout()}
+      </div>
+    );
   }
 
   return (

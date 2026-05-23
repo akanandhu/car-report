@@ -13,6 +13,7 @@ const EvaluationFormHead = ({
   handleSaveDraft,
   handleBack,
   submitting,
+  sectionsWithErrors,
 }: CarFormHeadPropsI) => {
   return (
     <div className="sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white">
@@ -52,6 +53,7 @@ const EvaluationFormHead = ({
           sections={sections}
           activeSection={currentSection}
           onSectionChange={handleSectionChange}
+          sectionsWithErrors={sectionsWithErrors}
           className="bg-slate-100/80"
         />
 
