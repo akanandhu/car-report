@@ -13,6 +13,7 @@ const EvaluationFormHead = ({
   handleSaveDraft,
   handleBack,
   submitting,
+  sectionsWithErrors,
 }: CarFormHeadPropsI) => {
   return (
     <div className="sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white">
@@ -23,7 +24,7 @@ const EvaluationFormHead = ({
 
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <span className="block truncate text-2xl font-semibold tracking-tight text-slate-950 sm:text-[30px]">
+            <span className="block truncate text-2xl font-semibold tracking-tight text-slate-950 sm:text-[26px]">
               {sections[currentSection]?.label}
             </span>
           </div>
@@ -52,6 +53,7 @@ const EvaluationFormHead = ({
           sections={sections}
           activeSection={currentSection}
           onSectionChange={handleSectionChange}
+          sectionsWithErrors={sectionsWithErrors}
           className="bg-slate-100/80"
         />
 

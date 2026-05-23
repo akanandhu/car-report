@@ -14,12 +14,12 @@ interface ApiResponse<T> {
 interface PaginatedApiResponse<T> {
   data: T[];
   pagination: {
-    page: number;
-    limit: number;
+    currentPage: number;
+    perPage: number;
     total: number;
     totalPages: number;
     hasNextPage: boolean;
-    hasPrevPage: boolean;
+    hasPreviousPage: boolean;
   };
   message: string;
   statusCode: number;
@@ -27,13 +27,19 @@ interface PaginatedApiResponse<T> {
 
 export const fetchVehicles = async (
   page: number = 1,
-  limit: number = 20,
+  limit: number = 10,
   search?: string,
+  status?: string,
 ): Promise<PaginatedApiResponse<VehicleResponse>> => {
   const res = await apiClient<PaginatedApiResponse<VehicleResponse>>(
     "vehicles",
     {
-      params: { page, limit, ...(search ? { search } : {}) },
+      params: {
+        page,
+        limit,
+        ...(search ? { search } : {}),
+        ...(status ? { status } : {}),
+      },
     },
   );
   return res;

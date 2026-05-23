@@ -67,7 +67,7 @@ export const DOCUMENT_GROUPS = [
         order: 9,
     },
     {
-        name: 'Manual Ratings',
+        name: 'Review & Submit',
         identifier: 'manual_ratings',
         description: 'Manual rating scores, voice notes, and selfie',
         type: 'FORM_STEP',

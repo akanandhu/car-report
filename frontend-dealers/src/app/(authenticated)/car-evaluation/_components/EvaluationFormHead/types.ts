@@ -8,4 +8,5 @@ export type CarFormHeadPropsI = {
     handleSectionChange: (index: number) => void;
     handleSaveDraft: () => void;
     submitting: boolean;
+    sectionsWithErrors: Record<number, boolean>;
 }

@@ -1,103 +1,216 @@
-import { Calendar, ChevronRight, Clock3, FilePen, Trash2 } from "lucide-react";
+"use client";
 
-type DraftCard = {
-  title: string;
-  progress: number;
-  lastSaved: string;
-  step: string;
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Calendar, ChevronRight, ClockIcon, SquarePen, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef } from "react";
+
+import { fetchVehicles } from "@/src/networks/vehicles";
+
+const PAGE_SIZE = 9;
+
+const formatVehicleTitle = (name: string, model: string) => {
+  if (!model) {
+    return name;
+  }
+
+  return `${name} ${model}`.trim();
 };
 
-const drafts: DraftCard[] = [
-  {
-    title: "Honda Civic 2021",
-    progress: 45,
-    lastSaved: "2 hours ago",
-    step: "Step 4",
-  },
-  {
-    title: "Toyota Camry 2019",
-    progress: 15,
-    lastSaved: "Yesterday",
-    step: "Step 2",
-  },
-  {
-    title: "Ford F-150 2022",
-    progress: 80,
-    lastSaved: "3 days ago",
-    step: "Step 8",
-  },
-];
+const formatRelativeDate = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Recently updated";
+  }
+
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) {
+    return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+};
+
+const formatDate = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Saved draft";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+};
 
 const DraftsDirectory = () => {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    data,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["vehicles", "drafts", PAGE_SIZE],
+    queryFn: ({ pageParam }) =>
+      fetchVehicles(pageParam, PAGE_SIZE, undefined, "draft"),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasNextPage
+        ? lastPage.pagination.currentPage + 1
+        : undefined,
+  });
+
+  const drafts = useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data],
+  );
+
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+
+    if (!sentinel || !hasNextPage) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+
+        if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "240px 0px" },
+    );
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   return (
     <>
-          <section>
-            <div className="w-full px-4 py-10 sm:px-8">
-              <h1 className="text-2xl font-bold text-slate-900">
-                Saved Drafts
-              </h1>
-              <p className="text-sm text-slate-500 mt-1 font-medium">
-                Continue working on your incomplete car evaluations.
-              </p>
-            </div>
-          </section>
+      <section>
+        <div className="w-full px-4 pt-7 pb-5 sm:px-8">
+          <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
+            Saved Drafts
+          </h1>
+          <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
+            Continue working on your incomplete car evaluations.
+          </p>
+        </div>
+      </section>
 
-          <section className="w-full px-4 sm:px-8">
+      <section className="w-full px-4 py-1 sm:px-8">
+        {isLoading ? (
+          <div className="rounded-2xl border border-[#dbe4f0] bg-white px-6 py-14 text-center text-[15px] text-[#5973a9] shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+            Loading drafts...
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-[#f3d1d1] bg-white px-6 py-14 text-center text-[15px] text-[#c2410c] shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+            Unable to load drafts right now.
+          </div>
+        ) : drafts.length === 0 ? (
+          <div className="rounded-2xl border border-[#dbe4f0] bg-white px-6 py-14 text-center text-[15px] text-[#5973a9] shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+            No draft evaluations found.
+          </div>
+        ) : (
+          <>
             <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
               {drafts.map((draft) => (
                 <article
-                  key={draft.title}
-                  className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col transition-colors hover:border-primary/30 group"
+                  key={draft.id}
+                  className="overflow-hidden rounded-2xl border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
                 >
-                  <div className="p-6 flex-1">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-600">
-                        <FilePen size={20} strokeWidth={2.2} />
+                  <div className="px-5 py-6">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f9fc] text-[#64748b]">
+                        <SquarePen size={19} />
                       </div>
-                      <span className="text-xs font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-md">
-                        {draft.progress}% Complete
+                      <span className="inline-flex rounded-[12px] bg-[#eef2f7] px-4 py-1 text-[12px] font-semibold text-[#081a43]">
+                        Draft
                       </span>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
-                      {draft.title}
+                    <h3 className="mt-5 text-[18px] font-semibold tracking-[-0.04em] text-[#081a43]">
+                      {formatVehicleTitle(draft.name, draft.model)}
                     </h3>
 
-                    <div className="flex items-center gap-4 text-sm text-slate-500 mt-4">
-                      <div className="flex items-center gap-1.5">
-                        <Clock3 size={18} strokeWidth={2} />
-                        <span>{draft.lastSaved}</span>
+                    <p className="mt-2 text-[13px] font-medium text-[#5973a9]">
+                      {draft.vehicleNumber}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-6 text-[13px] text-[#5973a9]">
+                      <div className="inline-flex items-center gap-2">
+                        <ClockIcon size={18} />
+                        <span>{formatRelativeDate(draft.updatedAt)}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Calendar size={18} strokeWidth={2} />
-                        <span>{draft.step}</span>
+                        <span>{formatDate(draft.updatedAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 border-t border-slate-100 p-4 flex gap-3">
+                  <div className="flex flex-col gap-3 border-t border-[#e7edf5] bg-[#fbfcfe] px-5 py-4 sm:flex-row">
                     <button
                       type="button"
-                      className="flex-1 inline-flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      disabled
+                      className="inline-flex h-10 items-center justify-center gap-3 rounded-xl border border-[#d7e2ef] bg-white text-[14px] font-semibold text-[#9aa9bf] md:flex-1"
                     >
-                      <span className="text-[#ff5d66]">
+                      <span className="text-[#ff9da3]">
                         <Trash2 size={17} strokeWidth={2.2} />
                       </span>
                       Discard
                     </button>
 
-                    <button
-                      type="button"
-                      className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                    <Link
+                      href={`/car-evaluation?vehicleId=${draft.id}`}
+                      className="inline-flex h-10 items-center justify-center gap-3 rounded-xl bg-[#06081d] text-[14px] font-semibold text-white transition hover:bg-[#101534] md:flex-1"
                     >
                       Resume
                       <ChevronRight size={18} strokeWidth={2.4} />
-                    </button>
+                    </Link>
                   </div>
                 </article>
               ))}
             </div>
-          </section>
+
+            <div ref={loadMoreRef} className="h-6 w-full" />
+
+            <div className="py-6 text-center text-[14px] text-[#5973a9]">
+              {isFetchingNextPage
+                ? "Loading more drafts..."
+                : hasNextPage
+                  ? "Scroll to load more drafts"
+                  : ""}
+            </div>
+          </>
+        )}
+      </section>
     </>
   );
 };

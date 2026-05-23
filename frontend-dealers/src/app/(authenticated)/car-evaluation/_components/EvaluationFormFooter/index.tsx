@@ -11,6 +11,7 @@ const EvaluationFormFooter = ({
   handleNext,
   handleSubmit,
 }: EvaluationFormFooterPropsI) => {
+  console.log("Is last action ", isLastSection)
   return (
     <div className="sticky bottom-0 z-20 shrink-0 border-t border-slate-200 bg-white">
       <div className="mx-auto w-full">
@@ -35,10 +36,21 @@ const EvaluationFormFooter = ({
               disabled={submitting}
             >
               <div className="flex items-center gap-2">
+                {submitting && (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                )}
                 <span className="font-semibold">
-                  {isLastSection ? "Submit" : "Next Section"}
+                  {isLastSection
+                    ? submitting
+                      ? "Submitting..."
+                      : "Submit"
+                    : submitting
+                      ? "Saving..."
+                      : "Next Section"}
                 </span>
-                {!isLastSection && <ChevronRight className="h-5 w-5" />}
+                {!isLastSection && !submitting && (
+                  <ChevronRight className="h-5 w-5" />
+                )}
               </div>
             </Button>
           </div>

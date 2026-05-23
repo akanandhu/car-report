@@ -10,6 +10,7 @@ export interface StepperTabsProps {
   sections: SectionI[];
   activeSection: number;
   onSectionChange: (index: number) => void;
+  sectionsWithErrors?: Record<number, boolean>;
   className?: string;
 }
 

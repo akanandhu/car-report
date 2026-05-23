@@ -143,76 +143,76 @@ const TemplatePreview = ({ accent }: { accent: TemplateCard["accent"] }) => (
 const DesignTemplateDirectory = () => {
   return (
     <>
-          <section className="border-b border-slate-200 bg-white">
-            <div className="flex w-full flex-col gap-5 px-4 py-10 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
-                  Report Templates
-                </h1>
-                <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
-                  Customize how your final car evaluation reports look.
-                </p>
+      <section >
+        <div className="flex w-full flex-col gap-5 px-4 pt-7 pb-5 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
+              Report Templates
+            </h1>
+            <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
+              Customize how your final car evaluation reports look.
+            </p>
+          </div>
+
+          <Button
+            variant="filled"
+            size="sm"
+            className="rounded-[18px] bg-[#06081d] font-semibold"
+            startAdornment={<LayoutIcon />}
+          >
+            Create New Template
+          </Button>
+        </div>
+      </section>
+
+      <section className="w-full px-4 py-1 sm:px-8">
+        <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
+          {templates.map((template) => (
+            <article
+              key={template.title}
+              className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
+            >
+              <TemplatePreview accent={template.accent} />
+
+              <div className="px-7 py-7">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="max-w-[220px] text-[24px] font-semibold tracking-[-0.04em] text-[#081a43]">
+                    {template.title}
+                  </h3>
+                  {template.status ? (
+                    <span className="inline-flex rounded-[12px] bg-[#f0f2f6] px-4 py-2 text-[13px] font-semibold text-[#081a43]">
+                      {template.status}
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 inline-flex items-center gap-2 text-[13px] text-[#5973a9]">
+                  <FileIcon />
+                  <span>{template.output}</span>
+                </div>
+
+                <div className="mt-8 flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex h-12 flex-1 items-center justify-center gap-3 rounded-2xl border border-[#d7e2ef] bg-white text-[15px] font-semibold text-[#21355b] transition hover:bg-slate-50"
+                  >
+                    <PaletteIcon />
+                    Customize
+                  </button>
+
+                  <button
+                    type="button"
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#d7e2ef] bg-white text-[#21355b] transition hover:bg-slate-50"
+                    aria-label="Template settings"
+                  >
+                    <SlidersIcon />
+                  </button>
+                </div>
               </div>
-
-              <Button
-                variant="filled"
-                size="sm"
-                className="rounded-[18px] bg-[#06081d] font-semibold"
-                startAdornment={<LayoutIcon />}
-              >
-                Create New Template
-              </Button>
-            </div>
-          </section>
-
-          <section className="w-full px-4 py-10 sm:px-8">
-            <div className="grid grid-cols-1 gap-7 xl:grid-cols-3">
-              {templates.map((template) => (
-                <article
-                  key={template.title}
-                  className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]"
-                >
-                  <TemplatePreview accent={template.accent} />
-
-                  <div className="px-7 py-7">
-                    <div className="flex items-start justify-between gap-4">
-                      <h3 className="max-w-[220px] text-[24px] font-semibold tracking-[-0.04em] text-[#081a43]">
-                        {template.title}
-                      </h3>
-                      {template.status ? (
-                        <span className="inline-flex rounded-[12px] bg-[#f0f2f6] px-4 py-2 text-[13px] font-semibold text-[#081a43]">
-                          {template.status}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-3 inline-flex items-center gap-2 text-[13px] text-[#5973a9]">
-                      <FileIcon />
-                      <span>{template.output}</span>
-                    </div>
-
-                    <div className="mt-8 flex items-center gap-3">
-                      <button
-                        type="button"
-                        className="inline-flex h-12 flex-1 items-center justify-center gap-3 rounded-2xl border border-[#d7e2ef] bg-white text-[15px] font-semibold text-[#21355b] transition hover:bg-slate-50"
-                      >
-                        <PaletteIcon />
-                        Customize
-                      </button>
-
-                      <button
-                        type="button"
-                        className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-[#d7e2ef] bg-white text-[#21355b] transition hover:bg-slate-50"
-                        aria-label="Template settings"
-                      >
-                        <SlidersIcon />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
+            </article>
+          ))}
+        </div>
+      </section>
     </>
   );
 };
