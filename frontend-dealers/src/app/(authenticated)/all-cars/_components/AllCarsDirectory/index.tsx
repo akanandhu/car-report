@@ -1,55 +1,21 @@
-type CarStatus = "Completed" | "Draft" | "In Progress";
+"use client";
 
-type CarRow = {
-  id: string;
-  vehicle: string;
-  type: string;
-  date: string;
-  evaluator: string;
-  status: CarStatus;
-};
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useDeferredValue, useEffect, useState } from "react";
 
-const carRows: CarRow[] = [
-  {
-    id: "EV-1029",
-    vehicle: "2021 Toyota Camry",
-    type: "Standard Eval",
-    date: "Oct 24, 2023",
-    evaluator: "John Doe",
-    status: "Completed",
-  },
-  {
-    id: "EV-1030",
-    vehicle: "2019 Honda Civic",
-    type: "Standard Eval",
-    date: "Oct 25, 2023",
-    evaluator: "Jane Smith",
-    status: "Draft",
-  },
-  {
-    id: "EV-1031",
-    vehicle: "2022 Ford Mustang",
-    type: "Standard Eval",
-    date: "Oct 25, 2023",
-    evaluator: "Mike Johnson",
-    status: "Completed",
-  },
-  {
-    id: "EV-1032",
-    vehicle: "2023 Tesla Model 3",
-    type: "Standard Eval",
-    date: "Oct 26, 2023",
-    evaluator: "Sarah Wilson",
-    status: "In Progress",
-  },
-  {
-    id: "EV-1033",
-    vehicle: "2020 BMW 3 Series",
-    type: "Standard Eval",
-    date: "Oct 26, 2023",
-    evaluator: "John Doe",
-    status: "Completed",
-  },
+import { fetchVehicles } from "@/src/networks/vehicles";
+
+const PAGE_SIZE = 10;
+
+const STATUS_OPTIONS = [
+  { label: "All Statuses", value: "" },
+  { label: "Draft", value: "draft" },
+  { label: "Completed", value: "completed" },
+  { label: "In Sale", value: "in_sale" },
+  { label: "Sold", value: "sold" },
+  { label: "Pending", value: "pending" },
+  { label: "Rejected", value: "rejected" },
 ];
 
 const SearchIcon = () => (
@@ -122,135 +88,282 @@ const ReportIcon = () => (
   </svg>
 );
 
-const getStatusClasses = (status: CarStatus) => {
-  if (status === "Completed") {
+const formatStatusLabel = (status: string) =>
+  status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+
+const getStatusClasses = (status: string) => {
+  const normalized = status.toLowerCase();
+
+  if (normalized === "completed") {
     return "bg-[#d6f6e4] text-[#00a76f]";
   }
 
-  if (status === "In Progress") {
+  if (normalized === "in_sale") {
     return "bg-[#dce8ff] text-[#2254f4]";
+  }
+
+  if (normalized === "pending") {
+    return "bg-[#fff1d6] text-[#c07a00]";
+  }
+
+  if (normalized === "rejected") {
+    return "bg-[#ffe0e0] text-[#cc3d3d]";
+  }
+
+  if (normalized === "sold") {
+    return "bg-[#e2e8f0] text-[#475569]";
   }
 
   return "bg-[#eef2f7] text-[#364a63]";
 };
 
+const formatVehicleName = (name: string, model: string) => {
+  if (!model) {
+    return name;
+  }
+
+  return `${name} ${model}`.trim();
+};
+
+const formatDate = (value: string) => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+};
+
 const AllCarsDirectory = () => {
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const deferredSearchInput = useDeferredValue(searchInput);
+  const search = deferredSearchInput.trim();
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
+
+  const { data, error, isFetching, isLoading } = useQuery({
+    queryKey: ["vehicles", page, PAGE_SIZE, search, statusFilter],
+    queryFn: () => fetchVehicles(page, PAGE_SIZE, search, statusFilter),
+    placeholderData: keepPreviousData,
+  });
+
+  const vehicles = data?.data ?? [];
+  const pagination = data?.pagination;
+  const totalItems = pagination?.total ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
+  const hasVehicles = vehicles.length > 0;
+  const hasActiveFilters = Boolean(search || statusFilter);
+  const from = totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const to = totalItems === 0 ? 0 : Math.min(page * PAGE_SIZE, totalItems);
+
   return (
     <>
-          <section className="border-b border-slate-200 bg-white">
-            <div className="w-full px-4 py-10 sm:px-8">
-              <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
-                All Cars Directory
-              </h1>
-              <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
-                Manage and view all previously evaluated vehicles.
-              </p>
-            </div>
-          </section>
+      <section className="border-b border-slate-200 bg-white">
+        <div className="w-full px-4 py-10 sm:px-8">
+          <h1 className="text-[22px] font-bold tracking-[-0.04em] text-[#081a43] sm:text-[24px]">
+            All Cars Directory
+          </h1>
+          <p className="text-[13px] leading-7 text-[#5973a9] sm:text-[14px]">
+            Manage and view all previously evaluated vehicles.
+          </p>
+        </div>
+      </section>
 
-          <section className="w-full px-4 py-10 sm:px-8">
-            <div className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
-              <div className="flex flex-col gap-4 border-b border-[#dbe4f0] px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="relative w-full max-w-[560px]">
-                  <input
-                    type="search"
-                    placeholder="Search by ID, Make, or Model..."
-                    className="h-11 w-full rounded-2xl border border-[#c8d5e6] bg-white pl-12 pr-4 text-[15px] text-[#334155] outline-none transition placeholder:text-[#8aa0c0] focus:border-[#b7c8e0]"
-                  />
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
-                    <SearchIcon />
-                  </span>
-                </div>
+      <section className="w-full px-4 py-10 sm:px-8">
+        <div className="overflow-hidden rounded-[24px] border border-[#dbe4f0] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+          <div className="flex flex-col gap-4 border-b border-[#dbe4f0] px-5 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex w-full flex-col gap-4 lg:flex-row">
+              <div className="relative w-full max-w-[560px]">
+                <input
+                  type="search"
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search by vehicle name or model..."
+                  className="h-11 w-full rounded-2xl border border-[#c8d5e6] bg-white pl-12 pr-4 text-[15px] text-[#334155] outline-none transition placeholder:text-[#8aa0c0] focus:border-[#b7c8e0]"
+                />
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
+                  <SearchIcon />
+                </span>
+              </div>
 
-                <button
-                  type="button"
-                  className="inline-flex h-11 items-center justify-center gap-3 rounded-2xl border border-[#c8d5e6] bg-white px-5 text-[15px] font-semibold text-[#21355b] transition hover:bg-slate-50"
-                >
+              <div className="relative w-full max-w-[240px]">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
                   <FilterIcon />
-                  Filter Results
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-[980px] w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-[#dbe4f0] bg-[#fbfcfe] text-left">
-                      <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Eval ID
-                      </th>
-                      <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Vehicle
-                      </th>
-                      <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Date
-                      </th>
-                      <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Evaluator
-                      </th>
-                      <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Status
-                      </th>
-                      <th className="px-8 py-5 text-right text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {carRows.map((row) => (
-                      <tr
-                        key={row.id}
-                        className="border-b border-[#dbe4f0] last:border-b-0"
-                      >
-                        <td className="px-8 py-5 text-[15px] font-semibold text-[#081a43]">
-                          {row.id}
-                        </td>
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#f0f4fa] text-[#64748b]">
-                              <CarIcon />
-                            </div>
-                            <div>
-                              <p className="text-[16px] font-semibold text-[#081a43]">
-                                {row.vehicle}
-                              </p>
-                              <p className="mt-1 text-[13px] text-[#5973a9]">
-                                {row.type}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5 text-[15px] text-[#334155]">
-                          {row.date}
-                        </td>
-                        <td className="px-8 py-5 text-[15px] text-[#334155]">
-                          {row.evaluator}
-                        </td>
-                        <td className="px-8 py-5">
-                          <span
-                            className={`inline-flex rounded-full px-4 py-2 text-[13px] font-semibold ${getStatusClasses(
-                              row.status,
-                            )}`}
-                          >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 text-right">
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-2 text-[16px] font-semibold text-[#081a43] transition hover:text-[#21355b]"
-                          >
-                            <ReportIcon />
-                            View Report
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                </span>
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  className="h-11 w-full appearance-none rounded-2xl border border-[#c8d5e6] bg-white pl-12 pr-10 text-[15px] font-medium text-[#21355b] outline-none transition focus:border-[#b7c8e0]"
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option key={option.value || "all"} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#94a3b8]">
+                  <ChevronRight className="h-4 w-4 rotate-90" />
+                </span>
               </div>
             </div>
-          </section>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-[980px] w-full border-collapse">
+              <thead>
+                <tr className="border-b border-[#dbe4f0] bg-[#fbfcfe] text-left">
+                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Eval ID
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Vehicle
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Date
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Evaluator
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Status
+                  </th>
+                  <th className="px-8 py-5 text-right text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-8 py-16 text-center text-[15px] text-[#5973a9]"
+                    >
+                      Loading vehicles...
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-8 py-16 text-center text-[15px] text-[#c2410c]"
+                    >
+                      Unable to load vehicles right now.
+                    </td>
+                  </tr>
+                ) : !hasVehicles ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-8 py-16 text-center text-[15px] text-[#5973a9]"
+                    >
+                      {hasActiveFilters
+                        ? "No vehicles matched your search or status filter."
+                        : "No vehicles found yet."}
+                    </td>
+                  </tr>
+                ) : (
+                  vehicles.map((vehicle) => (
+                    <tr
+                      key={vehicle.id}
+                      className="border-b border-[#dbe4f0] last:border-b-0"
+                    >
+                      <td className="px-8 py-5 text-[15px] font-semibold text-[#081a43]">
+                        {vehicle.id}
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#f0f4fa] text-[#64748b]">
+                            <CarIcon />
+                          </div>
+                          <div>
+                            <p className="text-[16px] font-semibold text-[#081a43]">
+                              {formatVehicleName(vehicle.name, vehicle.model)}
+                            </p>
+                            <p className="mt-1 text-[13px] text-[#5973a9]">
+                              {vehicle.vehicleNumber}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-8 py-5 text-[15px] text-[#334155]">
+                        {formatDate(vehicle.updatedAt || vehicle.createdAt)}
+                      </td>
+                      <td className="px-8 py-5 text-[15px] text-[#334155]">
+                        {vehicle.lastModifiedBy || vehicle.createdBy || "-"}
+                      </td>
+                      <td className="px-8 py-5">
+                        <span
+                          className={`inline-flex rounded-full px-4 py-2 text-[13px] font-semibold ${getStatusClasses(
+                            vehicle.status,
+                          )}`}
+                        >
+                          {formatStatusLabel(vehicle.status)}
+                        </span>
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 text-[16px] font-semibold text-[#081a43] transition hover:text-[#21355b]"
+                        >
+                          <ReportIcon />
+                          View Report
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-col gap-4 border-t border-[#dbe4f0] px-5 py-5 text-[14px] text-[#5973a9] sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              Showing {from}-{to} of {totalItems} vehicles
+              {isFetching && !isLoading ? " Updating..." : ""}
+            </div>
+
+            <div className="flex items-center gap-3 self-end lg:self-auto">
+              <button
+                type="button"
+                onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+                disabled={page === 1 || isLoading}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-[#c8d5e6] bg-white px-4 font-semibold text-[#21355b] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <div className="rounded-2xl border border-[#dbe4f0] bg-[#fbfcfe] px-4 py-2 font-semibold text-[#081a43]">
+                Page {page} of {totalPages}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPage((currentPage) => currentPage + 1)}
+                disabled={!pagination?.hasNextPage || isLoading}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-[#c8d5e6] bg-white px-4 font-semibold text-[#21355b] transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 };
