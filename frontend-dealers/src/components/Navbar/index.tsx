@@ -1,13 +1,27 @@
-import { Search, Bell, User} from 'lucide-react'
+import { Search, Bell, User, Menu } from 'lucide-react';
 
+type NavbarProps = {
+  onToggleSidebar?: () => void;
+};
 
-
-const Navbar = () => {
+const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur h-16">
-      <div className="h-full flex flex-col gap-4 px-4 py-2 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="relative w-full max-w-[560px]">
-          <Search size={16} className="absolute left-4 top-1/2  -translate-y-1/2 text-slate-400" />
+      <div className="h-full flex items-center gap-3 px-4 sm:px-6 lg:px-8">
+
+        {/* Hamburger — mobile only */}
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className="md:hidden flex items-center justify-center rounded-md p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+
+        {/* Search input — desktop only */}
+        <div className="relative hidden lg:block w-110 xl:w-140">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
             placeholder="Search cars, evaluations, or reports..."
@@ -15,28 +29,30 @@ const Navbar = () => {
           />
         </div>
 
-        <div className="flex items-center justify-end gap-4 sm:gap-6">
+        {/* Right side */}
+        <div className="flex items-center gap-3 sm:gap-4 ml-auto">
           <button
             type="button"
-            className="relative flex items-center justify-center rounded-full  text-slate-500 transition hover:text-slate-900"
+            className="relative flex items-center justify-center rounded-full text-slate-500 transition hover:text-slate-900"
             aria-label="Notifications"
           >
             <Bell size={20} />
             <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-red-500" />
           </button>
 
-          <div className="hidden h-10 w-px bg-slate-200 sm:block" />
+          <div className="h-8 w-px bg-slate-200" />
 
-          <div className="flex items-center gap-2">
-            <div className="flex p-2 items-center justify-center rounded-full border border-slate-200 bg-black/10 text-slate-700">
+          <div className="flex items-center gap-2.5">
+            <div className="flex p-2 items-center justify-center rounded-full border border-slate-200 bg-black/10 text-slate-700 shrink-0">
               <User size={16} />
             </div>
-            <div className="">
-              <p className="text-sm font-semibold text-slate-950">Admin User</p>
-              <p className="text-sm text-slate-500">admin@careval.com</p>
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold text-slate-950 leading-tight">Admin User</p>
+              <p className="text-xs text-slate-500 leading-tight">admin@careval.com</p>
             </div>
           </div>
         </div>
+
       </div>
     </header>
   );
