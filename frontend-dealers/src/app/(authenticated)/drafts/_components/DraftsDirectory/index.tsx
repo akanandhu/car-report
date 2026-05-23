@@ -79,7 +79,7 @@ const DraftsDirectory = () => {
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasNextPage
-        ? lastPage.pagination.page + 1
+        ? lastPage.pagination.currentPage + 1
         : undefined,
   });
 

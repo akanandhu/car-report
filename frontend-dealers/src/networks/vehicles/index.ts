@@ -14,12 +14,12 @@ interface ApiResponse<T> {
 interface PaginatedApiResponse<T> {
   data: T[];
   pagination: {
-    page: number;
-    limit: number;
+    currentPage: number;
+    perPage: number;
     total: number;
     totalPages: number;
     hasNextPage: boolean;
-    hasPrevPage: boolean;
+    hasPreviousPage: boolean;
   };
   message: string;
   statusCode: number;
