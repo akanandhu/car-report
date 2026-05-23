@@ -206,7 +206,7 @@ const DraftsDirectory = () => {
                 ? "Loading more drafts..."
                 : hasNextPage
                   ? "Scroll to load more drafts"
-                  : "You've reached the end of your drafts"}
+                  : ""}
             </div>
           </>
         )}

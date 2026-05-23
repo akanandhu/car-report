@@ -2789,7 +2789,7 @@ const DynamicFormSection = ({
     return renderSpecialCommentsLayout();
   }
 
-  if (sectionLabel?.toLowerCase().includes("manual rating")) {
+  if (sectionLabel?.toLowerCase().includes("manual rating") || sectionLabel?.toLowerCase().includes("review")) {
     return (
       <div className="flex flex-col gap-5">
         {renderManualRatingsLayout()}

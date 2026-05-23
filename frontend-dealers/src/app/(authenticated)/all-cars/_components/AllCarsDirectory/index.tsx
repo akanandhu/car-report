@@ -125,7 +125,7 @@ const formatVehicleName = (name: string, model: string) => {
     return name;
   }
 
-  return `${name} ${model}`.trim();
+  return `${name}`.trim();
 };
 
 const formatDate = (value: string) => {
@@ -167,7 +167,6 @@ const AllCarsDirectory = () => {
   const hasActiveFilters = Boolean(search || statusFilter);
   const from = totalItems === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const to = totalItems === 0 ? 0 : Math.min(page * PAGE_SIZE, totalItems);
-
   return (
     <>
       <section >
@@ -224,7 +223,7 @@ const AllCarsDirectory = () => {
             <table className="min-w-[980px] w-full border-collapse">
               <thead>
                 <tr className="border-b border-[#dbe4f0] bg-[#fbfcfe] text-left">
-                  <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
+                  <th className="w-32 px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">
                     Eval ID
                   </th>
                   <th className="px-8 py-5 text-[13px] font-bold uppercase tracking-[0.02em] text-[#56739c]">

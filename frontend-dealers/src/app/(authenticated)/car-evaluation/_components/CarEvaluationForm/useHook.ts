@@ -376,15 +376,21 @@ const useCarEvaluationForm = () => {
     });
   };
 
-  const createDraftVehicle = async () => {
+  const extractApiError = (error: unknown, fallback: string) =>
+    (error as { message?: string })?.message || fallback;
+
+  const buildVehicleMeta = () => {
     const brand = getLabelValue(formData.car_brand);
     const model = getLabelValue(formData.car_model);
-    const name =
-      [brand, model, formData.manufacturing_year].filter(Boolean).join(" ") ||
-      "New Vehicle";
+    const name = [brand, model, formData.manufacturing_year].filter(Boolean).join(" ");
+    return { name: name || undefined, model: model || undefined };
+  };
+
+  const createDraftVehicle = async () => {
+    const { name, model } = buildVehicleMeta();
 
     const vehicle = await createVehicle({
-      name,
+      name: name || "New Vehicle",
       vehicleNumber: getValue(formData.registration_number) || `TEMP-${Date.now()}`,
       status: "draft",
       model: model || "unknown",
@@ -416,7 +422,7 @@ const useCarEvaluationForm = () => {
       scrollToTop();
     } catch (error) {
       console.error("Failed to save step data:", error);
-      toast.error("Failed to save. Please try again.");
+      toast.error(extractApiError(error, "Failed to save. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -521,11 +527,19 @@ const useCarEvaluationForm = () => {
       flushSync(() => setSubmitting(true));
       const currentVehicleId = vehicleId || (await createDraftVehicle());
 
+      const { name, model } = buildVehicleMeta();
+      if (vehicleId && (name || model)) {
+        await updateVehicle(vehicleId, {
+          ...(name && { name }),
+          ...(model && { model }),
+        });
+      }
+
       await saveCurrentStepData(currentVehicleId, currentSection);
       toast.success("Draft saved successfully!");
     } catch (error) {
       console.error("Failed to save draft:", error);
-      toast.error("Failed to save draft. Please try again.");
+      toast.error(extractApiError(error, "Failed to save draft. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -541,15 +555,17 @@ const useCarEvaluationForm = () => {
       const currentVehicleId = vehicleId || (await createDraftVehicle());
       await saveCurrentStepData(currentVehicleId, currentSection);
       await submitAllSteps(currentVehicleId, "EVALUATION");
-      await updateVehicle(currentVehicleId, { status: "completed" });
+      const { name, model } = buildVehicleMeta();
+      await updateVehicle(currentVehicleId, {
+        status: "completed",
+        ...(name && { name }),
+        ...(model && { model }),
+      });
       toast.success("Evaluation submitted successfully!");
       setTimeout(() => router.push("/"), 1500);
     } catch (error) {
       console.error("Failed to submit evaluation:", error);
-      const message =
-        (error as { message?: string })?.message ||
-        "Failed to submit. Please try again.";
-      toast.error(message);
+      toast.error(extractApiError(error, "Failed to submit. Please try again."));
     } finally {
       setSubmitting(false);
     }
