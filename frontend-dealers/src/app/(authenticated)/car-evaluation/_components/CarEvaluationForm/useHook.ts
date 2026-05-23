@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { fetchConfigFull, fetchVariantsFull } from "@/src/networks/catalogue";
 import {
@@ -190,11 +192,13 @@ const useCarEvaluationForm = () => {
           setFieldsLoading(true);
           const fields = await fetchFormFields(enabledGroups[0].id);
           if (!active) return;
-          setCurrentFields(fields.fields);
-          setCurrentFieldGroups(fields.fieldGroups);
-          sectionFieldKeysRef.current[0] = fields.fields.map(
-            (field) => field.fieldKey,
-          );
+          const enabledFields = fields.fields.filter((f) => f.isEnabled);
+          const enabledFieldGroups = fields.fieldGroups
+            .map((g) => ({ ...g, fields: g.fields.filter((f) => f.isEnabled) }))
+            .filter((g) => g.fields.length > 0);
+          setCurrentFields(enabledFields);
+          setCurrentFieldGroups(enabledFieldGroups);
+          sectionFieldKeysRef.current[0] = enabledFields.map((f) => f.fieldKey);
           setFieldsLoading(false);
         }
 
@@ -255,11 +259,13 @@ const useCarEvaluationForm = () => {
     try {
       setFieldsLoading(true);
       const result = await fetchFormFields(group.id);
-      setCurrentFields(result.fields);
-      setCurrentFieldGroups(result.fieldGroups);
-      sectionFieldKeysRef.current[sectionIndex] = result.fields.map(
-        (field) => field.fieldKey,
-      );
+      const enabledFields = result.fields.filter((f) => f.isEnabled);
+      const enabledFieldGroups = result.fieldGroups
+        .map((g) => ({ ...g, fields: g.fields.filter((f) => f.isEnabled) }))
+        .filter((g) => g.fields.length > 0);
+      setCurrentFields(enabledFields);
+      setCurrentFieldGroups(enabledFieldGroups);
+      sectionFieldKeysRef.current[sectionIndex] = enabledFields.map((f) => f.fieldKey);
     } catch (error) {
       console.error("Failed to load form fields:", error);
       setCurrentFields([]);
@@ -332,6 +338,7 @@ const useCarEvaluationForm = () => {
     const errors = currentFields.reduce<Record<string, string>>(
       (nextErrors, field) => {
         const isRequiredVisible =
+          field.isEnabled &&
           field.isRequired &&
           isFieldVisible(field, formData);
 
@@ -343,6 +350,17 @@ const useCarEvaluationForm = () => {
       },
       {},
     );
+
+    if (Object.keys(errors).length > 0) {
+      console.warn(
+        "[Validation] Blocking fields:",
+        Object.entries(errors).map(([key, msg]) => ({
+          key,
+          msg,
+          value: formData[key],
+        })),
+      );
+    }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -388,7 +406,7 @@ const useCarEvaluationForm = () => {
     }
 
     try {
-      setSubmitting(true);
+      flushSync(() => setSubmitting(true));
       const currentVehicleId = vehicleId || (await createDraftVehicle());
 
       await saveCurrentStepData(currentVehicleId, currentSection);
@@ -398,7 +416,7 @@ const useCarEvaluationForm = () => {
       scrollToTop();
     } catch (error) {
       console.error("Failed to save step data:", error);
-      alert("Failed to save. Please try again.");
+      toast.error("Failed to save. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -500,39 +518,42 @@ const useCarEvaluationForm = () => {
 
   const handleSaveDraft = async () => {
     try {
-      setSubmitting(true);
+      flushSync(() => setSubmitting(true));
       const currentVehicleId = vehicleId || (await createDraftVehicle());
 
       await saveCurrentStepData(currentVehicleId, currentSection);
-      alert("Draft saved successfully!");
+      toast.success("Draft saved successfully!");
     } catch (error) {
       console.error("Failed to save draft:", error);
-      alert("Failed to save draft. Please try again.");
+      toast.error("Failed to save draft. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!vehicleId) {
-      alert("No vehicle found. Please start from the first step.");
-      return;
-    }
-
+    console.log("submit handler test")
     if (!validateCurrentFields()) {
       scrollToTop();
+    console.log("submit handler test2")
       return;
     }
+    console.log("submit handler test3")
 
     try {
-      setSubmitting(true);
-      await saveCurrentStepData(vehicleId, currentSection);
-      await submitAllSteps(vehicleId, "EVALUATION");
-      await updateVehicle(vehicleId, { status: "completed" });
-      router.push("/");
+      flushSync(() => setSubmitting(true));
+      const currentVehicleId = vehicleId || (await createDraftVehicle());
+      await saveCurrentStepData(currentVehicleId, currentSection);
+      await submitAllSteps(currentVehicleId, "EVALUATION");
+      await updateVehicle(currentVehicleId, { status: "completed" });
+      toast.success("Evaluation submitted successfully!");
+      setTimeout(() => router.push("/"), 1500);
     } catch (error) {
       console.error("Failed to submit evaluation:", error);
-      alert("Failed to submit. Please try again.");
+      const message =
+        (error as { message?: string })?.message ||
+        "Failed to submit. Please try again.";
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }

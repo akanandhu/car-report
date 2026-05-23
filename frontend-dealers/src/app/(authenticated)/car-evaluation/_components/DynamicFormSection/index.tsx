@@ -724,6 +724,7 @@ const DynamicFormSection = ({
             label={field.label}
             required={field.isRequired}
             error={error}
+            value={typeof value === "string" ? value : undefined}
             allowedFileTypes={field.validation?.allowedFileTypes}
             maxFileSize={field.validation?.maxFileSize}
             onFileSelect={(file) => onChange({ [commonKey]: file })}
@@ -903,6 +904,7 @@ const DynamicFormSection = ({
             label={field.label}
             required={field.isRequired}
             error={validationErrors[field.fieldKey]}
+            value={typeof value === "string" ? value : undefined}
             allowedFileTypes={field.validation?.allowedFileTypes}
             maxFileSize={field.validation?.maxFileSize}
             onFileSelect={(file) => onChange({ [commonKey]: file })}

@@ -5,6 +5,7 @@ import React, { useRef, useState } from "react";
 
 type UploadBoxProps = {
   label?: string;
+  value?: string | File | null;
   onFileSelect?: (file: File) => void;
   onFileRemove?: () => void;
   required?: boolean;
@@ -33,6 +34,7 @@ const normalizeExtension = (extension: string) =>
 
 export default function ImageUpload({
   label,
+  value,
   onFileSelect,
   onFileRemove,
   required,
@@ -42,8 +44,33 @@ export default function ImageUpload({
 }: UploadBoxProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [preview, setPreview] = useState<string | null>(null);
-  const [fileType, setFileType] = useState<"image" | "video" | null>(null);
+  const resolveInitialPreview = (v: string | File | null | undefined) => {
+    if (!v) return null;
+    if (typeof v === "string") return v;
+    return URL.createObjectURL(v);
+  };
+
+  const resolveInitialFileType = (v: string | File | null | undefined): "image" | "video" | null => {
+    if (!v) return null;
+    if (typeof v === "string") {
+      if (/\.(mp4|mov|avi|webm|mkv)$/i.test(v)) return "video";
+      return "image";
+    }
+    return v.type.startsWith("video") ? "video" : "image";
+  };
+
+  const [preview, setPreview] = useState<string | null>(() => resolveInitialPreview(value));
+  const [fileType, setFileType] = useState<"image" | "video" | null>(() => resolveInitialFileType(value));
+
+  React.useEffect(() => {
+    if (value && typeof value === "string") {
+      setPreview(value);
+      setFileType(/\.(mp4|mov|avi|webm|mkv)$/i.test(value) ? "video" : "image");
+    } else if (!value) {
+      setPreview(null);
+      setFileType(null);
+    }
+  }, [value]);
   const [localError, setLocalError] = useState<string>("");
   const displayError = localError || error;
   const accept =

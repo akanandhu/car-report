@@ -23,7 +23,7 @@ const EvaluationFormHead = ({
 
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <span className="block truncate text-2xl font-semibold tracking-tight text-slate-950 sm:text-[30px]">
+            <span className="block truncate text-2xl font-semibold tracking-tight text-slate-950 sm:text-[26px]">
               {sections[currentSection]?.label}
             </span>
           </div>

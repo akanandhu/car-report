@@ -38,7 +38,7 @@ const CarEvaluationForm = () => {
   if (sections.length === 0) {
     return <CarEvaluationNoSection handleBack={handleBack} />;
   }
-
+  console.log("suvmitting",submitting)
   return (
     <div className="h-screen overflow-hidden bg-slate-100 p-3">
       <div
