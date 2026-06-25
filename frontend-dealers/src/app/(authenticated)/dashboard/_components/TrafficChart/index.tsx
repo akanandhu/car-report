@@ -21,47 +21,55 @@ const data = [
 
 const TrafficChart = () => {
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <AreaChart
-        data={data}
-        margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-      >
-        <defs>
-          <linearGradient id="trafficGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#1D9E75" stopOpacity={0.18} />
-            <stop offset="95%" stopColor="#1D9E75" stopOpacity={0.01} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid
-          strokeDasharray="4 4"
-          stroke="rgba(136,135,128,0.2)"
-          vertical={false}
-        />
-        <XAxis
-          dataKey="month"
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: "#888780", fontSize: 13 }}
-        />
-        <YAxis
-          domain={[0, 10000]}
-          ticks={[0, 2500, 5000, 7500, 10000]}
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: "#888780", fontSize: 13 }}
-        />
-        <Tooltip />
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="#1D9E75"
-          strokeWidth={2}
-          fill="url(#trafficGradient)"
-          dot={false}
-          activeDot={{ r: 5, fill: "#1D9E75", stroke: "#fff", strokeWidth: 2 }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <div className="h-60 w-full sm:h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={data}
+          margin={{ top: 10, right: 4, left: -12, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="trafficGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#1D9E75" stopOpacity={0.18} />
+              <stop offset="95%" stopColor="#1D9E75" stopOpacity={0.01} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            strokeDasharray="4 4"
+            stroke="rgba(136,135,128,0.2)"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="month"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#888780", fontSize: 12 }}
+          />
+          <YAxis
+            width={54}
+            domain={[0, 10000]}
+            ticks={[0, 2500, 5000, 7500, 10000]}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: "#888780", fontSize: 11 }}
+          />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke="#1D9E75"
+            strokeWidth={2}
+            fill="url(#trafficGradient)"
+            dot={false}
+            activeDot={{
+              r: 5,
+              fill: "#1D9E75",
+              stroke: "#fff",
+              strokeWidth: 2,
+            }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 

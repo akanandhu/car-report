@@ -60,12 +60,12 @@ const metrics: MetricCard[] = [
 
 const Evaluations = () => {
   return (
-    <div className="w-full space-y-10 px-4 py-10 sm:px-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="w-full space-y-6 px-4 py-6 sm:space-y-10 sm:px-8 sm:py-10">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:gap-6 lg:grid-cols-4">
         {metrics.map((metric) => (
           <article
             key={metric.title}
-            className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col gap-4"
+            className="flex min-w-0 flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-6"
           >
             <div className="flex items-center justify-between">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7f9fc] text-[#475569]">
@@ -87,7 +87,7 @@ const Evaluations = () => {
             </div>
 
             <div>
-              <h3 className="text-3xl font-bold text-slate-900">
+              <h3 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                 {metric.value}
               </h3>
               <p className="text-sm font-semibold text-slate-600">
@@ -101,9 +101,9 @@ const Evaluations = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200">
-          <div className="mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-4 sm:p-6 lg:col-span-2">
+          <div className="mb-4 sm:mb-6">
             <h3 className="text-lg font-semibold text-slate-900">
               Traffic &amp; Sales Trends
             </h3>
@@ -115,8 +115,8 @@ const Evaluations = () => {
           <TrafficChart />
         </section>
 
-        <section className="bg-white p-6 rounded-xl border border-slate-200">
-          <div className="mb-6">
+        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-4 sm:p-6">
+          <div className="mb-4 sm:mb-6">
             <h3 className="text-lg font-semibold text-slate-900">
               Weekly Activity
             </h3>
