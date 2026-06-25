@@ -20,6 +20,22 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Mobile apps
+
+The Android and iOS projects use Capacitor and consume the static Next.js
+export from `out/`.
+
+```bash
+# Build, sync, and open Android Studio
+npm run android
+
+# Build, sync, and open Xcode (macOS only)
+npm run ios
+
+# Build and sync both native projects without opening an IDE
+npm run mobile:sync
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -39,3 +39,38 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# capacitor - generated web assets and configuration
+/android/app/src/main/assets/public/
+/android/app/src/main/assets/capacitor.config.json
+/android/app/src/main/assets/capacitor.plugins.json
+/android/app/src/main/res/xml/config.xml
+/android/capacitor-cordova-android-plugins/
+/ios/App/App/public/
+/ios/App/App/capacitor.config.json
+/ios/App/App/config.xml
+/ios/capacitor-cordova-ios-plugins/
+
+# android - local IDE, SDK, and build files
+/android/.gradle/
+/android/.idea/
+/android/**/build/
+/android/local.properties
+/android/captures/
+/android/.externalNativeBuild/
+/android/.cxx/
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# ios - local dependencies, IDE state, and build files
+/ios/App/Pods/
+/ios/App/build/
+/ios/App/output/
+/ios/DerivedData/
+/ios/**/xcuserdata/
+/ios/App/CapApp-SPM/.build/
+/ios/App/CapApp-SPM/Packages/
+/ios/App/CapApp-SPM/.swiftpm/
+*.xcarchive

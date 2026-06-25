@@ -1,15 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
- redirects: () => {
-  return [
-    {
-      source: "/",
-      destination: '/dashboard',
-      permanent: false
-    }
-  ]
- }
+  output: "export",
+  trailingSlash: true,
 };
 
 export default nextConfig;
