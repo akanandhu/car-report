@@ -1,41 +1,29 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
 import {CarIcon, LayoutDashboardIcon, FilePen, LayoutTemplate, Settings } from "lucide-react"
-
-type SidebarItem = {
-  label: string;
-  href: string;
-  match: (pathname: string) => boolean;
-  icon: ReactNode;
-};
+import { SidebarItemI } from "./types";
 
 
-const sidebarItems: SidebarItem[] = [
+const sidebarItems: SidebarItemI[] = [
   {
     label: "Dashboard",
     href: "/dashboard",
-    match: (pathname) => pathname === "/dashboard",
     icon: <LayoutDashboardIcon width={18} height={18} />,
   },
   {
     label: "All Cars",
     href: "/all-cars",
-    match: (pathname) => pathname.startsWith("/all-cars"),
     icon: <CarIcon width={18} height={18}  />,
   },
   {
     label: "Drafts",
     href: "/drafts",
-    match: (pathname) => pathname.startsWith("/drafts"),
     icon: <FilePen width={18} height={18}  />,
   },
   {
     label: "Design Template",
     href: "/design-template",
-    match: (pathname) => pathname.startsWith("/design-template"),
     icon: <LayoutTemplate width={18} height={18}  />,
   },
 ];
@@ -56,7 +44,7 @@ const AppSidebar = () => {
       </div>
       <nav className="hide-scrollbar flex gap-2 overflow-x-auto px-4 py-6 md:flex-1 md:flex-col md:overflow-y-auto md:overflow-x-visible md:px-5 md:py-7">
         {sidebarItems.map((item) => {
-          const isActive = item.match(pathname);
+          const isActive = pathname.includes(item.href)
 
           return (
             <Link
