@@ -83,3 +83,7 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
