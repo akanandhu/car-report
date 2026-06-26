@@ -966,7 +966,7 @@ const DynamicFormSection = ({
     if (Object.keys(nextData).length > 0) {
       onChange(nextData);
     }
-  };
+  };  
 
   const renderExteriorLayout = () => {
     const groupedCards = fieldGroups.filter((group) => group.subgroup);

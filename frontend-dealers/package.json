@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
+    "dev:all": "dotenv -e .env.local -- next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
+    "build:android": "dotenv -e .env.local -- next build",
+    "build:ios": "dotenv -e .env.local -- next build",
     "start": "next start",
     "lint": "eslint",
     "mobile:sync": "npm run build && cap sync",
-    "android": "npm run build && cap sync android && cap open android",
-    "ios": "npm run build && cap sync ios && cap open ios"
+    "android": "npm run build:android && npx cap sync android && npx cap run android",
+    "ios": "npm run build:ios && npx cap sync ios && npx cap run ios",
+    "android:dev": "dotenv -e .env.local -- sh -c 'CAP_TARGET=android-dev npx cap sync android && CAP_TARGET=android-dev npx cap run android'",
+    "ios:dev": "dotenv -e .env.local -- sh -c 'CAP_TARGET=ios-dev npx cap sync ios && CAP_TARGET=ios-dev npx cap run ios'"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",

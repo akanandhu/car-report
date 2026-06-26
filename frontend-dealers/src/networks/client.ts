@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+
 type ApiOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
@@ -6,7 +8,17 @@ type ApiOptions = {
   params?: Record<string, string | number | boolean | undefined>;
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const isDev = process.env.NODE_ENV === "development";
+const platform = Capacitor.getPlatform();
+const isAndroid = platform === "android";
+
+const devServerUrl = isDev
+  ? isAndroid
+    ? process.env.NEXT_PUBLIC_API_URL_ANDROID
+    : process.env.NEXT_PUBLIC_API_URL
+  : undefined;
+
+const BASE_URL = isDev ? devServerUrl : process.env.NEXT_PUBLIC_API_URL;
 
 export async function apiClient<T>(
   endpoint: string,
