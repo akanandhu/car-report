@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NativeSafeArea from "../components/NativeSafeArea";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NativeSafeArea>{children}</NativeSafeArea>
+        <div className="box-border min-h-[100dvh] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+          {children}
+        </div>
       </body>
     </html>
   );

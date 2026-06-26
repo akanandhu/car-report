@@ -53,11 +53,11 @@ const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
         }`}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,86vw)] shrink-0 flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 md:sticky md:top-0 md:h-screen md:w-64 md:self-start md:translate-x-0 md:shadow-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,86vw)] shrink-0 flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 md:w-[calc(16rem+env(safe-area-inset-left))] md:translate-x-0 md:shadow-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] items-center border-b border-slate-200 px-5 pt-[env(safe-area-inset-top)] md:h-16 md:px-8 md:pt-0">
+        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center border-b border-slate-200 pb-0 pl-[calc(1.25rem+env(safe-area-inset-left))] pr-5 pt-[env(safe-area-inset-top)] md:pl-[calc(2rem+env(safe-area-inset-left))] md:pr-8">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-950">
             <CarIcon />
           </div>
@@ -100,7 +100,7 @@ const AppSidebar = ({ isOpen, onClose }: AppSidebarProps) => {
           })}
         </nav>
 
-        <div className="border-t border-slate-200 px-2 py-1">
+        <div className="border-t border-slate-200 px-2 pb-[calc(0.25rem+env(safe-area-inset-bottom))] pt-1">
           <Link
             href="/settings"
             onClick={onClose}

@@ -2,12 +2,17 @@ import { Bell, Car, Menu, Search, User } from "lucide-react";
 
 type NavbarProps = {
   onOpenSidebar: () => void;
+  hasSidebar?: boolean;
 };
 
-const Navbar = ({ onOpenSidebar }: NavbarProps) => {
+const Navbar = ({ onOpenSidebar, hasSidebar = true }: NavbarProps) => {
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur md:h-16">
-      <div className="flex h-full flex-col gap-3 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] sm:px-6 md:flex-row md:items-center md:justify-between md:gap-6 md:py-2 lg:px-8">
+    <header
+      className={`fixed left-0 right-0 top-0 z-40 h-[calc(7.375rem+env(safe-area-inset-top))] border-b border-slate-200 bg-white md:h-[calc(4rem+env(safe-area-inset-top))] ${
+        hasSidebar ? "md:left-[calc(16rem+env(safe-area-inset-left))]" : ""
+      }`}
+    >
+      <div className="flex h-full flex-col gap-3 pb-3 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pt-[calc(0.75rem+env(safe-area-inset-top))] sm:pl-[calc(1.5rem+env(safe-area-inset-left))] sm:pr-[calc(1.5rem+env(safe-area-inset-right))] md:flex-row md:items-center md:justify-between md:gap-6 md:px-8 md:pb-2 md:pt-[calc(0.5rem+env(safe-area-inset-top))]">
         <div className="flex items-center justify-between gap-3 md:hidden">
           <div className="flex min-w-0 items-center gap-2">
             <button
@@ -32,7 +37,7 @@ const Navbar = ({ onOpenSidebar }: NavbarProps) => {
           </div>
         </div>
 
-        <div className="relative w-full min-w-0 md:max-w-[560px] md:flex-1">
+        <div className="relative w-full min-w-0 md:max-w-140 md:flex-1">
           <Search
             size={16}
             className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
