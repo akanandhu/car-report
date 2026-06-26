@@ -13,6 +13,7 @@ import { FormFieldModule } from './form-field/form-field.module';
 import { SeederModule } from './seeder/seeder.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { RtoModule } from './rto/rto.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RtoModule } from './rto/rto.module';
     SeederModule,
     CatalogueModule,
     RtoModule,
+    MediaModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],
