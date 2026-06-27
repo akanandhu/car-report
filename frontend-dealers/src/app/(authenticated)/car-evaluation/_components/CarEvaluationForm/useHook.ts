@@ -173,7 +173,7 @@ const useCarEvaluationForm = () => {
   const progress =
     sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
   const isStepOneCompleted = Boolean(vehicleId);
-  const canSaveDraft = currentSection > 0 && isStepOneCompleted;
+  const canSaveDraft = currentSection > 0 || isStepOneCompleted;
   const maxAccessibleSection = isStepOneCompleted ? sections.length - 1 : 0;
 
   useEffect(() => {
