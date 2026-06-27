@@ -18,6 +18,12 @@ import {
   saveStepData,
   submitAllSteps,
 } from "@/src/networks/vehicle-documents";
+import {
+  createSignedMediaReads,
+  deleteUploadedMedia,
+  uploadEvaluationMedia,
+} from "@/src/networks/media";
+import { isUploadedMedia, UploadedMedia } from "@/src/utils/media";
 import { FormDataI, SectionI } from "./types";
 import { isFieldVisible } from "../DynamicFormSection/utils";
 
@@ -85,17 +91,27 @@ const getVariantSelection = (variants: VariantFullItem[], data: FormDataI) => {
   let transmissionOptions: CatalogueOption[] = [];
   let variantOptions: CatalogueOption[] = [];
 
-  if (fuelTypes.length === 1) {
+  if (!getValue(nextData.fuel_type) && fuelTypes.length === 1) {
     nextData.fuel_type = fuelTypes[0];
-    transmissionOptions = getTransmissionOptions(variants, fuelTypes[0]);
   }
 
-  if (transmissionOptions.length === 1) {
+  const selectedFuelType = getValue(nextData.fuel_type);
+
+  if (selectedFuelType) {
+    transmissionOptions = getTransmissionOptions(variants, selectedFuelType);
+  }
+
+  if (!getValue(nextData.transmission_type) && transmissionOptions.length === 1) {
     nextData.transmission_type = transmissionOptions[0].value;
+  }
+
+  const selectedTransmissionType = getValue(nextData.transmission_type);
+
+  if (selectedFuelType && selectedTransmissionType) {
     variantOptions = getVariantOptions(
       variants,
-      String(nextData.fuel_type ?? ""),
-      transmissionOptions[0].value,
+      selectedFuelType,
+      selectedTransmissionType,
     );
   }
 
@@ -147,12 +163,18 @@ const useCarEvaluationForm = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const [mediaPreviewUrls, setMediaPreviewUrls] = useState<
+    Record<string, string>
+  >({});
 
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
   const initialVehicleIdRef = useRef(vehicleIdFromUrl);
 
   const progress =
     sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
+  const isStepOneCompleted = Boolean(vehicleId);
+  const canSaveDraft = currentSection > 0 || isStepOneCompleted;
+  const maxAccessibleSection = isStepOneCompleted ? sections.length - 1 : 0;
 
   useEffect(() => {
     let active = true;
@@ -245,6 +267,47 @@ const useCarEvaluationForm = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const mediaByPath = new Map<string, UploadedMedia>();
+
+    currentFields.forEach((field) => {
+      if (field.type !== "file" || !isFieldVisible(field, formData)) return;
+
+      const value = formData[field.fieldKey];
+      if (
+        isUploadedMedia(value) &&
+        (value.type === "image" || value.type === "video") &&
+        !mediaPreviewUrls[value.path]
+      ) {
+        mediaByPath.set(value.path, value);
+      }
+    });
+
+    const mediaItems = [...mediaByPath.values()];
+    if (mediaItems.length === 0) return;
+
+    let active = true;
+
+    createSignedMediaReads(
+      mediaItems.map((media) => ({
+        bucket: media.bucket,
+        path: media.path,
+      })),
+    )
+      .then(({ urls }) => {
+        if (!active) return;
+        if (Object.keys(urls).length === 0) return;
+        setMediaPreviewUrls((prevUrls) => ({ ...prevUrls, ...urls }));
+      })
+      .catch((error) => {
+        console.error("Failed to load media previews:", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentFields, formData, mediaPreviewUrls]);
+
   const loadFields = async (
     sectionIndex: number,
     groups: DocumentGroupI[] = documentGroups,
@@ -310,7 +373,11 @@ const useCarEvaluationForm = () => {
     if (!fieldKeys?.length) return { ...formData };
 
     return fieldKeys.reduce<Record<string, unknown>>((data, key) => {
-      if (formData[key] !== undefined && formData[key] !== "") {
+      if (
+        formData[key] !== undefined &&
+        formData[key] !== "" &&
+        !(formData[key] instanceof File)
+      ) {
         data[key] = formData[key];
       }
 
@@ -358,7 +425,18 @@ const useCarEvaluationForm = () => {
     });
   };
 
-  const createDraftVehicle = async () => {
+  const getFallbackVehicleNumber = () => {
+    const registered = getValue(formData.registered).toLowerCase();
+    const prefix = registered === "scrap" ? "SCRAP" : "UNREGISTERED";
+    const randomNumber = `${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+
+    return `${prefix}_${randomNumber}`;
+  };
+
+  const getStepOneVehicleNumber = () =>
+    getValue(formData.registration_number) || getFallbackVehicleNumber();
+
+  const createVehicleFromStepOne = async () => {
     const brand = getLabelValue(formData.car_brand);
     const model = getLabelValue(formData.car_model);
     const name =
@@ -367,13 +445,69 @@ const useCarEvaluationForm = () => {
 
     const vehicle = await createVehicle({
       name,
-      vehicleNumber: getValue(formData.registration_number) || `TEMP-${Date.now()}`,
+      vehicleNumber: getStepOneVehicleNumber(),
       status: "draft",
       model: model || "unknown",
     });
 
     updateVehicleId(vehicle.id);
     return vehicle.id;
+  };
+
+  const requireVehicleId = () => {
+    if (!vehicleId) {
+      throw new Error("Complete Basic Details before continuing.");
+    }
+
+    return vehicleId;
+  };
+
+  const handleMediaUpload = async ({
+    documentGroupId,
+    fieldKey,
+    file,
+  }: {
+    documentGroupId: string;
+    fieldKey: string;
+    file: File;
+  }) => {
+    const currentVehicleId = requireVehicleId();
+
+    return uploadEvaluationMedia({
+      vehicleId: currentVehicleId,
+      documentGroupId,
+      fieldKey,
+      file,
+    });
+  };
+
+  const handleMediaDelete = async ({
+    documentGroupId,
+    fieldKey,
+    media,
+  }: {
+    documentGroupId: string;
+    fieldKey: string;
+    media: UploadedMedia;
+  }) => {
+    const currentVehicleId = requireVehicleId();
+
+    await deleteUploadedMedia({
+      bucket: media.bucket,
+      path: media.path,
+    });
+
+    await saveStepData(currentVehicleId, {
+      documentGroupId,
+      documentSpec: { [fieldKey]: "" },
+    });
+
+    setMediaPreviewUrls((prevUrls) => {
+      const nextUrls = { ...prevUrls };
+      delete nextUrls[media.path];
+      return nextUrls;
+    });
+    setFormData((prevData) => ({ ...prevData, [fieldKey]: "" }));
   };
 
   const scrollToTop = () => {
@@ -389,7 +523,10 @@ const useCarEvaluationForm = () => {
 
     try {
       setSubmitting(true);
-      const currentVehicleId = vehicleId || (await createDraftVehicle());
+      const currentVehicleId =
+        currentSection === 0
+          ? vehicleId || (await createVehicleFromStepOne())
+          : requireVehicleId();
 
       await saveCurrentStepData(currentVehicleId, currentSection);
       setValidationErrors({});
@@ -414,6 +551,8 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSectionChange = (index: number) => {
+    if (index > 0 && !isStepOneCompleted) return;
+
     setValidationErrors({});
     setCurrentSection(index);
     loadFields(index);
@@ -499,9 +638,11 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSaveDraft = async () => {
+    if (!canSaveDraft) return;
+
     try {
       setSubmitting(true);
-      const currentVehicleId = vehicleId || (await createDraftVehicle());
+      const currentVehicleId = requireVehicleId();
 
       await saveCurrentStepData(currentVehicleId, currentSection);
       alert("Draft saved successfully!");
@@ -557,6 +698,8 @@ const useCarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    canSaveDraft,
+    maxAccessibleSection,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -564,6 +707,9 @@ const useCarEvaluationForm = () => {
     handleSaveDraft,
     handleSubmit,
     handleBack,
+    handleMediaUpload,
+    handleMediaDelete,
+    mediaPreviewUrls,
   };
 };
 

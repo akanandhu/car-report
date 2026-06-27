@@ -24,5 +24,10 @@ export const config = {
         port: parseInt(process.env.BACKEND_PORT || '3000', 10),
         apiUrl: process.env.BACKEND_API_URL || 'http://localhost:3000',
     },
+    supabase: {
+        url: process.env.SUPABASE_URL || '',
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+        storageBucket: process.env.SUPABASE_STORAGE_BUCKET || '',
+    },
     environment: process.env.NODE_ENV || 'development',
 };

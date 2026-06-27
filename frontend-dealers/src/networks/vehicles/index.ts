@@ -3,6 +3,7 @@ import {
   CreateVehiclePayload,
   PaginatedApiResponse,
   UpdateVehiclePayload,
+  VehicleListStatus,
   VehicleResponse,
 } from "./types";
 
@@ -16,11 +17,12 @@ export const fetchVehicles = async (
   page: number = 1,
   limit: number = 20,
   search?: string,
+  status?: VehicleListStatus,
 ): Promise<PaginatedApiResponse<VehicleResponse>> => {
   const res = await apiClient<PaginatedApiResponse<VehicleResponse>>(
     "vehicles",
     {
-      params: { page, limit, ...(search ? { search } : {}) },
+      params: { page, limit, ...(search ? { search } : {}), status },
     },
   );
   return res;

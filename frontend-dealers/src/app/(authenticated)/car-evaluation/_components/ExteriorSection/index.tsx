@@ -5,12 +5,24 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
+import { isUploadedMedia, UploadedMedia } from "@/src/utils/media";
 
 type ExteriorSectionProps = {
   fields: FormFieldI[];
   data: FormDataI;
   onChange: (newData: Partial<FormDataI>) => void;
   validationErrors?: Record<string, string>;
+  onMediaUpload: (payload: {
+    documentGroupId: string;
+    fieldKey: string;
+    file: File;
+  }) => Promise<UploadedMedia>;
+  onMediaDelete: (payload: {
+    documentGroupId: string;
+    fieldKey: string;
+    media: UploadedMedia;
+  }) => Promise<void>;
+  mediaPreviewUrls: Record<string, string>;
 };
 
 type ExteriorItem = {
@@ -206,6 +218,9 @@ const ExteriorSection = ({
   data,
   onChange,
   validationErrors = {},
+  onMediaUpload,
+  onMediaDelete,
+  mediaPreviewUrls,
 }: ExteriorSectionProps) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [infoModal, setInfoModal] = useState<InfoModalContent | null>(null);
@@ -327,6 +342,9 @@ const ExteriorSection = ({
     ) : null;
   };
 
+  const getMediaPreviewUrl = (value: unknown) =>
+    isUploadedMedia(value) ? mediaPreviewUrls[value.path] : undefined;
+
   const toggleOption = (field: FormFieldI, optionValue: string) => {
     const currentValue = data[field.fieldKey];
 
@@ -364,7 +382,7 @@ const ExteriorSection = ({
       aria-label={`Open ${content.title} info`}
     >
       <svg
-        className="h-[18px] w-[18px]"
+        className="h-4.5 w-4.5"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -439,7 +457,7 @@ const ExteriorSection = ({
                           ? "bg-white text-[#030213] shadow-sm"
                           : "text-[#717182] hover:bg-white/50 hover:text-[#030213]"
                       }`
-                    : `rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
+                    : `rounded-full border px-3.5 py-1.75 text-[13px] font-medium leading-5 transition-colors ${
                         getExteriorOptionClasses(option.label, isSelected)
                       }`
                 }
@@ -458,11 +476,26 @@ const ExteriorSection = ({
     <ImageUpload
       key={field.id}
       label={labelOverride || field.label}
+      value={data[field.fieldKey] || null}
       required={field.isRequired}
       error={getFieldError(field)}
       allowedFileTypes={field.validation?.allowedFileTypes}
-      maxFileSize={field.validation?.maxFileSize}
-      onFileSelect={(file) => onChange({ [field.fieldKey]: file })}
+      previewUrl={getMediaPreviewUrl(data[field.fieldKey])}
+      uploadFile={(file) =>
+        onMediaUpload({
+          documentGroupId: field.documentGroupId,
+          fieldKey: field.fieldKey,
+          file,
+        })
+      }
+      deleteFile={(media) =>
+        onMediaDelete({
+          documentGroupId: field.documentGroupId,
+          fieldKey: field.fieldKey,
+          media,
+        })
+      }
+      onFileSelect={(media) => onChange({ [field.fieldKey]: media })}
       onFileRemove={() => onChange({ [field.fieldKey]: "" })}
     />
   );
@@ -497,7 +530,7 @@ const ExteriorSection = ({
             }`}
           >
             <svg
-              className="h-[18px] w-[18px] shrink-0"
+              className="h-4.5 w-4.5 shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

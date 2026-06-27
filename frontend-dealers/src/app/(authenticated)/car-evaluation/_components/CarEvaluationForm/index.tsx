@@ -20,6 +20,8 @@ const CarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    canSaveDraft,
+    maxAccessibleSection,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -27,6 +29,9 @@ const CarEvaluationForm = () => {
     handleSaveDraft,
     handleSubmit,
     handleBack,
+    handleMediaUpload,
+    handleMediaDelete,
+    mediaPreviewUrls,
   } = useCarEvaluationForm();
 
   const isLastSection = currentSection === sections.length - 1;
@@ -53,6 +58,8 @@ const CarEvaluationForm = () => {
           handleSectionChange={handleSectionChange}
           handleSaveDraft={handleSaveDraft}
           submitting={submitting}
+          canSaveDraft={canSaveDraft}
+          maxAccessibleSection={maxAccessibleSection}
         />
 
         <EvaluationFormFields
@@ -66,6 +73,9 @@ const CarEvaluationForm = () => {
           configOptions={configOptions}
           variantDerivedOptions={variantDerivedOptions}
           validationErrors={validationErrors}
+          handleMediaUpload={handleMediaUpload}
+          handleMediaDelete={handleMediaDelete}
+          mediaPreviewUrls={mediaPreviewUrls}
         />
 
         <EvaluationFormFooter
