@@ -11,6 +11,7 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
+import { downloadVehicleReport } from "@/src/networks/reports";
 import { fetchVehicles } from "@/src/networks/vehicles";
 import type { VehicleResponse } from "@/src/networks/vehicles/types";
 import type { CarRowI, CarStatusI } from "./types";
@@ -85,6 +86,9 @@ const AllCarsDirectory = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [retryCount, setRetryCount] = useState(0);
+  const [reportLoadingIds, setReportLoadingIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
@@ -163,6 +167,22 @@ const AllCarsDirectory = () => {
 
   const goToNextPage = () => {
     setPage((current) => Math.min(current + 1, totalPages));
+  };
+
+  const handleDownloadReport = async (vehicleId: string) => {
+    setReportLoadingIds((current) => new Set(current).add(vehicleId));
+
+    try {
+      await downloadVehicleReport(vehicleId);
+    } catch (reportError) {
+      alert(getErrorMessage(reportError));
+    } finally {
+      setReportLoadingIds((current) => {
+        const next = new Set(current);
+        next.delete(vehicleId);
+        return next;
+      });
+    }
   };
 
   return (
@@ -303,10 +323,14 @@ const AllCarsDirectory = () => {
                       ) : (
                         <button
                           type="button"
+                          onClick={() => handleDownloadReport(row.id)}
+                          disabled={reportLoadingIds.has(row.id)}
                           className="ml-auto flex items-center justify-end gap-1 text-primary hover:text-primary/80"
                         >
                           <FileText size={16} aria-hidden="true" />
-                          View Report
+                          {reportLoadingIds.has(row.id)
+                            ? "Generating..."
+                            : "View Report"}
                         </button>
                       )}
                     </td>

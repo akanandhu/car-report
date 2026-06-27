@@ -8,7 +8,7 @@
     "build": "next build",
     "build:android": "dotenv -e .env.local -- next build",
     "build:ios": "dotenv -e .env.local -- next build",
-    "start": "next start",
+    "start": "npx serve@latest out",
     "lint": "eslint",
     "mobile:sync": "npm run build && cap sync",
     "android": "npm run build:android && npx cap sync android && npx cap run android",

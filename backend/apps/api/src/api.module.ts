@@ -14,6 +14,7 @@ import { SeederModule } from './seeder/seeder.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { RtoModule } from './rto/rto.module';
 import { MediaModule } from './media/media.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MediaModule } from './media/media.module';
     CatalogueModule,
     RtoModule,
     MediaModule,
+    ReportModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],

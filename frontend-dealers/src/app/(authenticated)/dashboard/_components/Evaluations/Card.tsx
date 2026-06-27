@@ -1,8 +1,11 @@
+"use client";
+
 import Pdf from "@/public/assets/svg/Pdf";
 import Share from "@/public/assets/svg/Share";
 import Threedots from "@/public/assets/svg/Threedots";
 import Button from "@/src/components/Button";
-import React from "react";
+import { downloadVehicleReport } from "@/src/networks/reports";
+import React, { useState } from "react";
 import Status from "./Status";
 import { CardProps } from "./types";
 import Link from "next/link";
@@ -16,8 +19,25 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  return "Unable to generate report.";
+};
+
 const Card = ({ vehicle }: CardProps) => {
   const isDraft = vehicle.status.toLowerCase() === "draft";
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const handleDownloadReport = async () => {
+    try {
+      setReportLoading(true);
+      await downloadVehicleReport(vehicle.id);
+    } catch (error) {
+      alert(getErrorMessage(error));
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   return (
     <div
@@ -68,8 +88,10 @@ const Card = ({ vehicle }: CardProps) => {
                 size="sm"
                 className="py-1 h-9 px-10"
                 startAdornment={<Pdf className="h-4 w-4" />}
+                disabled={reportLoading}
+                onClick={handleDownloadReport}
               >
-                PDF
+                {reportLoading ? "PDF..." : "PDF"}
               </Button>
               <Button
                 variant="outlined"

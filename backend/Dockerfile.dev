@@ -1,6 +1,17 @@
 # Development Dockerfile
 FROM node:20-alpine
 
+# Install Chromium for puppeteer-core PDF generation
+RUN apk add --no-cache \
+    ca-certificates \
+    chromium \
+    freetype \
+    harfbuzz \
+    nss \
+    ttf-freefont
+
+ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Install pnpm
 RUN npm install -g pnpm
 
