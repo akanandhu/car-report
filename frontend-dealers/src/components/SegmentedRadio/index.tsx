@@ -61,7 +61,7 @@ const SegmentedRadio = ({
     <div
       role="radiogroup"
       aria-label={name ? `${name} options` : "Options"}
-      className={`flex w-full gap-2 rounded-xl bg-[#eeeeF3] p-1 ${
+      className={`flex w-full flex-wrap gap-2 rounded-xl bg-[#eeeeF3] p-1 ${
         disabled ? "opacity-60" : ""
       } ${className}`}
     >
@@ -81,13 +81,12 @@ const SegmentedRadio = ({
             tabIndex={isSelected || (!value && index === 0) ? 0 : -1}
             onClick={() => selectOption(option.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
-            className={`flex-1 rounded-xl px-4 py-1.5 text-center text-base font-bold transition-all duration-200 sm:text-lg ${
-              isSelected
-                ? "bg-white text-black shadow-[0_2px_5px_rgba(0,0,0,0.20)]"
-                : "bg-transparent text-[#747486] hover:bg-[#f8f8fa] hover:text-black"
-            } ${
-              isDisabled ? "cursor-not-allowed" : "cursor-pointer"
-            } ${optionClassName}`}
+            className={`min-w-[calc(50%-4px)] flex-1 rounded-xl px-4 py-1.5 text-center 
+  text-sm font-bold transition-all duration-200 sm:text-lg ${
+    isSelected
+      ? "bg-white text-black shadow-[0_2px_5px_rgba(0,0,0,0.20)]"
+      : "bg-transparent text-[#747486] hover:bg-[#f8f8fa] hover:text-black"
+  } ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"} ${optionClassName}`}
           >
             {option.label}
           </button>
