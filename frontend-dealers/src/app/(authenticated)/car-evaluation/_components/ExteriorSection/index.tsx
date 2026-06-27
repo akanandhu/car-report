@@ -5,12 +5,18 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
+import { UploadedMedia } from "@/src/utils/media";
 
 type ExteriorSectionProps = {
   fields: FormFieldI[];
   data: FormDataI;
   onChange: (newData: Partial<FormDataI>) => void;
   validationErrors?: Record<string, string>;
+  onMediaUpload: (payload: {
+    documentGroupId: string;
+    fieldKey: string;
+    file: File;
+  }) => Promise<UploadedMedia>;
 };
 
 type ExteriorItem = {
@@ -206,6 +212,7 @@ const ExteriorSection = ({
   data,
   onChange,
   validationErrors = {},
+  onMediaUpload,
 }: ExteriorSectionProps) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [infoModal, setInfoModal] = useState<InfoModalContent | null>(null);
@@ -458,11 +465,18 @@ const ExteriorSection = ({
     <ImageUpload
       key={field.id}
       label={labelOverride || field.label}
+      value={data[field.fieldKey] || null}
       required={field.isRequired}
       error={getFieldError(field)}
       allowedFileTypes={field.validation?.allowedFileTypes}
-      maxFileSize={field.validation?.maxFileSize}
-      onFileSelect={(file) => onChange({ [field.fieldKey]: file })}
+      uploadFile={(file) =>
+        onMediaUpload({
+          documentGroupId: field.documentGroupId,
+          fieldKey: field.fieldKey,
+          file,
+        })
+      }
+      onFileSelect={(media) => onChange({ [field.fieldKey]: media })}
       onFileRemove={() => onChange({ [field.fieldKey]: "" })}
     />
   );

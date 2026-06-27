@@ -19,6 +19,7 @@ import {
   MediaType,
   SignedUploadResponse,
 } from './media.types';
+import WebSocket from 'ws';
 
 @Injectable()
 export class SharedMediaService {
@@ -129,6 +130,9 @@ export class SharedMediaService {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
+      },
+      realtime: {
+        transport: WebSocket as unknown as typeof globalThis.WebSocket,
       },
     });
 

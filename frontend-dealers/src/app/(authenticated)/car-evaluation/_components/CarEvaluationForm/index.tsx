@@ -27,6 +27,7 @@ const CarEvaluationForm = () => {
     handleSaveDraft,
     handleSubmit,
     handleBack,
+    handleMediaUpload,
   } = useCarEvaluationForm();
 
   const isLastSection = currentSection === sections.length - 1;
@@ -66,6 +67,7 @@ const CarEvaluationForm = () => {
           configOptions={configOptions}
           variantDerivedOptions={variantDerivedOptions}
           validationErrors={validationErrors}
+          handleMediaUpload={handleMediaUpload}
         />
 
         <EvaluationFormFooter

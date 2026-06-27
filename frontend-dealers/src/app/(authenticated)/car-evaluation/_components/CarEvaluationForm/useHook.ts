@@ -18,6 +18,7 @@ import {
   saveStepData,
   submitAllSteps,
 } from "@/src/networks/vehicle-documents";
+import { uploadEvaluationMedia } from "@/src/networks/media";
 import { FormDataI, SectionI } from "./types";
 import { isFieldVisible } from "../DynamicFormSection/utils";
 
@@ -150,6 +151,7 @@ const useCarEvaluationForm = () => {
 
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
   const initialVehicleIdRef = useRef(vehicleIdFromUrl);
+  const draftVehiclePromiseRef = useRef<Promise<string> | null>(null);
 
   const progress =
     sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
@@ -310,7 +312,11 @@ const useCarEvaluationForm = () => {
     if (!fieldKeys?.length) return { ...formData };
 
     return fieldKeys.reduce<Record<string, unknown>>((data, key) => {
-      if (formData[key] !== undefined && formData[key] !== "") {
+      if (
+        formData[key] !== undefined &&
+        formData[key] !== "" &&
+        !(formData[key] instanceof File)
+      ) {
         data[key] = formData[key];
       }
 
@@ -374,6 +380,37 @@ const useCarEvaluationForm = () => {
 
     updateVehicleId(vehicle.id);
     return vehicle.id;
+  };
+
+  const ensureDraftVehicleId = async () => {
+    if (vehicleId) return vehicleId;
+
+    if (!draftVehiclePromiseRef.current) {
+      draftVehiclePromiseRef.current = createDraftVehicle().finally(() => {
+        draftVehiclePromiseRef.current = null;
+      });
+    }
+
+    return draftVehiclePromiseRef.current;
+  };
+
+  const handleMediaUpload = async ({
+    documentGroupId,
+    fieldKey,
+    file,
+  }: {
+    documentGroupId: string;
+    fieldKey: string;
+    file: File;
+  }) => {
+    const currentVehicleId = await ensureDraftVehicleId();
+
+    return uploadEvaluationMedia({
+      vehicleId: currentVehicleId,
+      documentGroupId,
+      fieldKey,
+      file,
+    });
   };
 
   const scrollToTop = () => {
@@ -564,6 +601,7 @@ const useCarEvaluationForm = () => {
     handleSaveDraft,
     handleSubmit,
     handleBack,
+    handleMediaUpload,
   };
 };
 

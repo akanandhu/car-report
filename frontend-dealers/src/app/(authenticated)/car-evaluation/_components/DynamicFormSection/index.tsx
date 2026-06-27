@@ -302,6 +302,7 @@ const DynamicFormSection = ({
   configOptions = {},
   variantDerivedOptions = {},
   validationErrors = {},
+  onMediaUpload,
 }: DynamicFormSectionProps) => {
   const injectedOptions: Record<string, { label: string; value: string }[]> = {
     ...configOptions,
@@ -722,11 +723,18 @@ const DynamicFormSection = ({
           <ImageUpload
             key={field.id}
             label={field.label}
+            value={value || null}
             required={field.isRequired}
             error={error}
             allowedFileTypes={field.validation?.allowedFileTypes}
-            maxFileSize={field.validation?.maxFileSize}
-            onFileSelect={(file) => onChange({ [commonKey]: file })}
+            uploadFile={(file) =>
+              onMediaUpload({
+                documentGroupId: field.documentGroupId,
+                fieldKey: commonKey,
+                file,
+              })
+            }
+            onFileSelect={(media) => onChange({ [commonKey]: media })}
             onFileRemove={() => onChange({ [commonKey]: "" })}
           />
         );
@@ -901,11 +909,18 @@ const DynamicFormSection = ({
           <ImageUpload
             key={field.id}
             label={field.label}
+            value={value || null}
             required={field.isRequired}
             error={validationErrors[field.fieldKey]}
             allowedFileTypes={field.validation?.allowedFileTypes}
-            maxFileSize={field.validation?.maxFileSize}
-            onFileSelect={(file) => onChange({ [commonKey]: file })}
+            uploadFile={(file) =>
+              onMediaUpload({
+                documentGroupId: field.documentGroupId,
+                fieldKey: commonKey,
+                file,
+              })
+            }
+            onFileSelect={(media) => onChange({ [commonKey]: media })}
             onFileRemove={() => onChange({ [commonKey]: "" })}
           />
         </div>
