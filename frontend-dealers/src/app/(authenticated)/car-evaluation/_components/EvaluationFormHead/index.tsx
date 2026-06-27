@@ -13,6 +13,8 @@ const EvaluationFormHead = ({
   handleSaveDraft,
   handleBack,
   submitting,
+  canSaveDraft,
+  maxAccessibleSection,
 }: CarFormHeadPropsI) => {
   return (
     <div className="sticky top-0 z-20 shrink-0 border-b border-slate-200 bg-white">
@@ -31,7 +33,7 @@ const EvaluationFormHead = ({
             <Button
               variant="outlined"
               onClick={handleSaveDraft}
-              disabled={submitting}
+              disabled={submitting || !canSaveDraft}
               className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-none hover:border-slate-400 hover:bg-slate-50"
             >
               <div className="flex items-center gap-2">
@@ -52,6 +54,7 @@ const EvaluationFormHead = ({
           sections={sections}
           activeSection={currentSection}
           onSectionChange={handleSectionChange}
+          maxAccessibleSection={maxAccessibleSection}
           className="bg-slate-100/80"
         />
 

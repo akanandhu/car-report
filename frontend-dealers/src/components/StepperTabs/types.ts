@@ -11,6 +11,7 @@ export interface StepperTabsProps {
   activeSection: number;
   onSectionChange: (index: number) => void;
   className?: string;
+  maxAccessibleSection?: number;
 }
 
 export type StepperTabsPropsI = {

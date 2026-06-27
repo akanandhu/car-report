@@ -151,10 +151,12 @@ const useCarEvaluationForm = () => {
 
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
   const initialVehicleIdRef = useRef(vehicleIdFromUrl);
-  const draftVehiclePromiseRef = useRef<Promise<string> | null>(null);
 
   const progress =
     sections.length > 0 ? ((currentSection + 1) / sections.length) * 100 : 0;
+  const isStepOneCompleted = Boolean(vehicleId);
+  const canSaveDraft = currentSection > 0 && isStepOneCompleted;
+  const maxAccessibleSection = isStepOneCompleted ? sections.length - 1 : 0;
 
   useEffect(() => {
     let active = true;
@@ -364,7 +366,18 @@ const useCarEvaluationForm = () => {
     });
   };
 
-  const createDraftVehicle = async () => {
+  const getFallbackVehicleNumber = () => {
+    const registered = getValue(formData.registered).toLowerCase();
+    const prefix = registered === "scrap" ? "SCRAP" : "UNREGISTERED";
+    const randomNumber = `${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+
+    return `${prefix}_${randomNumber}`;
+  };
+
+  const getStepOneVehicleNumber = () =>
+    getValue(formData.registration_number) || getFallbackVehicleNumber();
+
+  const createVehicleFromStepOne = async () => {
     const brand = getLabelValue(formData.car_brand);
     const model = getLabelValue(formData.car_model);
     const name =
@@ -373,7 +386,7 @@ const useCarEvaluationForm = () => {
 
     const vehicle = await createVehicle({
       name,
-      vehicleNumber: getValue(formData.registration_number) || `TEMP-${Date.now()}`,
+      vehicleNumber: getStepOneVehicleNumber(),
       status: "draft",
       model: model || "unknown",
     });
@@ -382,16 +395,12 @@ const useCarEvaluationForm = () => {
     return vehicle.id;
   };
 
-  const ensureDraftVehicleId = async () => {
-    if (vehicleId) return vehicleId;
-
-    if (!draftVehiclePromiseRef.current) {
-      draftVehiclePromiseRef.current = createDraftVehicle().finally(() => {
-        draftVehiclePromiseRef.current = null;
-      });
+  const requireVehicleId = () => {
+    if (!vehicleId) {
+      throw new Error("Complete Basic Details before continuing.");
     }
 
-    return draftVehiclePromiseRef.current;
+    return vehicleId;
   };
 
   const handleMediaUpload = async ({
@@ -403,7 +412,7 @@ const useCarEvaluationForm = () => {
     fieldKey: string;
     file: File;
   }) => {
-    const currentVehicleId = await ensureDraftVehicleId();
+    const currentVehicleId = requireVehicleId();
 
     return uploadEvaluationMedia({
       vehicleId: currentVehicleId,
@@ -426,7 +435,10 @@ const useCarEvaluationForm = () => {
 
     try {
       setSubmitting(true);
-      const currentVehicleId = vehicleId || (await createDraftVehicle());
+      const currentVehicleId =
+        currentSection === 0
+          ? vehicleId || (await createVehicleFromStepOne())
+          : requireVehicleId();
 
       await saveCurrentStepData(currentVehicleId, currentSection);
       setValidationErrors({});
@@ -451,6 +463,8 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSectionChange = (index: number) => {
+    if (index > 0 && !isStepOneCompleted) return;
+
     setValidationErrors({});
     setCurrentSection(index);
     loadFields(index);
@@ -536,9 +550,11 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSaveDraft = async () => {
+    if (!canSaveDraft) return;
+
     try {
       setSubmitting(true);
-      const currentVehicleId = vehicleId || (await createDraftVehicle());
+      const currentVehicleId = requireVehicleId();
 
       await saveCurrentStepData(currentVehicleId, currentSection);
       alert("Draft saved successfully!");
@@ -594,6 +610,8 @@ const useCarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    canSaveDraft,
+    maxAccessibleSection,
     handleNext,
     handlePrevious,
     handleSectionChange,

@@ -20,6 +20,8 @@ const CarEvaluationForm = () => {
     configOptions,
     variantDerivedOptions,
     validationErrors,
+    canSaveDraft,
+    maxAccessibleSection,
     handleNext,
     handlePrevious,
     handleSectionChange,
@@ -54,6 +56,8 @@ const CarEvaluationForm = () => {
           handleSectionChange={handleSectionChange}
           handleSaveDraft={handleSaveDraft}
           submitting={submitting}
+          canSaveDraft={canSaveDraft}
+          maxAccessibleSection={maxAccessibleSection}
         />
 
         <EvaluationFormFields

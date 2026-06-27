@@ -6,6 +6,7 @@ const StepperTabs = ({
   activeSection,
   onSectionChange,
   className = "",
+  maxAccessibleSection = sections.length - 1,
 }: StepperTabsProps) => {
   return (
     <div
@@ -13,19 +14,32 @@ const StepperTabs = ({
     >
       {sections.map((section, index) => {
         const isActive = index === activeSection;
+        const isDisabled = index > maxAccessibleSection;
 
         return (
           <button
             key={section.id}
-            onClick={() => onSectionChange(index)}
+            type="button"
+            disabled={isDisabled}
+            onClick={() => {
+              if (!isDisabled) onSectionChange(index);
+            }}
             className={`shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
               isActive
                 ? "bg-white text-slate-950 shadow-sm"
-                : "bg-transparent text-slate-500 hover:bg-slate-200 hover:text-slate-700"
+                : isDisabled
+                  ? "cursor-not-allowed bg-transparent text-slate-300"
+                  : "bg-transparent text-slate-500 hover:bg-slate-200 hover:text-slate-700"
             }`}
           >
             <span
-              className={`mr-2 text-xs ${isActive ? "text-slate-500" : "text-slate-400"}`}
+              className={`mr-2 text-xs ${
+                isActive
+                  ? "text-slate-500"
+                  : isDisabled
+                    ? "text-slate-300"
+                    : "text-slate-400"
+              }`}
             >
               {index + 1}
             </span>
