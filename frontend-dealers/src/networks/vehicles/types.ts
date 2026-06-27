@@ -35,6 +35,8 @@ export interface VehicleResponse {
   deletedAt: string | null;
 }
 
+export type VehicleListStatus = "draft" | "completed";
+
 export interface PaginatedApiResponse<T> {
   data: T[];
   pagination: {

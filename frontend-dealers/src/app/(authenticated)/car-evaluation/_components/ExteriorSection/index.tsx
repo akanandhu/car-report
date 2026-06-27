@@ -371,7 +371,7 @@ const ExteriorSection = ({
       aria-label={`Open ${content.title} info`}
     >
       <svg
-        className="h-[18px] w-[18px]"
+        className="h-4.5 w-4.5"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -446,7 +446,7 @@ const ExteriorSection = ({
                           ? "bg-white text-[#030213] shadow-sm"
                           : "text-[#717182] hover:bg-white/50 hover:text-[#030213]"
                       }`
-                    : `rounded-full border px-[14px] py-[7px] text-[13px] font-medium leading-[20px] transition-colors ${
+                    : `rounded-full border px-3.5 py-1.75 text-[13px] font-medium leading-5 transition-colors ${
                         getExteriorOptionClasses(option.label, isSelected)
                       }`
                 }
@@ -511,7 +511,7 @@ const ExteriorSection = ({
             }`}
           >
             <svg
-              className="h-[18px] w-[18px] shrink-0"
+              className="h-4.5 w-4.5 shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

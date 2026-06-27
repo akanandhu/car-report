@@ -6,9 +6,11 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  FilePen,
   Funnel,
   Search,
 } from "lucide-react";
+import Link from "next/link";
 import { fetchVehicles } from "@/src/networks/vehicles";
 import type { VehicleResponse } from "@/src/networks/vehicles/types";
 import type { CarRowI, CarStatusI } from "./types";
@@ -67,7 +69,8 @@ const getErrorMessage = (error: unknown) => {
 };
 
 const mapVehicleToRow = (vehicle: VehicleResponse): CarRowI => ({
-  id: vehicle.vehicleNumber,
+  id: vehicle.id,
+  evalId: vehicle.vehicleNumber || vehicle.id,
   vehicle: vehicle.name,
   type: vehicle.model,
   date: formatDate(vehicle.createdAt),
@@ -258,7 +261,7 @@ const AllCarsDirectory = () => {
                     className="transition-colors hover:bg-slate-50/50"
                   >
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900">
-                      {row.id}
+                      {row.evalId}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -289,13 +292,23 @@ const AllCarsDirectory = () => {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <button
-                        type="button"
-                        className="ml-auto flex items-center justify-end gap-1 text-primary hover:text-primary/80"
-                      >
-                        <FileText size={16} aria-hidden="true" />
-                        View Report
-                      </button>
+                      {row.status.toLowerCase() === "draft" ? (
+                        <Link
+                          href={`/car-evaluation?vehicleId=${row.id}`}
+                          className="ml-auto flex items-center justify-end gap-1 text-primary hover:text-primary/80"
+                        >
+                          <FilePen size={16} aria-hidden="true" />
+                          Edit Draft
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          className="ml-auto flex items-center justify-end gap-1 text-primary hover:text-primary/80"
+                        >
+                          <FileText size={16} aria-hidden="true" />
+                          View Report
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
