@@ -1,11 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsInt,
   IsMimeType,
   IsNotEmpty,
   IsString,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export class CreateSignedUploadDto {
@@ -76,3 +80,31 @@ export class SignedUploadResponseDto {
   @ApiProperty()
   maxSize: number;
 }
+
+export class MediaStorageObjectDto {
+  @ApiProperty({ description: 'Supabase storage bucket' })
+  @IsNotEmpty()
+  @IsString()
+  bucket: string;
+
+  @ApiProperty({ description: 'Supabase storage object path' })
+  @IsNotEmpty()
+  @IsString()
+  path: string;
+}
+
+export class CreateSignedReadsDto {
+  @ApiProperty({ type: [MediaStorageObjectDto] })
+  @IsArray()
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => MediaStorageObjectDto)
+  items: MediaStorageObjectDto[];
+}
+
+export class SignedReadsResponseDto {
+  @ApiProperty({ type: Object })
+  urls: Record<string, string>;
+}
+
+export class DeleteMediaDto extends MediaStorageObjectDto {}

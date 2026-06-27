@@ -18,7 +18,12 @@ import {
   saveStepData,
   submitAllSteps,
 } from "@/src/networks/vehicle-documents";
-import { uploadEvaluationMedia } from "@/src/networks/media";
+import {
+  createSignedMediaReads,
+  deleteUploadedMedia,
+  uploadEvaluationMedia,
+} from "@/src/networks/media";
+import { isUploadedMedia, UploadedMedia } from "@/src/utils/media";
 import { FormDataI, SectionI } from "./types";
 import { isFieldVisible } from "../DynamicFormSection/utils";
 
@@ -158,6 +163,9 @@ const useCarEvaluationForm = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const [mediaPreviewUrls, setMediaPreviewUrls] = useState<
+    Record<string, string>
+  >({});
 
   const sectionFieldKeysRef = useRef<Record<number, string[]>>({});
   const initialVehicleIdRef = useRef(vehicleIdFromUrl);
@@ -258,6 +266,47 @@ const useCarEvaluationForm = () => {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    const mediaByPath = new Map<string, UploadedMedia>();
+
+    currentFields.forEach((field) => {
+      if (field.type !== "file" || !isFieldVisible(field, formData)) return;
+
+      const value = formData[field.fieldKey];
+      if (
+        isUploadedMedia(value) &&
+        (value.type === "image" || value.type === "video") &&
+        !mediaPreviewUrls[value.path]
+      ) {
+        mediaByPath.set(value.path, value);
+      }
+    });
+
+    const mediaItems = [...mediaByPath.values()];
+    if (mediaItems.length === 0) return;
+
+    let active = true;
+
+    createSignedMediaReads(
+      mediaItems.map((media) => ({
+        bucket: media.bucket,
+        path: media.path,
+      })),
+    )
+      .then(({ urls }) => {
+        if (!active) return;
+        if (Object.keys(urls).length === 0) return;
+        setMediaPreviewUrls((prevUrls) => ({ ...prevUrls, ...urls }));
+      })
+      .catch((error) => {
+        console.error("Failed to load media previews:", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentFields, formData, mediaPreviewUrls]);
 
   const loadFields = async (
     sectionIndex: number,
@@ -430,6 +479,35 @@ const useCarEvaluationForm = () => {
       fieldKey,
       file,
     });
+  };
+
+  const handleMediaDelete = async ({
+    documentGroupId,
+    fieldKey,
+    media,
+  }: {
+    documentGroupId: string;
+    fieldKey: string;
+    media: UploadedMedia;
+  }) => {
+    const currentVehicleId = requireVehicleId();
+
+    await deleteUploadedMedia({
+      bucket: media.bucket,
+      path: media.path,
+    });
+
+    await saveStepData(currentVehicleId, {
+      documentGroupId,
+      documentSpec: { [fieldKey]: "" },
+    });
+
+    setMediaPreviewUrls((prevUrls) => {
+      const nextUrls = { ...prevUrls };
+      delete nextUrls[media.path];
+      return nextUrls;
+    });
+    setFormData((prevData) => ({ ...prevData, [fieldKey]: "" }));
   };
 
   const scrollToTop = () => {
@@ -630,6 +708,8 @@ const useCarEvaluationForm = () => {
     handleSubmit,
     handleBack,
     handleMediaUpload,
+    handleMediaDelete,
+    mediaPreviewUrls,
   };
 };
 

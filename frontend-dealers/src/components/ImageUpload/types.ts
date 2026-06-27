@@ -8,6 +8,8 @@ export type UploadBoxProps = {
   onFileSelect?: (media: UploadedMedia) => void;
   onFileRemove?: () => void;
   uploadFile?: (file: File) => Promise<UploadedMedia>;
+  deleteFile?: (media: UploadedMedia) => Promise<void>;
+  previewUrl?: string;
   required?: boolean;
   error?: string;
   allowedFileTypes?: string[];

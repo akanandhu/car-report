@@ -27,3 +27,9 @@ export type UploadEvaluationMediaPayload = {
   fieldKey: string;
   file: File;
 };
+
+export type MediaStorageObjectPayload = Pick<UploadedMedia, "bucket" | "path">;
+
+export type SignedReadsResponse = {
+  urls: Record<string, string>;
+};

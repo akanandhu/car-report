@@ -20,3 +20,12 @@ export type SignedUploadResponse = {
   originalName: string;
   maxSize: number;
 };
+
+export type MediaStorageObject = {
+  bucket: string;
+  path: string;
+};
+
+export type SignedReadResponse = {
+  urls: Record<string, string>;
+};

@@ -1,6 +1,8 @@
 import { apiClient } from "../client";
 import {
   CreateSignedUploadPayload,
+  MediaStorageObjectPayload,
+  SignedReadsResponse,
   SignedUploadResponse,
   UploadEvaluationMediaPayload,
 } from "./types";
@@ -78,4 +80,27 @@ export const uploadEvaluationMedia = async ({
     originalName: signedUpload.originalName,
     uploadedAt: new Date().toISOString(),
   };
+};
+
+export const createSignedMediaReads = async (
+  items: MediaStorageObjectPayload[],
+) => {
+  const res = await apiClient<ApiResponse<SignedReadsResponse>>(
+    "media/signed-reads",
+    {
+      method: "POST",
+      body: { items },
+    },
+  );
+
+  return res.data;
+};
+
+export const deleteUploadedMedia = async (media: MediaStorageObjectPayload) => {
+  const res = await apiClient<ApiResponse<{ path: string }>>("media", {
+    method: "DELETE",
+    body: media,
+  });
+
+  return res.data;
 };

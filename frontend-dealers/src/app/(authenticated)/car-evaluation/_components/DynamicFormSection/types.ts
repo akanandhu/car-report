@@ -18,4 +18,10 @@ export type DynamicFormSectionProps = {
     fieldKey: string;
     file: File;
   }) => Promise<UploadedMedia>;
+  onMediaDelete: (payload: {
+    documentGroupId: string;
+    fieldKey: string;
+    media: UploadedMedia;
+  }) => Promise<void>;
+  mediaPreviewUrls: Record<string, string>;
 };

@@ -16,6 +16,7 @@ import {
 } from "./utils";
 import { fetchCatalogueOptions } from "@/src/networks/catalogue";
 import { FormFieldGroupI } from "@/src/networks/form-fields/types";
+import { isUploadedMedia } from "@/src/utils/media";
 
 const EXTERIOR_STATUS_FALLBACK = [
   { label: "Good", value: "Good" },
@@ -303,6 +304,8 @@ const DynamicFormSection = ({
   variantDerivedOptions = {},
   validationErrors = {},
   onMediaUpload,
+  onMediaDelete,
+  mediaPreviewUrls,
 }: DynamicFormSectionProps) => {
   const injectedOptions: Record<string, { label: string; value: string }[]> = {
     ...configOptions,
@@ -325,6 +328,9 @@ const DynamicFormSection = ({
 
   const getFieldError = (field: FormFieldI) =>
     validationErrors[field.fieldKey] || "";
+
+  const getMediaPreviewUrl = (value: unknown) =>
+    isUploadedMedia(value) ? mediaPreviewUrls[value.path] : undefined;
 
   const renderError = (field: FormFieldI) => {
     const error = getFieldError(field);
@@ -727,11 +733,19 @@ const DynamicFormSection = ({
             required={field.isRequired}
             error={error}
             allowedFileTypes={field.validation?.allowedFileTypes}
+            previewUrl={getMediaPreviewUrl(value)}
             uploadFile={(file) =>
               onMediaUpload({
                 documentGroupId: field.documentGroupId,
                 fieldKey: commonKey,
                 file,
+              })
+            }
+            deleteFile={(media) =>
+              onMediaDelete({
+                documentGroupId: field.documentGroupId,
+                fieldKey: commonKey,
+                media,
               })
             }
             onFileSelect={(media) => onChange({ [commonKey]: media })}
@@ -913,11 +927,19 @@ const DynamicFormSection = ({
             required={field.isRequired}
             error={validationErrors[field.fieldKey]}
             allowedFileTypes={field.validation?.allowedFileTypes}
+            previewUrl={getMediaPreviewUrl(value)}
             uploadFile={(file) =>
               onMediaUpload({
                 documentGroupId: field.documentGroupId,
                 fieldKey: commonKey,
                 file,
+              })
+            }
+            deleteFile={(media) =>
+              onMediaDelete({
+                documentGroupId: field.documentGroupId,
+                fieldKey: commonKey,
+                media,
               })
             }
             onFileSelect={(media) => onChange({ [commonKey]: media })}

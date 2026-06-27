@@ -10,6 +10,7 @@ import {
   getMediaUploadMaxSize,
   validateAllowedFileType,
 } from "@/src/utils/media";
+import ConfirmModal from "@/src/components/ConfirmModal";
 import { UploadBoxProps, UploadStatus } from "./types";
 
 type DisplayStatus = UploadStatus | "uploaded";
@@ -20,6 +21,8 @@ export default function ImageUpload({
   onFileSelect,
   onFileRemove,
   uploadFile,
+  deleteFile,
+  previewUrl,
   required,
   error,
   allowedFileTypes,
@@ -31,6 +34,9 @@ export default function ImageUpload({
   const [fileType, setFileType] = useState<"image" | "video" | null>(null);
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
   const [localError, setLocalError] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const displayError = localError || error;
   const displayStatus: DisplayStatus =
     uploadStatus === "uploading" || uploadStatus === "failed"
@@ -38,6 +44,9 @@ export default function ImageUpload({
       : value
         ? "uploaded"
         : "idle";
+  const savedPreviewType = value?.type === "image" || value?.type === "video"
+    ? value.type
+    : null;
   const accept =
     allowedFileTypes && allowedFileTypes.length > 0
       ? allowedFileTypes.join(",")
@@ -115,8 +124,7 @@ export default function ImageUpload({
     }
   };
 
-  const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const clearSelectedMedia = () => {
     setPreviewUrl(null);
     setFileType(null);
     setUploadStatus("idle");
@@ -124,6 +132,38 @@ export default function ImageUpload({
     onFileRemove?.();
 
     if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteError("");
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setDeleteLoading(true);
+      setDeleteError("");
+
+      if (value) {
+        if (!deleteFile) {
+          throw new Error("Delete is not configured for this field");
+        }
+
+        await deleteFile(value);
+      }
+
+      clearSelectedMedia();
+      setDeleteModalOpen(false);
+    } catch (deleteRequestError) {
+      setDeleteError(
+        deleteRequestError instanceof Error
+          ? deleteRequestError.message
+          : "Failed to delete media. Please try again.",
+      );
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const hasMedia = Boolean(preview || value);
@@ -158,6 +198,19 @@ export default function ImageUpload({
               <video
                 src={preview}
                 muted
+                className="h-full w-full rounded-xl object-contain"
+              />
+            ) : previewUrl && savedPreviewType === "image" ? (
+              <img
+                src={previewUrl}
+                alt={value?.originalName || "Uploaded media"}
+                className="h-full w-full rounded-xl object-contain"
+              />
+            ) : previewUrl && savedPreviewType === "video" ? (
+              <video
+                src={previewUrl}
+                muted
+                controls
                 className="h-full w-full rounded-xl object-contain"
               />
             ) : (
@@ -212,6 +265,20 @@ export default function ImageUpload({
       {displayError ? (
         <p className="mt-2 text-sm font-medium text-red-600">{displayError}</p>
       ) : null}
+      <ConfirmModal
+        open={deleteModalOpen}
+        title="Delete media?"
+        description="This will remove the uploaded file from storage and clear it from this field."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        variant="danger"
+        loading={deleteLoading}
+        error={deleteError}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          if (!deleteLoading) setDeleteModalOpen(false);
+        }}
+      />
     </div>
   );
 }

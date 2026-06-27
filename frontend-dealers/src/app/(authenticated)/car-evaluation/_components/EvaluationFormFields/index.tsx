@@ -15,6 +15,8 @@ const EvaluationFormFields = ({
   variantDerivedOptions,
   validationErrors,
   handleMediaUpload,
+  handleMediaDelete,
+  mediaPreviewUrls,
 }: EvaluationFormFieldsPropsI) => {
   const isExteriorSection = currentSectionLabel?.toLowerCase().includes("exterior");
 
@@ -51,6 +53,8 @@ const EvaluationFormFields = ({
                   onChange={handleDataChange}
                   validationErrors={validationErrors}
                   onMediaUpload={handleMediaUpload}
+                  onMediaDelete={handleMediaDelete}
+                  mediaPreviewUrls={mediaPreviewUrls}
                 />
               ) : (
                 <DynamicFormSection
@@ -63,6 +67,8 @@ const EvaluationFormFields = ({
                   variantDerivedOptions={variantDerivedOptions}
                   validationErrors={validationErrors}
                   onMediaUpload={handleMediaUpload}
+                  onMediaDelete={handleMediaDelete}
+                  mediaPreviewUrls={mediaPreviewUrls}
                 />
               )}
             </>

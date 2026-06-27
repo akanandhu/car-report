@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import ImageUpload from "@/src/components/ImageUpload";
 import { FormDataI, FormFieldI } from "../CarEvaluationForm/types";
-import { UploadedMedia } from "@/src/utils/media";
+import { isUploadedMedia, UploadedMedia } from "@/src/utils/media";
 
 type ExteriorSectionProps = {
   fields: FormFieldI[];
@@ -17,6 +17,12 @@ type ExteriorSectionProps = {
     fieldKey: string;
     file: File;
   }) => Promise<UploadedMedia>;
+  onMediaDelete: (payload: {
+    documentGroupId: string;
+    fieldKey: string;
+    media: UploadedMedia;
+  }) => Promise<void>;
+  mediaPreviewUrls: Record<string, string>;
 };
 
 type ExteriorItem = {
@@ -213,6 +219,8 @@ const ExteriorSection = ({
   onChange,
   validationErrors = {},
   onMediaUpload,
+  onMediaDelete,
+  mediaPreviewUrls,
 }: ExteriorSectionProps) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [infoModal, setInfoModal] = useState<InfoModalContent | null>(null);
@@ -333,6 +341,9 @@ const ExteriorSection = ({
       <p className="mt-2 text-sm font-medium text-red-600">{error}</p>
     ) : null;
   };
+
+  const getMediaPreviewUrl = (value: unknown) =>
+    isUploadedMedia(value) ? mediaPreviewUrls[value.path] : undefined;
 
   const toggleOption = (field: FormFieldI, optionValue: string) => {
     const currentValue = data[field.fieldKey];
@@ -469,11 +480,19 @@ const ExteriorSection = ({
       required={field.isRequired}
       error={getFieldError(field)}
       allowedFileTypes={field.validation?.allowedFileTypes}
+      previewUrl={getMediaPreviewUrl(data[field.fieldKey])}
       uploadFile={(file) =>
         onMediaUpload({
           documentGroupId: field.documentGroupId,
           fieldKey: field.fieldKey,
           file,
+        })
+      }
+      deleteFile={(media) =>
+        onMediaDelete({
+          documentGroupId: field.documentGroupId,
+          fieldKey: field.fieldKey,
+          media,
         })
       }
       onFileSelect={(media) => onChange({ [field.fieldKey]: media })}
