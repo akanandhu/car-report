@@ -86,17 +86,27 @@ const getVariantSelection = (variants: VariantFullItem[], data: FormDataI) => {
   let transmissionOptions: CatalogueOption[] = [];
   let variantOptions: CatalogueOption[] = [];
 
-  if (fuelTypes.length === 1) {
+  if (!getValue(nextData.fuel_type) && fuelTypes.length === 1) {
     nextData.fuel_type = fuelTypes[0];
-    transmissionOptions = getTransmissionOptions(variants, fuelTypes[0]);
   }
 
-  if (transmissionOptions.length === 1) {
+  const selectedFuelType = getValue(nextData.fuel_type);
+
+  if (selectedFuelType) {
+    transmissionOptions = getTransmissionOptions(variants, selectedFuelType);
+  }
+
+  if (!getValue(nextData.transmission_type) && transmissionOptions.length === 1) {
     nextData.transmission_type = transmissionOptions[0].value;
+  }
+
+  const selectedTransmissionType = getValue(nextData.transmission_type);
+
+  if (selectedFuelType && selectedTransmissionType) {
     variantOptions = getVariantOptions(
       variants,
-      String(nextData.fuel_type ?? ""),
-      transmissionOptions[0].value,
+      selectedFuelType,
+      selectedTransmissionType,
     );
   }
 
