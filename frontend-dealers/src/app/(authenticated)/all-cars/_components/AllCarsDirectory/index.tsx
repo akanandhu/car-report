@@ -169,11 +169,11 @@ const AllCarsDirectory = () => {
     setPage((current) => Math.min(current + 1, totalPages));
   };
 
-  const handleDownloadReport = async (vehicleId: string) => {
+  const handleDownloadReport = async (vehicleId: string, name: string) => {
     setReportLoadingIds((current) => new Set(current).add(vehicleId));
 
     try {
-      await downloadVehicleReport(vehicleId);
+      await downloadVehicleReport(vehicleId, name);
     } catch (reportError) {
       alert(getErrorMessage(reportError));
     } finally {
@@ -323,7 +323,12 @@ const AllCarsDirectory = () => {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleDownloadReport(row.id)}
+                          onClick={() =>
+                            handleDownloadReport(
+                              row.id,
+                              `${row.vehicle} ${row.type}`,
+                            )
+                          }
                           disabled={reportLoadingIds.has(row.id)}
                           className="ml-auto flex items-center justify-end gap-1 text-primary hover:text-primary/80"
                         >
