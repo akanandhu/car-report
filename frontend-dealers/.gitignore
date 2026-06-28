@@ -59,6 +59,9 @@ next-env.d.ts
 /android/captures/
 /android/.externalNativeBuild/
 /android/.cxx/
+/android/keystore.properties
+/android/app/*.keystore
+/android/app/*.jks
 *.apk
 *.aab
 *.jks
