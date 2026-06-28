@@ -25,6 +25,17 @@ RUN pnpm build
 # Production stage
 FROM node:20-alpine AS production
 
+# Install Chromium for puppeteer-core PDF generation
+RUN apk add --no-cache \
+    ca-certificates \
+    chromium \
+    freetype \
+    harfbuzz \
+    nss \
+    ttf-freefont
+
+ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # Install pnpm
 RUN npm install -g pnpm
 
@@ -59,4 +70,3 @@ RUN sed -i 's/\r$//' start.sh
 
 RUN chmod +x start.sh
 CMD ["sh", "start.sh"]
-

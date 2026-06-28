@@ -32,7 +32,6 @@ services:
     ports:
       - "3001:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/carsreport
       NODE_ENV: development
       PORT: 3000
     volumes:

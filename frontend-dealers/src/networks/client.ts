@@ -20,15 +20,10 @@ const devServerUrl = isDev
 
 const BASE_URL = isDev ? devServerUrl : process.env.NEXT_PUBLIC_API_URL;
 
-export async function apiClient<T>(
+export const buildApiUrl = (
   endpoint: string,
-  options: ApiOptions = {},
-): Promise<T> {
-  const { method = "GET", body, headers = {}, next, params } = options;
-
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-
+  params?: ApiOptions["params"],
+) => {
   let url = `${BASE_URL}/${endpoint}`;
 
   if (params) {
@@ -42,6 +37,20 @@ export async function apiClient<T>(
 
     url += `?${searchParams.toString()}`;
   }
+
+  return url;
+};
+
+export async function apiClient<T>(
+  endpoint: string,
+  options: ApiOptions = {},
+): Promise<T> {
+  const { method = "GET", body, headers = {}, next, params } = options;
+
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  const url = buildApiUrl(endpoint, params);
   const res = await fetch(url, {
     method,
     headers: {
