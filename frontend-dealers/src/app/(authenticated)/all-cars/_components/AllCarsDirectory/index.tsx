@@ -300,7 +300,7 @@ const AllCarsDirectory = () => {
                       {row.date}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-600">
-                      {row.evaluator}
+                      {row.evaluator === "-" ? "N/A" : row.evaluator}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
                       <span
