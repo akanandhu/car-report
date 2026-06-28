@@ -24,6 +24,7 @@ import {
   uploadEvaluationMedia,
 } from "@/src/networks/media";
 import { isUploadedMedia, UploadedMedia } from "@/src/utils/media";
+import { appToast } from "@/src/utils/toast";
 import { FormDataI, SectionI } from "./types";
 import { isFieldVisible } from "../DynamicFormSection/utils";
 
@@ -535,7 +536,10 @@ const useCarEvaluationForm = () => {
       scrollToTop();
     } catch (error) {
       console.error("Failed to save step data:", error);
-      alert("Failed to save. Please try again.");
+      appToast.error({
+        title: "Unable to save progress",
+        message: "Please try again before moving to the next section.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -638,17 +642,33 @@ const useCarEvaluationForm = () => {
   };
 
   const handleSaveDraft = async () => {
-    if (!canSaveDraft) return;
+    if (!canSaveDraft) {
+      appToast.info(
+        {
+          title: "Draft is not ready yet",
+          message:
+            "Complete Basic Details and click Next once before saving this evaluation as a draft.",
+        },
+        { id: "draft-not-ready" },
+      );
+      return;
+    }
 
     try {
       setSubmitting(true);
       const currentVehicleId = requireVehicleId();
 
       await saveCurrentStepData(currentVehicleId, currentSection);
-      alert("Draft saved successfully!");
+      appToast.success({
+        title: "Draft saved",
+        message: "Your car evaluation draft has been updated.",
+      });
     } catch (error) {
       console.error("Failed to save draft:", error);
-      alert("Failed to save draft. Please try again.");
+      appToast.error({
+        title: "Unable to save draft",
+        message: "Please check your connection and try again.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -656,7 +676,10 @@ const useCarEvaluationForm = () => {
 
   const handleSubmit = async () => {
     if (!vehicleId) {
-      alert("No vehicle found. Please start from the first step.");
+      appToast.info({
+        title: "Start with Basic Details",
+        message: "No vehicle record was found for this evaluation.",
+      });
       return;
     }
 
@@ -670,10 +693,17 @@ const useCarEvaluationForm = () => {
       await saveCurrentStepData(vehicleId, currentSection);
       await submitAllSteps(vehicleId, "EVALUATION");
       await updateVehicle(vehicleId, { status: "completed" });
+      appToast.success({
+        title: "Evaluation completed",
+        message: "The car evaluation has been submitted successfully.",
+      });
       router.push("/");
     } catch (error) {
       console.error("Failed to submit evaluation:", error);
-      alert("Failed to submit. Please try again.");
+      appToast.error({
+        title: "Unable to submit evaluation",
+        message: "Please try again after reviewing the current section.",
+      });
     } finally {
       setSubmitting(false);
     }
