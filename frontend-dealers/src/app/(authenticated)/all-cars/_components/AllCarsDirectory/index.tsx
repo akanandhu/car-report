@@ -14,6 +14,7 @@ import Link from "next/link";
 import { downloadVehicleReport } from "@/src/networks/reports";
 import { fetchVehicles } from "@/src/networks/vehicles";
 import type { VehicleResponse } from "@/src/networks/vehicles/types";
+import { appToast } from "@/src/utils/toast";
 import type { CarRowI, CarStatusI } from "./types";
 
 const PAGE_LIMIT = 10;
@@ -175,7 +176,10 @@ const AllCarsDirectory = () => {
     try {
       await downloadVehicleReport(vehicleId, name);
     } catch (reportError) {
-      alert(getErrorMessage(reportError));
+      appToast.error({
+        title: "Report generation failed",
+        message: getErrorMessage(reportError),
+      });
     } finally {
       setReportLoadingIds((current) => {
         const next = new Set(current);

@@ -33,8 +33,13 @@ const EvaluationFormHead = ({
             <Button
               variant="outlined"
               onClick={handleSaveDraft}
-              disabled={submitting || !canSaveDraft}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-none hover:border-slate-400 hover:bg-slate-50"
+              disabled={submitting}
+              aria-disabled={!canSaveDraft}
+              className={`rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow-none hover:border-slate-400 hover:bg-slate-50 ${
+                canSaveDraft
+                  ? ""
+                  : "cursor-not-allowed opacity-50 hover:border-slate-300 hover:bg-white"
+              }`}
             >
               <div className="flex items-center gap-2">
                 <Draft className="w-4 h-4" />
