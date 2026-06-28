@@ -36,7 +36,7 @@ export default function RootLayout({
       >
         <div className="box-border min-h-dvh pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
           {children}
-        <AppToaster />
+          <AppToaster />
         </div>
       </body>
     </html>

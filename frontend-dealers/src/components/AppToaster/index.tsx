@@ -1,9 +1,11 @@
-"use client";
-
+'use client';
+import { Capacitor } from "@capacitor/core";
 import { Toaster } from "react-hot-toast";
 
 const AppToaster = () => {
-  return <Toaster position="top-right" />;
+  const platform = Capacitor.getPlatform();
+  const isWeb = platform === "web";
+  return <Toaster position={isWeb ? "top-right" : "bottom-center"} />;
 };
 
 export default AppToaster;

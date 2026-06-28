@@ -1,5 +1,3 @@
-"use client";
-
 import { AlertCircle, CheckCircle2, Info, XCircle } from "lucide-react";
 import toast, { Toast, ToastOptions } from "react-hot-toast";
 
