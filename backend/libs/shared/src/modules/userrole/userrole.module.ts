@@ -6,7 +6,11 @@ import { REPOSITORY_PROVIDERS } from '@shared/common/providers/repository.provid
 
 @Module({
   imports: [PrismaModule],
-  providers: [SharedUserroleService, UserroleUtilsService, ...REPOSITORY_PROVIDERS],
+  providers: [
+    SharedUserroleService,
+    UserroleUtilsService,
+    ...REPOSITORY_PROVIDERS,
+  ],
   exports: [SharedUserroleService],
 })
-export class SharedUserroleModule { }
+export class SharedUserroleModule {}

@@ -30,10 +30,7 @@ export class RefreshtokenRepository extends BaseRepository<RefreshToken> {
    * Revoke all tokens for a user
    */
   async revokeAllUserTokens(userId: string): Promise<{ count: number }> {
-    return this.updateMany(
-      { userId, isRevoked: false },
-      { isRevoked: true },
-    );
+    return this.updateMany({ userId, isRevoked: false }, { isRevoked: true });
   }
 
   /**

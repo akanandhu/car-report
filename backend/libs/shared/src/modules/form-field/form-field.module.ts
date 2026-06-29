@@ -6,7 +6,11 @@ import { PrismaModule } from '@shared/database/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
-  providers: [SharedFormFieldService, FormFieldUtilsService, FormFieldRepository],
+  providers: [
+    SharedFormFieldService,
+    FormFieldUtilsService,
+    FormFieldRepository,
+  ],
   exports: [SharedFormFieldService, FormFieldRepository],
 })
-export class SharedFormFieldModule { }
+export class SharedFormFieldModule {}

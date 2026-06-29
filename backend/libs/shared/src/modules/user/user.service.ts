@@ -162,7 +162,10 @@ export class SharedUserService {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
@@ -246,4 +249,3 @@ export class SharedUserService {
     };
   }
 }
-

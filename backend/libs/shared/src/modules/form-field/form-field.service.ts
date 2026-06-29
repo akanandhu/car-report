@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FormFieldRepository } from './repository/form-field.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { DocumentGroupRepository } from '../document-group/repository/document-group.repository';
@@ -28,9 +33,7 @@ export class SharedFormFieldService {
   private readonly formFieldRepository: FormFieldRepository;
   private readonly documentGroupRepository: DocumentGroupRepository;
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(private readonly prisma: PrismaService) {
     this.formFieldRepository = new FormFieldRepository(prisma);
     this.documentGroupRepository = new DocumentGroupRepository(prisma);
   }
@@ -93,7 +96,9 @@ export class SharedFormFieldService {
     const stepGroup = allSteps.find((s) => s.order === step);
 
     if (!stepGroup) {
-      throw new NotFoundException(`Step ${step} not found for form type '${type}'`);
+      throw new NotFoundException(
+        `Step ${step} not found for form type '${type}'`,
+      );
     }
 
     // Get all enabled fields for this step, ordered
@@ -191,7 +196,9 @@ export class SharedFormFieldService {
     }
 
     // Check document group exists
-    const documentGroup = await this.documentGroupRepository.findById(data.documentGroupId);
+    const documentGroup = await this.documentGroupRepository.findById(
+      data.documentGroupId,
+    );
     if (!documentGroup) {
       throw new NotFoundException('Document group (step) not found');
     }
@@ -314,7 +321,8 @@ export class SharedFormFieldService {
     fieldOrders: { fieldId: string; order: number }[],
   ) {
     // Verify document group exists
-    const documentGroup = await this.documentGroupRepository.findById(documentGroupId);
+    const documentGroup =
+      await this.documentGroupRepository.findById(documentGroupId);
     if (!documentGroup) {
       throw new NotFoundException('Document group (step) not found');
     }
@@ -343,9 +351,12 @@ export class SharedFormFieldService {
    */
   async getFieldsByGroupAndVehicle(vehicleId: string, documentGroupId: string) {
     // Verify the document group exists
-    const documentGroup = await this.documentGroupRepository.findById(documentGroupId);
+    const documentGroup =
+      await this.documentGroupRepository.findById(documentGroupId);
     if (!documentGroup) {
-      throw new NotFoundException(`Document group '${documentGroupId}' not found`);
+      throw new NotFoundException(
+        `Document group '${documentGroupId}' not found`,
+      );
     }
 
     // Fetch all enabled, non-deleted fields for the group
@@ -400,13 +411,13 @@ export class SharedFormFieldService {
         // Saved vehicle document data for this field (if any)
         vehicleDocument: vehicleDoc
           ? {
-            id: vehicleDoc.id,
-            status: vehicleDoc.status,
-            documentSpec: vehicleDoc.documentSpec,
-            submittedBy: vehicleDoc.submittedBy,
-            createdAt: vehicleDoc.createdAt,
-            updatedAt: vehicleDoc.updatedAt,
-          }
+              id: vehicleDoc.id,
+              status: vehicleDoc.status,
+              documentSpec: vehicleDoc.documentSpec,
+              submittedBy: vehicleDoc.submittedBy,
+              createdAt: vehicleDoc.createdAt,
+              updatedAt: vehicleDoc.updatedAt,
+            }
           : null,
       };
     });

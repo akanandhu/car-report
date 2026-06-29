@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { VehicleUtilsService } from './service/vehicle.utils.service';
 import { VehicleRepository } from './repository/vehicle.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
@@ -45,12 +49,9 @@ export class SharedVehicleService {
       });
 
       return vehicle;
-
     } catch (err) {
-      console.log(err, 'errorChecking')
+      console.log(err, 'errorChecking');
     }
-
-
   }
 
   /**
@@ -85,7 +86,10 @@ export class SharedVehicleService {
     }
 
     // Update vehicle
-    const updatedVehicle = await this.vehicleRepository.updateById(vehicleId, data);
+    const updatedVehicle = await this.vehicleRepository.updateById(
+      vehicleId,
+      data,
+    );
 
     return updatedVehicle;
   }
@@ -123,7 +127,12 @@ export class SharedVehicleService {
   /**
    * List vehicles with pagination
    */
-  async list(params: { page: number; limit: number; search?: string; status?: string }) {
+  async list(params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string;
+  }) {
     const { page, limit, search, status } = params;
     const skip = (page - 1) * limit;
 

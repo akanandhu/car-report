@@ -5,23 +5,24 @@ import { TokenPayload } from '../service/auth-token.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor() {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-        });
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey:
+        process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+    });
+  }
+
+  async validate(payload: TokenPayload) {
+    if (!payload.userId) {
+      throw new UnauthorizedException();
     }
 
-    async validate(payload: TokenPayload) {
-        if (!payload.userId) {
-            throw new UnauthorizedException();
-        }
-
-        return {
-            userId: payload.userId,
-            email: payload.email,
-            roles: payload.roles,
-        };
-    }
+    return {
+      userId: payload.userId,
+      email: payload.email,
+      roles: payload.roles,
+    };
+  }
 }

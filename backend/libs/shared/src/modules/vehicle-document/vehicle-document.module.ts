@@ -4,8 +4,8 @@ import { SharedVehicleDocumentService } from './vehicle-document.service';
 import { PrismaModule } from '@shared/database/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [VehicleDocumentRepository, SharedVehicleDocumentService],
-    exports: [SharedVehicleDocumentService, VehicleDocumentRepository],
+  imports: [PrismaModule],
+  providers: [VehicleDocumentRepository, SharedVehicleDocumentService],
+  exports: [SharedVehicleDocumentService, VehicleDocumentRepository],
 })
-export class SharedVehicleDocumentModule { }
+export class SharedVehicleDocumentModule {}

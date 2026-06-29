@@ -11,5 +11,4 @@ import { SharedBranchModule } from '../branch/branch.module';
   providers: [SharedUserService, UserUtilsService, ...REPOSITORY_PROVIDERS],
   exports: [SharedUserService],
 })
-export class SharedUserModule { }
-
+export class SharedUserModule {}

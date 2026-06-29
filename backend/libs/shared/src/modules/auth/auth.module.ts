@@ -32,6 +32,11 @@ import { SharedRefreshtokenModule } from '../refreshtoken/refreshtoken.module';
     JwtStrategy,
     ...REPOSITORY_PROVIDERS,
   ],
-  exports: [SharedAuthService, SharedAuthTokenService, JwtStrategy, PassportModule],
+  exports: [
+    SharedAuthService,
+    SharedAuthTokenService,
+    JwtStrategy,
+    PassportModule,
+  ],
 })
-export class SharedAuthModule { }
+export class SharedAuthModule {}

@@ -6,4 +6,4 @@ import { SharedUserModule } from '@shared/modules/user/user.module';
   imports: [SharedUserModule],
   controllers: [UserController],
 })
-export class UserModule { }
+export class UserModule {}

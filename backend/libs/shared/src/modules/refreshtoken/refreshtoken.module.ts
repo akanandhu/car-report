@@ -4,7 +4,11 @@ import { RefreshtokenUtilsService } from './service/refreshtoken.utils.service';
 import { RefreshtokenRepository } from './repository/refreshtoken.repository';
 
 @Module({
-  providers: [SharedRefreshtokenService, RefreshtokenUtilsService, RefreshtokenRepository],
+  providers: [
+    SharedRefreshtokenService,
+    RefreshtokenUtilsService,
+    RefreshtokenRepository,
+  ],
   exports: [SharedRefreshtokenService, RefreshtokenRepository],
 })
 export class SharedRefreshtokenModule {}

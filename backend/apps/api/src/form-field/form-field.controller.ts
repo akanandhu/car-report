@@ -11,7 +11,13 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SharedFormFieldService } from '@shared/modules/form-field/form-field.service';
 import {
   CreateFormFieldDto,
@@ -27,9 +33,7 @@ import { ResponseDto } from '../common/dto/response.dto';
 @Controller('form-config')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class FormFieldController {
-  constructor(
-    private readonly formFieldService: SharedFormFieldService,
-  ) { }
+  constructor(private readonly formFieldService: SharedFormFieldService) {}
 
   // ─── Get Form Config ────────────────────────────────────────────────────────
 
@@ -39,17 +43,36 @@ export class FormFieldController {
   @Get(':type/:step')
   @ApiOperation({
     summary: 'Get form configuration for a type and step',
-    description: 'Returns all enabled fields for the given form type and step number, ordered by display order',
+    description:
+      'Returns all enabled fields for the given form type and step number, ordered by display order',
   })
-  @ApiParam({ name: 'type', description: 'Form type identifier (e.g., EVALUATION, FINANCE)', example: 'EVALUATION' })
-  @ApiParam({ name: 'step', description: 'Step number (1-based)', example: '1' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Form configuration retrieved', type: FormConfigResponseDto })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Type or step not found' })
+  @ApiParam({
+    name: 'type',
+    description: 'Form type identifier (e.g., EVALUATION, FINANCE)',
+    example: 'EVALUATION',
+  })
+  @ApiParam({
+    name: 'step',
+    description: 'Step number (1-based)',
+    example: '1',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Form configuration retrieved',
+    type: FormConfigResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Type or step not found',
+  })
   async getFormConfig(
     @Param('type') type: string,
     @Param('step') step: string,
   ): Promise<ResponseDto<FormConfigResponseDto>> {
-    const config = await this.formFieldService.getFormConfig(type, parseInt(step, 10));
+    const config = await this.formFieldService.getFormConfig(
+      type,
+      parseInt(step, 10),
+    );
 
     return {
       data: config as FormConfigResponseDto,
@@ -64,9 +87,14 @@ export class FormFieldController {
   @Get(':type/steps')
   @ApiOperation({
     summary: 'Get all steps for a form type',
-    description: 'Returns an overview of all steps within a form type, without field details',
+    description:
+      'Returns an overview of all steps within a form type, without field details',
   })
-  @ApiParam({ name: 'type', description: 'Form type identifier', example: 'EVALUATION' })
+  @ApiParam({
+    name: 'type',
+    description: 'Form type identifier',
+    example: 'EVALUATION',
+  })
   @ApiResponse({ status: HttpStatus.OK, type: TypeStepsResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Type not found' })
   async getTypeSteps(
@@ -91,15 +119,32 @@ export class FormFieldController {
       'Returns all enabled form fields for the given documentGroupId. ' +
       'Each field includes the saved VehicleDocument value for the specified vehicle (if any).',
   })
-  @ApiQuery({ name: 'vehicleId', required: true, description: 'Vehicle ID to load saved data for' })
-  @ApiQuery({ name: 'documentGroupId', required: true, description: 'Document group (step) ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Fields with vehicle document data' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Document group not found' })
+  @ApiQuery({
+    name: 'vehicleId',
+    required: true,
+    description: 'Vehicle ID to load saved data for',
+  })
+  @ApiQuery({
+    name: 'documentGroupId',
+    required: true,
+    description: 'Document group (step) ID',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Fields with vehicle document data',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Document group not found',
+  })
   async getFieldsForVehicle(
     @Query('vehicleId') vehicleId: string,
     @Query('documentGroupId') documentGroupId: string,
   ): Promise<ResponseDto<any>> {
-    const result = await this.formFieldService.getFieldsByGroupAndVehicle(vehicleId, documentGroupId);
+    const result = await this.formFieldService.getFieldsByGroupAndVehicle(
+      vehicleId,
+      documentGroupId,
+    );
 
     return {
       data: result,
@@ -116,11 +161,18 @@ export class FormFieldController {
   @Post('fields')
   @ApiOperation({
     summary: 'Add a new field to a step',
-    description: 'Creates a new form field within a specific step (document group)',
+    description:
+      'Creates a new form field within a specific step (document group)',
   })
   @ApiResponse({ status: HttpStatus.CREATED, type: FormFieldResponseDto })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Field key already exists in this step' })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Invalid field type' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Field key already exists in this step',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid field type',
+  })
   async addField(
     @Body() dto: CreateFormFieldDto,
   ): Promise<ResponseDto<FormFieldResponseDto>> {
@@ -144,7 +196,10 @@ export class FormFieldController {
   @ApiParam({ name: 'id', description: 'Field ID' })
   @ApiResponse({ status: HttpStatus.OK, type: FormFieldResponseDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Field not found' })
-  @ApiResponse({ status: HttpStatus.CONFLICT, description: 'Field key already exists' })
+  @ApiResponse({
+    status: HttpStatus.CONFLICT,
+    description: 'Field key already exists',
+  })
   async updateField(
     @Param('id') id: string,
     @Body() dto: UpdateFormFieldDto,

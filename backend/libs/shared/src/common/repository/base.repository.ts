@@ -39,7 +39,7 @@ export abstract class BaseRepository<T extends BaseModel> {
    */
   protected readonly softDeleteEnabled: boolean = true;
 
-  constructor(protected readonly prisma: PrismaService) { }
+  constructor(protected readonly prisma: PrismaService) {}
 
   /**
    * Get the Prisma model dynamically
@@ -52,13 +52,7 @@ export abstract class BaseRepository<T extends BaseModel> {
    * Create a new record
    */
   async create(
-    data: Omit<
-      T,
-      | 'id'
-      | 'createdAt'
-      | 'updatedAt'
-      | 'deletedAt'
-    >,
+    data: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
     options?: { select?: any; include?: any },
   ): Promise<T> {
     return this.model.create({
@@ -208,7 +202,9 @@ export abstract class BaseRepository<T extends BaseModel> {
    */
   async softDelete(options: DeleteOptions): Promise<T> {
     if (!this.softDeleteEnabled) {
-      throw new Error(`Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`);
+      throw new Error(
+        `Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
     }
     const { where } = options;
 
@@ -233,7 +229,9 @@ export abstract class BaseRepository<T extends BaseModel> {
    */
   async softDeleteMany(where: any): Promise<{ count: number }> {
     if (!this.softDeleteEnabled) {
-      throw new Error(`Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`);
+      throw new Error(
+        `Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
     }
     return this.model.updateMany({
       where: { ...where, deletedAt: null },
@@ -249,7 +247,9 @@ export abstract class BaseRepository<T extends BaseModel> {
    */
   async restore(options: DeleteOptions): Promise<T> {
     if (!this.softDeleteEnabled) {
-      throw new Error(`Restore is not supported on model '${this.modelName}' (no deletedAt column)`);
+      throw new Error(
+        `Restore is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
     }
     const { where } = options;
 
@@ -274,7 +274,9 @@ export abstract class BaseRepository<T extends BaseModel> {
    */
   async restoreMany(where: any): Promise<{ count: number }> {
     if (!this.softDeleteEnabled) {
-      throw new Error(`Restore is not supported on model '${this.modelName}' (no deletedAt column)`);
+      throw new Error(
+        `Restore is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
     }
     return this.model.updateMany({
       where: { ...where, deletedAt: { not: null } },
@@ -358,7 +360,9 @@ export abstract class BaseRepository<T extends BaseModel> {
     options?: Omit<FindManyOptions, 'where'> & { where?: any },
   ): Promise<T[]> {
     if (!this.softDeleteEnabled) {
-      throw new Error(`findSoftDeleted is not supported on model '${this.modelName}' (no deletedAt column)`);
+      throw new Error(
+        `findSoftDeleted is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
     }
     const { where = {}, ...restOptions } = options || {};
 

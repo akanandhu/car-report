@@ -1,7 +1,6 @@
-﻿
-import { BaseModel } from "@shared/common/interface/base-model.interface";
+﻿import { BaseModel } from '@shared/common/interface/base-model.interface';
 
 export interface RoleInterface extends BaseModel {
-    name: string;
-    identifier: string;
+  name: string;
+  identifier: string;
 }

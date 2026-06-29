@@ -17,7 +17,7 @@ export class SharedAuthService {
     private readonly userService: SharedUserService,
     private readonly tokenService: SharedAuthTokenService,
     private readonly otpService: SharedAuthOtpService,
-  ) { }
+  ) {}
 
   /**
    * Register a new user
@@ -133,7 +133,9 @@ export class SharedAuthService {
    * Get current user info
    */
   async getCurrentUser(userId: string) {
-    const user = await this.userRepository.findUnique({ where: { id: userId } });
+    const user = await this.userRepository.findUnique({
+      where: { id: userId },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }

@@ -107,6 +107,7 @@ model RefreshToken {
   isRevoked Boolean  @default(false) @map("is_revoked")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -126,6 +127,7 @@ model DocumentGroup {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime ? @map("deleted_at")
 
   // Relations
   parent           DocumentGroup?    @relation("DocumentGroupParent", fields: [parentId], references: [id])
@@ -155,6 +157,7 @@ model VehicleDocument {
   formFieldId     String?               @map("form_field_id")
   createdAt       DateTime              @default(now()) @map("created_at")
   updatedAt       DateTime              @updatedAt @map("updated_at")
+  deletedAt DateTime ? @map("deleted_at")
 
   // Relations
   documentGroup DocumentGroup @relation(fields: [documentGroupId], references: [id])

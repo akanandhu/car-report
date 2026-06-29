@@ -9,4 +9,4 @@ import { PrismaModule } from '@shared/database/prisma/prisma.module';
   providers: [SharedVehicleService, VehicleUtilsService, VehicleRepository],
   exports: [SharedVehicleService],
 })
-export class SharedVehicleModule { }
+export class SharedVehicleModule {}

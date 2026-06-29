@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { UserroleUtilsService } from './service/userrole.utils.service';
 import { UserroleRepository } from './repository/userrole.repository';
 import { RoleRepository } from '../role/repository/role.repository';
@@ -11,7 +15,7 @@ export class SharedUserroleService {
     private readonly userroleRepository: UserroleRepository,
     private readonly roleRepository: RoleRepository,
     private readonly userRepository: UserRepository,
-  ) { }
+  ) {}
 
   /**
    * Assign a role to a user
@@ -34,7 +38,9 @@ export class SharedUserroleService {
     });
 
     if (!role) {
-      throw new NotFoundException(`Role with identifier "${roleIdentifier}" not found`);
+      throw new NotFoundException(
+        `Role with identifier "${roleIdentifier}" not found`,
+      );
     }
 
     // Check if user already has this role

@@ -6,4 +6,4 @@ import { SharedRoleModule } from '@shared/modules/role/role.module';
   imports: [SharedRoleModule],
   controllers: [RoleController],
 })
-export class RoleModule { }
+export class RoleModule {}

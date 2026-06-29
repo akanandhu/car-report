@@ -7,7 +7,7 @@ export class SharedBranchService {
   constructor(
     private readonly branchUtilsService: BranchUtilsService,
     private readonly branchRepository: BranchRepository,
-  ) { }
+  ) {}
 
   /**
    * Create a default branch for a user

@@ -9,4 +9,4 @@ import { REPOSITORY_PROVIDERS } from '@shared/common/providers/repository.provid
   providers: [SharedBranchService, BranchUtilsService, ...REPOSITORY_PROVIDERS],
   exports: [SharedBranchService],
 })
-export class SharedBranchModule { }
+export class SharedBranchModule {}

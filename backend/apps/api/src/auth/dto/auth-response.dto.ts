@@ -1,43 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AuthTokensDto {
-    @ApiProperty()
-    accessToken: string;
+  @ApiProperty()
+  accessToken: string;
 
-    @ApiProperty()
-    refreshToken: string;
+  @ApiProperty()
+  refreshToken: string;
 
-    @ApiProperty()
-    expiresIn: number;
+  @ApiProperty()
+  expiresIn: number;
 }
 
 export class AuthResponseDto {
-    @ApiProperty()
-    success: boolean;
+  @ApiProperty()
+  success: boolean;
 
-    @ApiProperty()
-    message: string;
+  @ApiProperty()
+  message: string;
 
-    @ApiProperty({ required: false })
-    data?: any;
+  @ApiProperty({ required: false })
+  data?: any;
 }
 
 export class UserResponseDto {
-    @ApiProperty()
-    id: string;
+  @ApiProperty()
+  id: string;
 
-    @ApiProperty()
-    name: string;
+  @ApiProperty()
+  name: string;
 
-    @ApiProperty()
-    email: string;
+  @ApiProperty()
+  email: string;
 
-    @ApiProperty()
-    mobile: string;
+  @ApiProperty()
+  mobile: string;
 
-    @ApiProperty({ required: false })
-    emailVerifiedAt?: Date;
+  @ApiProperty({ required: false })
+  emailVerifiedAt?: Date;
 
-    @ApiProperty({ required: false })
-    mobileVerifiedAt?: Date;
+  @ApiProperty({ required: false })
+  mobileVerifiedAt?: Date;
 }
