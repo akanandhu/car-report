@@ -1,11 +1,19 @@
-import { Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   SeederService,
   SeederResult,
 } from '@shared/database/seeder/seeder.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('Seeder')
+@UseGuards(JwtAuthGuard)
 @Controller('seed')
 export class SeederController {
   constructor(private readonly seederService: SeederService) {}

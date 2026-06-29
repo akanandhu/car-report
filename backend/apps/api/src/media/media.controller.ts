@@ -6,9 +6,11 @@ import {
   Post,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SharedMediaService } from '@shared/modules/media/media.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import { ResponseDto } from '../common/dto/response.dto';
 import {
   CreateSignedReadsDto,
@@ -19,6 +21,7 @@ import {
 } from './dto/media.dto';
 
 @ApiTags('Media')
+@UseGuards(JwtAuthGuard)
 @Controller('media')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class MediaController {

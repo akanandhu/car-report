@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { SharedDocumentGroupService } from '@shared/modules/document-group/document-group.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
   CreateDocumentGroupDto,
   DocumentGroupResponseDto,
@@ -23,6 +25,7 @@ import {
 } from './dto/document-group.dto';
 
 @ApiTags('Document Groups')
+@UseGuards(JwtAuthGuard)
 @Controller('document-groups')
 export class DocumentGroupController {
   constructor(private readonly service: SharedDocumentGroupService) {}

@@ -5,12 +5,15 @@ import {
   Param,
   Res,
   StreamableFile,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ReportService } from './report.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('Reports')
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}

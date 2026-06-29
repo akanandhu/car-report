@@ -9,6 +9,7 @@ import {
   HttpStatus,
   ValidationPipe,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { SharedUserService } from '@shared/modules/user/user.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
   RegisterUserDto,
   UpdateUserDto,
@@ -31,6 +33,7 @@ import {
 } from '../common/dto/response.dto';
 
 @ApiTags('users')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class UserController {

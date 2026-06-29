@@ -1,8 +1,10 @@
-import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RtoService } from './rto.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('rto')
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class RtoController {
   constructor(private readonly rtoService: RtoService) {}

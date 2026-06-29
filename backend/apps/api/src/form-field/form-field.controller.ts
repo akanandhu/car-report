@@ -10,6 +10,7 @@ import {
   HttpStatus,
   ValidationPipe,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +20,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { SharedFormFieldService } from '@shared/modules/form-field/form-field.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
   CreateFormFieldDto,
   UpdateFormFieldDto,
@@ -30,6 +32,7 @@ import {
 import { ResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('Form Configuration')
+@UseGuards(JwtAuthGuard)
 @Controller('form-config')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class FormFieldController {

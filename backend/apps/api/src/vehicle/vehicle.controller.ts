@@ -10,6 +10,7 @@ import {
   HttpStatus,
   ValidationPipe,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +20,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { SharedVehicleService } from '@shared/modules/vehicle/vehicle.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
   CreateVehicleDto,
   UpdateVehicleDto,
@@ -29,6 +31,7 @@ import {
 import { ResponseDto, PaginatedResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('vehicles')
+@UseGuards(JwtAuthGuard)
 @Controller('vehicles')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class VehicleController {

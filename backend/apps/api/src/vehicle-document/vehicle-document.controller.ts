@@ -9,6 +9,7 @@ import {
   ValidationPipe,
   UsePipes,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { SharedVehicleDocumentService } from '@shared/modules/vehicle-document/vehicle-document.service';
+import { JwtAuthGuard } from '@shared/modules/auth/guards/jwt-auth.guard';
 import {
   CreateVehicleDocumentDto,
   SaveStepDataDto,
@@ -27,6 +29,7 @@ import {
 import { ResponseDto } from '../common/dto/response.dto';
 
 @ApiTags('Vehicle Documents')
+@UseGuards(JwtAuthGuard)
 @Controller('vehicle-documents')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class VehicleDocumentController {
