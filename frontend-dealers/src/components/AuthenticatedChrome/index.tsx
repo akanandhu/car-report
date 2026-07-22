@@ -1,16 +1,44 @@
 "use client";
 
 import AppSidebar from "@/src/components/AppSidebar";
+
 import Navbar from "@/src/components/Navbar";
-import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, type ReactNode } from "react";
 import { getAuthenticatedChromeVisibility } from "./utils";
+import { useSession } from "next-auth/react";
+import { Capacitor } from "@capacitor/core";
 
 const AuthenticatedChrome = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { status } = useSession();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { showNavbar, showSidebar } =
     getAuthenticatedChromeVisibility(pathname);
+
+  useEffect(() => {
+    const platform = Capacitor.getPlatform();
+    const isNative = platform === "android" || platform === "ios";
+
+    if (isNative) {
+      const localToken = localStorage.getItem("accessToken");
+      if (!localToken) {
+        router.push("/auth");
+      }
+    } else if (status === "unauthenticated") {
+      router.push("/auth");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-sm font-semibold text-slate-500">Loading session...</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900">

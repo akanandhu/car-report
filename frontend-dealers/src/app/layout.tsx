@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AppToaster from "@/src/components/AppToaster";
+import NextAuthProvider from "@/src/components/NextAuthProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,11 +35,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="box-border min-h-dvh pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-          {children}
-          <AppToaster />
-        </div>
+        <NextAuthProvider>
+          <div className="box-border min-h-dvh pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+            {children}
+            <AppToaster />
+          </div>
+        </NextAuthProvider>
       </body>
     </html>
   );
 }
+

@@ -1,0 +1,45 @@
+import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
+import { JWT } from "next-auth/jwt";
+
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+      id: string;
+      name: string;
+      email: string;
+      mobile: string;
+      emailVerifiedAt: string | null;
+      mobileVerifiedAt: string | null;
+    } & DefaultSession["user"];
+  }
+
+  interface User extends DefaultUser {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+      id: string;
+      name: string;
+      email: string;
+      mobile: string;
+      emailVerifiedAt: string | null;
+      mobileVerifiedAt: string | null;
+    };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+      id: string;
+      name: string;
+      email: string;
+      mobile: string;
+      emailVerifiedAt: string | null;
+      mobileVerifiedAt: string | null;
+    };
+  }
+}

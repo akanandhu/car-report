@@ -6,7 +6,7 @@ import { EmailLoginFormPropsI } from "./types";
 import useEmailLoginForm from "./useHook";
 import Back from "@/src/components/Back";
 
-const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
+const EmailLoginForm = ({ onBack, onForgotPassword }: EmailLoginFormPropsI) => {
   const { errors, handleSubmit, isLoading, onSubmit, register } =
     useEmailLoginForm();
 
@@ -31,6 +31,17 @@ const EmailLoginForm = ({ onBack }: EmailLoginFormPropsI) => {
         error={errors.password?.message}
         disabled={isLoading}
       />
+
+      <div className="flex justify-end -mt-2">
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition"
+          disabled={isLoading}
+        >
+          Forgot Password?
+        </button>
+      </div>
 
       <Button
         type="submit"

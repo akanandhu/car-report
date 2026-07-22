@@ -6,6 +6,7 @@ import EmailLoginForm from "../EmailLoginForm";
 import PhoneLoginForm from "../PhoneLoginForm";
 import EmailSignupForm from "../EmailSignupForm";
 import PhoneSignupForm from "../PhoneSignupForm";
+import ForgotPasswordFlow from "../ForgotPasswordFlow";
 import Divider from "@/src/components/Divider";
 import Button from "@/src/components/Button";
 import Google from "@/public/assets/svg/Google";
@@ -20,18 +21,38 @@ const AuthForm = () => {
     showEmailForm,
     showPhoneForm,
     backToMethodSelection,
+    onSignupSuccess,
+    showForgotPassword,
+    onForgotPasswordSuccess,
   } = useAuthForm();
 
   const renderContent = () => {
     switch (currentView) {
       case "email-login":
-        return <EmailLoginForm onBack={backToMethodSelection} />;
+        return (
+          <EmailLoginForm
+            onBack={backToMethodSelection}
+            onForgotPassword={showForgotPassword}
+          />
+        );
       case "phone-login":
         return <PhoneLoginForm onBack={backToMethodSelection} />;
       case "email-signup":
-        return <EmailSignupForm onBack={backToMethodSelection} />;
+        return (
+          <EmailSignupForm
+            onBack={backToMethodSelection}
+            onSuccess={onSignupSuccess}
+          />
+        );
       case "phone-signup":
         return <PhoneSignupForm onBack={backToMethodSelection} />;
+      case "forgot-password":
+        return (
+          <ForgotPasswordFlow
+            onBack={() => onTabChange("login")}
+            onSuccess={onForgotPasswordSuccess}
+          />
+        );
       case "method-selection":
       default:
         return (

@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { getSession } from "next-auth/react";
 
 type ApiOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -47,8 +48,15 @@ export async function apiClient<T>(
 ): Promise<T> {
   const { method = "GET", body, headers = {}, next, params } = options;
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+  let token = null;
+  if (typeof window !== "undefined") {
+    const session = await getSession();
+    if (session?.accessToken) {
+      token = session.accessToken;
+    } else {
+      token = localStorage.getItem("accessToken");
+    }
+  }
 
   const url = buildApiUrl(endpoint, params);
   const res = await fetch(url, {

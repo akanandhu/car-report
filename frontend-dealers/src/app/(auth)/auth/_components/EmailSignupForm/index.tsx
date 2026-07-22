@@ -7,9 +7,9 @@ import { EmailSignupFormPropsI } from "./types";
 import useEmailSignupForm from "./useHook";
 import Back from "@/src/components/Back";
 
-const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
+const EmailSignupForm = ({ onBack, onSuccess }: EmailSignupFormPropsI) => {
   const { register, handleSubmit, errors, isLoading, onSubmit } =
-    useEmailSignupForm();
+    useEmailSignupForm(onSuccess);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -24,11 +24,11 @@ const EmailSignupForm = ({ onBack }: EmailSignupFormPropsI) => {
       />
 
       <Input
-        label="Company/Dealership (Optional)"
-        type="text"
-        placeholder="Premium Auto Assessments"
-        {...register("company")}
-        error={errors.company?.message}
+        label="Mobile Number"
+        type="tel"
+        placeholder="8129390516"
+        {...register("mobile")}
+        error={errors.mobile?.message}
         disabled={isLoading}
       />
 

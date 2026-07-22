@@ -1,4 +1,9 @@
+"use client";
+
 import { Bell, Car, Menu, Search, User } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 
 type NavbarProps = {
   onOpenSidebar: () => void;
@@ -70,20 +75,61 @@ const NotificationButton = () => (
   </button>
 );
 
-const AdminProfile = ({ compact = false }: { compact?: boolean }) => (
-  <div className="flex min-w-0 items-center gap-2">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-700">
-      <User size={16} />
-    </div>
-    {!compact ? (
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-slate-950">
-          Admin User
-        </p>
-        <p className="truncate text-sm text-slate-500">admin@careval.com</p>
+const AdminProfile = ({ compact = false }: { compact?: boolean }) => {
+  const { data: session } = useSession();
+  const [localUser, setLocalUser] = useState<{ name?: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    const platform = Capacitor.getPlatform();
+    if (platform === "android" || platform === "ios") {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setLocalUser(JSON.parse(storedUser));
+        }
+      } catch (e) {
+        console.error("Failed to parse local user details:", e);
+      }
+    }
+  }, []);
+
+  const name = session?.user?.name || localUser?.name || "Admin User";
+  const email = session?.user?.email || localUser?.email || "admin@careval.com";
+
+  const handleLogout = async () => {
+    const platform = Capacitor.getPlatform();
+    if (platform === "android" || platform === "ios") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      window.location.href = "/auth";
+    } else {
+      await signOut({ callbackUrl: "/auth" });
+    }
+  };
+
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+        <User size={16} />
       </div>
-    ) : null}
-  </div>
-);
+      {!compact ? (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-slate-950">
+            {name}
+          </p>
+          <p className="truncate text-xs text-slate-500">{email}</p>
+        </div>
+      ) : null}
+      <button
+        onClick={handleLogout}
+        className="ml-2 text-xs font-semibold text-red-600 hover:text-red-800 transition"
+        title="Logout"
+      >
+        Logout
+      </button>
+    </div>
+  );
+};
 
 export default Navbar;

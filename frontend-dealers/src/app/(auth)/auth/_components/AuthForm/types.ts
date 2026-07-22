@@ -8,4 +8,6 @@ export type AuthView =
   | "email-login"
   | "phone-login"
   | "email-signup"
-  | "phone-signup";
+  | "phone-signup"
+  | "forgot-password";
+
