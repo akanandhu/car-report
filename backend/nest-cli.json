@@ -5,10 +5,10 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/car-garage/tsconfig.app.json"
+    "tsConfigPath": "apps/api/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/car-garage",
+  "root": "apps/api",
   "projects": {
     "api": {
       "type": "application",
@@ -17,15 +17,6 @@
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
         "tsConfigPath": "apps/api/tsconfig.app.json"
-      }
-    },
-    "car-garage": {
-      "type": "application",
-      "root": "apps/car-garage",
-      "entryFile": "main",
-      "sourceRoot": "apps/car-garage/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/car-garage/tsconfig.app.json"
       }
     },
     "shared": {
