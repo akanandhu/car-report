@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -9,6 +9,8 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
+    // The pg package currently resolves as an error type in type-aware ESLint.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
     });
@@ -30,12 +32,15 @@ export class PrismaService
 
   async cleanDatabase() {
     if (process.env['NODE_ENV'] === 'production') return;
-    const models = Reflect.ownKeys(this).filter(
-      (key) => typeof key === 'string' && key[0] !== '_',
-    );
 
-    return Promise.all(
-      models.map((modelKey) => (this as any)[modelKey].deleteMany()),
+    const tableNames = Prisma.dmmf.datamodel.models
+      .map((model) => model.dbName ?? model.name)
+      .map((tableName) => `"${tableName.replaceAll('"', '""')}"`)
+      .join(', ');
+
+    // Identifiers cannot be parameterized; names come only from generated Prisma metadata.
+    return this.$executeRawUnsafe(
+      `TRUNCATE TABLE ${tableNames} RESTART IDENTITY CASCADE`,
     );
   }
 }

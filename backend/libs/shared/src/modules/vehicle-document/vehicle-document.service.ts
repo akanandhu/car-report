@@ -3,6 +3,7 @@ import { VehicleDocumentRepository } from './repository/vehicle-document.reposit
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { DocumentGroupRepository } from '../document-group/repository/document-group.repository';
 import { VehicleRepository } from '../vehicle/repository/vehicle.repository';
+import { Prisma, VehicleDocumentStatus } from '@prisma/client';
 
 @Injectable()
 export class SharedVehicleDocumentService {
@@ -24,7 +25,7 @@ export class SharedVehicleDocumentService {
     vehicleId: string,
     data: {
       documentGroupId: string;
-      documentSpec: Record<string, any>;
+      documentSpec: Prisma.JsonObject;
       submittedBy?: string;
       formFieldId?: string;
     },
@@ -46,8 +47,14 @@ export class SharedVehicleDocumentService {
 
     if (existing) {
       // Merge the new data with existing data (allows partial step saves)
+      const existingSpec =
+        existing.documentSpec &&
+        typeof existing.documentSpec === 'object' &&
+        !Array.isArray(existing.documentSpec)
+          ? existing.documentSpec
+          : {};
       const mergedSpec = {
-        ...((existing.documentSpec as Record<string, any>) || {}),
+        ...existingSpec,
         ...data.documentSpec,
       };
 
@@ -56,7 +63,7 @@ export class SharedVehicleDocumentService {
         data: {
           documentSpec: mergedSpec,
           submittedBy: data.submittedBy || existing.submittedBy,
-          status: 'DRAFT' as any,
+          status: VehicleDocumentStatus.DRAFT,
         },
       });
     } else {
@@ -66,7 +73,7 @@ export class SharedVehicleDocumentService {
         documentSpec: data.documentSpec,
         submittedBy: data.submittedBy || null,
         formFieldId: data.formFieldId || null,
-        status: 'DRAFT' as any,
+        status: VehicleDocumentStatus.DRAFT,
       });
     }
   }
@@ -104,9 +111,9 @@ export class SharedVehicleDocumentService {
         status: 'DRAFT',
       },
       {
-        status: 'SUBMITTED' as any,
+        status: VehicleDocumentStatus.SUBMITTED,
         submittedBy: submittedBy || undefined,
-      } as any,
+      },
     );
 
     return {
@@ -138,7 +145,7 @@ export class SharedVehicleDocumentService {
       stepIds = steps.map((s) => s.id);
     }
 
-    const where: any = { vehicleId };
+    const where: Record<string, unknown> = { vehicleId };
     if (stepIds) {
       where.documentGroupId = { in: stepIds };
     }
