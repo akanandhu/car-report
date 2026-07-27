@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { BaseRepository } from '@shared/common/repository/base.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 
@@ -9,5 +9,14 @@ export class UserroleRepository extends BaseRepository<UserRole> {
 
   constructor(prisma: PrismaService) {
     super(prisma);
+  }
+
+  async findManyWithRole(
+    userId: string,
+  ): Promise<Prisma.UserRoleGetPayload<{ include: { role: true } }>[]> {
+    return this.prisma.userRole.findMany({
+      where: { userId, deletedAt: null },
+      include: { role: true },
+    });
   }
 }

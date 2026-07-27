@@ -27,6 +27,12 @@ import {
 import { AuthResponseDto, AuthTokensDto } from './dto/auth-response.dto';
 import type { Request } from 'express';
 
+type AuthenticatedRequestI = Request & {
+  user: {
+    userId: string;
+  };
+};
+
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -196,8 +202,8 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Unauthorized',
   })
-  async logout(@Req() req: Request): Promise<AuthResponseDto> {
-    const userId = (req.user as any)?.userId;
+  async logout(@Req() req: AuthenticatedRequestI): Promise<AuthResponseDto> {
+    const userId = req.user?.userId;
     const result = await this.authService.logout(userId);
 
     return {
@@ -220,8 +226,10 @@ export class AuthController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Unauthorized',
   })
-  async getCurrentUser(@Req() req: Request): Promise<AuthResponseDto> {
-    const userId = (req.user as any)?.userId;
+  async getCurrentUser(
+    @Req() req: AuthenticatedRequestI,
+  ): Promise<AuthResponseDto> {
+    const userId = req.user?.userId;
     const user = await this.authService.getCurrentUser(userId);
 
     return {

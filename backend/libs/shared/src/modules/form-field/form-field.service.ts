@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { FormFieldRepository } from './repository/form-field.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { DocumentGroupRepository } from '../document-group/repository/document-group.repository';
-import { FIELD_TYPES } from './interface/form-field.interface';
+import { FIELD_TYPES, isFieldType } from './interface/form-field.interface';
+import { Prisma, VehicleDocument } from '@prisma/client';
 
-type FormFieldResponse = {
+type FormFieldResponseI = {
   id: string;
   type: string;
   label: string;
@@ -28,17 +34,15 @@ export class SharedFormFieldService {
   private readonly formFieldRepository: FormFieldRepository;
   private readonly documentGroupRepository: DocumentGroupRepository;
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(private readonly prisma: PrismaService) {
     this.formFieldRepository = new FormFieldRepository(prisma);
     this.documentGroupRepository = new DocumentGroupRepository(prisma);
   }
 
-  private groupFieldsBySubgroup(fields: FormFieldResponse[]) {
+  private groupFieldsBySubgroup(fields: FormFieldResponseI[]) {
     const fieldGroups = new Map<
       string,
-      { subgroup: string | null; order: number; fields: FormFieldResponse[] }
+      { subgroup: string | null; order: number; fields: FormFieldResponseI[] }
     >();
 
     for (const field of fields) {
@@ -93,7 +97,9 @@ export class SharedFormFieldService {
     const stepGroup = allSteps.find((s) => s.order === step);
 
     if (!stepGroup) {
-      throw new NotFoundException(`Step ${step} not found for form type '${type}'`);
+      throw new NotFoundException(
+        `Step ${step} not found for form type '${type}'`,
+      );
     }
 
     // Get all enabled fields for this step, ordered
@@ -177,21 +183,23 @@ export class SharedFormFieldService {
     defaultValue?: string;
     isRequired?: boolean;
     order?: number;
-    validation?: any;
-    options?: any;
+    validation?: Prisma.JsonValue;
+    options?: Prisma.JsonValue;
     endpoint?: string;
-    conditions?: any;
+    conditions?: Prisma.JsonValue;
     isEnabled?: boolean;
   }) {
     // Validate field type
-    if (!FIELD_TYPES.includes(data.type as any)) {
+    if (!isFieldType(data.type)) {
       throw new BadRequestException(
         `Invalid field type '${data.type}'. Allowed types: ${FIELD_TYPES.join(', ')}`,
       );
     }
 
     // Check document group exists
-    const documentGroup = await this.documentGroupRepository.findById(data.documentGroupId);
+    const documentGroup = await this.documentGroupRepository.findById(
+      data.documentGroupId,
+    );
     if (!documentGroup) {
       throw new NotFoundException('Document group (step) not found');
     }
@@ -254,10 +262,10 @@ export class SharedFormFieldService {
       defaultValue?: string;
       isRequired?: boolean;
       order?: number;
-      validation?: any;
-      options?: any;
+      validation?: Prisma.JsonValue;
+      options?: Prisma.JsonValue;
       endpoint?: string;
-      conditions?: any;
+      conditions?: Prisma.JsonValue;
       isEnabled?: boolean;
     },
   ) {
@@ -267,7 +275,7 @@ export class SharedFormFieldService {
     }
 
     // Validate type if being updated
-    if (data.type && !FIELD_TYPES.includes(data.type as any)) {
+    if (data.type && !isFieldType(data.type)) {
       throw new BadRequestException(
         `Invalid field type '${data.type}'. Allowed types: ${FIELD_TYPES.join(', ')}`,
       );
@@ -314,7 +322,8 @@ export class SharedFormFieldService {
     fieldOrders: { fieldId: string; order: number }[],
   ) {
     // Verify document group exists
-    const documentGroup = await this.documentGroupRepository.findById(documentGroupId);
+    const documentGroup =
+      await this.documentGroupRepository.findById(documentGroupId);
     if (!documentGroup) {
       throw new NotFoundException('Document group (step) not found');
     }
@@ -343,9 +352,12 @@ export class SharedFormFieldService {
    */
   async getFieldsByGroupAndVehicle(vehicleId: string, documentGroupId: string) {
     // Verify the document group exists
-    const documentGroup = await this.documentGroupRepository.findById(documentGroupId);
+    const documentGroup =
+      await this.documentGroupRepository.findById(documentGroupId);
     if (!documentGroup) {
-      throw new NotFoundException(`Document group '${documentGroupId}' not found`);
+      throw new NotFoundException(
+        `Document group '${documentGroupId}' not found`,
+      );
     }
 
     // Fetch all enabled, non-deleted fields for the group
@@ -360,16 +372,15 @@ export class SharedFormFieldService {
 
     // Fetch VehicleDocument records for this vehicle + group combination
     // There may be one per formFieldId (or one aggregate without formFieldId)
-    // Using 'any' cast to handle stale Prisma client types (pending `prisma generate`)
-    const vehicleDocs = (await (this.prisma.vehicleDocument as any).findMany({
+    const vehicleDocs = await this.prisma.vehicleDocument.findMany({
       where: {
         vehicleId,
         documentGroupId,
       },
-    })) as any[];
+    });
 
     // Build a lookup: formFieldId → vehicleDocument (null key for group-level doc)
-    const vehicleDocByFieldId = new Map<string | null, any>();
+    const vehicleDocByFieldId = new Map<string | null, VehicleDocument>();
     for (const vd of vehicleDocs) {
       vehicleDocByFieldId.set(vd.formFieldId ?? null, vd);
     }
@@ -400,13 +411,13 @@ export class SharedFormFieldService {
         // Saved vehicle document data for this field (if any)
         vehicleDocument: vehicleDoc
           ? {
-            id: vehicleDoc.id,
-            status: vehicleDoc.status,
-            documentSpec: vehicleDoc.documentSpec,
-            submittedBy: vehicleDoc.submittedBy,
-            createdAt: vehicleDoc.createdAt,
-            updatedAt: vehicleDoc.updatedAt,
-          }
+              id: vehicleDoc.id,
+              status: vehicleDoc.status,
+              documentSpec: vehicleDoc.documentSpec,
+              submittedBy: vehicleDoc.submittedBy,
+              createdAt: vehicleDoc.createdAt,
+              updatedAt: vehicleDoc.updatedAt,
+            }
           : null,
       };
     });
