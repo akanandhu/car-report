@@ -6,7 +6,7 @@ import { FormConfigSeeder } from './form-config.seeder';
 import { DocumentGroupSeeder } from './document-group.seeder';
 import { RtoSeeder } from './rto.seeder';
 
-export interface SeederResult {
+export type SeederResultI = {
   success: boolean;
   message: string;
   details: {
@@ -15,7 +15,7 @@ export interface SeederResult {
     error?: string;
   }[];
   executedAt: string;
-}
+};
 
 @Injectable()
 export class SeederService {
@@ -23,10 +23,10 @@ export class SeederService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async runAll(): Promise<SeederResult> {
+  async runAll(): Promise<SeederResultI> {
     this.logger.log('🌱 Starting database seeding via API...');
 
-    const details: SeederResult['details'] = [];
+    const details: SeederResultI['details'] = [];
 
     const seeders: Array<{ name: string; fn: () => Promise<void> }> = [
       {
@@ -59,18 +59,20 @@ export class SeederService {
         await seeder.fn();
         this.logger.log(`  ✅ ${seeder.name} completed`);
         details.push({ seeder: seeder.name, status: 'success' });
-      } catch (err: any) {
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown error';
         hasFailure = true;
-        this.logger.error(`  ❌ ${seeder.name} failed: ${err?.message}`);
+        this.logger.error(`  ❌ ${seeder.name} failed: ${message}`);
         details.push({
           seeder: seeder.name,
           status: 'failed',
-          error: err?.message ?? 'Unknown error',
+          error: message,
         });
       }
     }
 
-    const result: SeederResult = {
+    const result: SeederResultI = {
       success: !hasFailure,
       message: hasFailure
         ? 'Seeding completed with errors. Check details.'

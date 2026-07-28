@@ -1,301 +1,168 @@
 import { Injectable } from '@nestjs/common';
-import { BaseModel } from '../interface';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
+import { BaseModel } from '../interface';
+import {
+  CreateDataI,
+  DeleteOptionsI,
+  FindManyOptionsI,
+  FindOneOptionsI,
+  PaginatedResultI,
+  QueryObjectI,
+  RepositoryDelegateI,
+  SelectOptionsI,
+  UpdateOptionsI,
+} from './base-repository.types';
 
-export interface FindManyOptions {
-  where?: any;
-  select?: any;
-  include?: any;
-  orderBy?: any;
-  skip?: number;
-  take?: number;
-  cursor?: any;
-}
-
-export interface FindOneOptions {
-  where: any;
-  select?: any;
-  include?: any;
-}
-
-export interface UpdateOptions<T = any> {
-  where: any;
-  data: Partial<T>;
-  select?: any;
-  include?: any;
-}
-
-export interface DeleteOptions {
-  where: any;
-}
+export type {
+  FindManyOptionsI,
+  FindOneOptionsI,
+  PaginatedResultI,
+  UpdateOptionsI,
+} from './base-repository.types';
 
 @Injectable()
 export abstract class BaseRepository<T extends BaseModel> {
   protected abstract readonly modelName: string;
-
-  /**
-   * Set to false for models that have no `deletedAt` column.
-   * When false, soft-delete filters are never applied.
-   */
   protected readonly softDeleteEnabled: boolean = true;
 
-  constructor(protected readonly prisma: PrismaService) { }
+  constructor(protected readonly prisma: PrismaService) {}
 
-  /**
-   * Get the Prisma model dynamically
-   */
-  protected get model() {
-    return (this.prisma as any)[this.modelName];
+  protected get model(): RepositoryDelegateI<T> {
+    // Prisma has no common delegate type for dynamically selected models.
+    const delegates = this.prisma as unknown as Record<
+      string,
+      RepositoryDelegateI<T>
+    >;
+    return delegates[this.modelName];
   }
 
-  /**
-   * Create a new record
-   */
-  async create(
-    data: Omit<
-      T,
-      | 'id'
-      | 'createdAt'
-      | 'updatedAt'
-      | 'deletedAt'
-    >,
-    options?: { select?: any; include?: any },
-  ): Promise<T> {
-    return this.model.create({
-      data,
-      ...options,
-    });
+  private activeWhere(
+    where: QueryObjectI = {},
+    includeSoftDeleted = false,
+  ): QueryObjectI {
+    return !this.softDeleteEnabled || includeSoftDeleted
+      ? where
+      : { ...where, deletedAt: null };
   }
 
-  /**
-   * Find many records (excludes soft-deleted by default)
-   */
-  async findMany(
-    options?: FindManyOptions & { includeSoftDeleted?: boolean },
-  ): Promise<T[]> {
-    const {
-      includeSoftDeleted = false,
-      where = {},
-      ...restOptions
-    } = options || {};
+  private requireSoftDelete(operation: string): void {
+    if (!this.softDeleteEnabled) {
+      throw new Error(
+        `${operation} is not supported on model '${this.modelName}' (no deletedAt column)`,
+      );
+    }
+  }
 
-    const whereClause =
-      !this.softDeleteEnabled || includeSoftDeleted
-        ? where
-        : { ...where, deletedAt: null };
+  async create(data: CreateDataI<T>, options?: SelectOptionsI): Promise<T> {
+    return this.model.create({ data, ...options });
+  }
 
+  async findMany(options: FindManyOptionsI = {}): Promise<T[]> {
+    const { includeSoftDeleted = false, where = {}, ...rest } = options;
     return this.model.findMany({
-      where: whereClause,
-      ...restOptions,
+      where: this.activeWhere(where, includeSoftDeleted),
+      ...rest,
     });
   }
 
-  /**
-   * Find one record (excludes soft-deleted by default)
-   */
-  async findOne(
-    options: FindOneOptions & { includeSoftDeleted?: boolean },
-  ): Promise<T | null> {
-    const { includeSoftDeleted = false, where, ...restOptions } = options;
-
-    const whereClause =
-      !this.softDeleteEnabled || includeSoftDeleted
-        ? where
-        : { ...where, deletedAt: null };
-
+  async findOne(options: FindOneOptionsI): Promise<T | null> {
+    const { includeSoftDeleted = false, where, ...rest } = options;
     return this.model.findFirst({
-      where: whereClause,
-      ...restOptions,
+      where: this.activeWhere(where, includeSoftDeleted),
+      ...rest,
     });
   }
 
-  /**
-   * Find first record (alias for findOne)
-   */
-  async findFirst(
-    options: FindOneOptions & { includeSoftDeleted?: boolean },
-  ): Promise<T | null> {
+  async findFirst(options: FindOneOptionsI): Promise<T | null> {
     return this.findOne(options);
   }
 
-  /**
-   * Find one record by ID (excludes soft-deleted by default)
-   */
   async findById(
     id: string,
-    options?: { select?: any; include?: any; includeSoftDeleted?: boolean },
+    options: SelectOptionsI & { includeSoftDeleted?: boolean } = {},
   ): Promise<T | null> {
-    const { includeSoftDeleted = false, ...restOptions } = options || {};
-
-    const whereClause =
-      !this.softDeleteEnabled || includeSoftDeleted
-        ? { id }
-        : { id, deletedAt: null };
-
+    const { includeSoftDeleted = false, ...rest } = options;
     return this.model.findFirst({
-      where: whereClause,
-      ...restOptions,
+      where: this.activeWhere({ id }, includeSoftDeleted),
+      ...rest,
     });
   }
 
-  /**
-   * Find unique record (excludes soft-deleted by default)
-   */
-  async findUnique(
-    options: FindOneOptions & { includeSoftDeleted?: boolean },
-  ): Promise<T | null> {
-    const { includeSoftDeleted = false, where, ...restOptions } = options;
-
-    // For findUnique, we need to use findFirst with additional deletedAt filter
-    // since findUnique doesn't support complex where clauses
-    return this.findOne({ where, includeSoftDeleted, ...restOptions });
+  async findUnique(options: FindOneOptionsI): Promise<T | null> {
+    return this.findOne(options);
   }
 
-  /**
-   * Update a record
-   */
-  async update(options: UpdateOptions<T>): Promise<T> {
-    const { where, data, ...restOptions } = options;
-
-    const whereClause = this.softDeleteEnabled
-      ? { ...where, deletedAt: null }
-      : where;
-
+  async update(options: UpdateOptionsI<T>): Promise<T> {
+    const { where, data, ...rest } = options;
     return this.model.update({
-      where: whereClause,
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
-      ...restOptions,
+      where: this.activeWhere(where),
+      data: { ...data, updatedAt: new Date() },
+      ...rest,
     });
   }
 
-  /**
-   * Update by ID
-   */
   async updateById(
     id: string,
     data: Partial<T>,
-    options?: { select?: any; include?: any },
+    options?: SelectOptionsI,
   ): Promise<T> {
-    return this.update({
-      where: { id },
-      data,
-      ...options,
-    });
+    return this.update({ where: { id }, data, ...options });
   }
 
-  /**
-   * Update many records
-   */
-  async updateMany(where: any, data: Partial<T>): Promise<{ count: number }> {
-    const whereClause = this.softDeleteEnabled
-      ? { ...where, deletedAt: null }
-      : where;
-
+  async updateMany(
+    where: QueryObjectI,
+    data: Partial<T>,
+  ): Promise<{ count: number }> {
     return this.model.updateMany({
-      where: whereClause,
-      data: {
-        ...data,
-        updatedAt: new Date(),
-      },
+      where: this.activeWhere(where),
+      data: { ...data, updatedAt: new Date() },
     });
   }
 
-  /**
-   * Soft delete a record
-   */
-  async softDelete(options: DeleteOptions): Promise<T> {
-    if (!this.softDeleteEnabled) {
-      throw new Error(`Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`);
-    }
-    const { where } = options;
-
+  async softDelete(options: DeleteOptionsI): Promise<T> {
+    this.requireSoftDelete('Soft delete');
     return this.model.update({
-      where: { ...where, deletedAt: null },
-      data: {
-        deletedAt: new Date(),
-        updatedAt: new Date(),
-      },
+      where: this.activeWhere(options.where),
+      data: { deletedAt: new Date(), updatedAt: new Date() },
     });
   }
 
-  /**
-   * Soft delete by ID
-   */
   async softDeleteById(id: string): Promise<T> {
     return this.softDelete({ where: { id } });
   }
 
-  /**
-   * Soft delete many records
-   */
-  async softDeleteMany(where: any): Promise<{ count: number }> {
-    if (!this.softDeleteEnabled) {
-      throw new Error(`Soft delete is not supported on model '${this.modelName}' (no deletedAt column)`);
-    }
+  async softDeleteMany(where: QueryObjectI): Promise<{ count: number }> {
+    this.requireSoftDelete('Soft delete');
     return this.model.updateMany({
-      where: { ...where, deletedAt: null },
-      data: {
-        deletedAt: new Date(),
-        updatedAt: new Date(),
-      },
+      where: this.activeWhere(where),
+      data: { deletedAt: new Date(), updatedAt: new Date() },
     });
   }
 
-  /**
-   * Restore a soft-deleted record
-   */
-  async restore(options: DeleteOptions): Promise<T> {
-    if (!this.softDeleteEnabled) {
-      throw new Error(`Restore is not supported on model '${this.modelName}' (no deletedAt column)`);
-    }
-    const { where } = options;
-
+  async restore(options: DeleteOptionsI): Promise<T> {
+    this.requireSoftDelete('Restore');
     return this.model.update({
-      where: { ...where, deletedAt: { not: null } },
-      data: {
-        deletedAt: null,
-        updatedAt: new Date(),
-      },
+      where: { ...options.where, deletedAt: { not: null } },
+      data: { deletedAt: null, updatedAt: new Date() },
     });
   }
 
-  /**
-   * Restore by ID
-   */
   async restoreById(id: string): Promise<T> {
     return this.restore({ where: { id } });
   }
 
-  /**
-   * Restore many records
-   */
-  async restoreMany(where: any): Promise<{ count: number }> {
-    if (!this.softDeleteEnabled) {
-      throw new Error(`Restore is not supported on model '${this.modelName}' (no deletedAt column)`);
-    }
+  async restoreMany(where: QueryObjectI): Promise<{ count: number }> {
+    this.requireSoftDelete('Restore');
     return this.model.updateMany({
       where: { ...where, deletedAt: { not: null } },
-      data: {
-        deletedAt: null,
-        updatedAt: new Date(),
-      },
+      data: { deletedAt: null, updatedAt: new Date() },
     });
   }
 
-  /**
-   * Hard delete a record (permanently remove from database)
-   */
-  async hardDelete(options: DeleteOptions): Promise<T> {
-    const { where } = options;
-    return this.model.delete({ where });
+  async hardDelete(options: DeleteOptionsI): Promise<T> {
+    return this.model.delete({ where: options.where });
   }
 
-  /**
-   * Hard delete by ID
-   */
   async hardDeleteById(id: string): Promise<T> {
     return this.hardDelete({ where: { id } });
   }
@@ -304,112 +171,70 @@ export abstract class BaseRepository<T extends BaseModel> {
     return this.hardDeleteMany({ id: { in: ids } });
   }
 
-  /**
-   * Hard delete many records
-   */
-  async hardDeleteMany(where: any): Promise<{ count: number }> {
+  async hardDeleteMany(where: QueryObjectI): Promise<{ count: number }> {
     return this.model.deleteMany({ where });
   }
 
-  /**
-   * Count records (excludes soft-deleted by default)
-   */
-  async count(where?: any, includeSoftDeleted = false): Promise<number> {
-    const whereClause =
-      !this.softDeleteEnabled || includeSoftDeleted
-        ? where
-        : { ...where, deletedAt: null };
-
-    return this.model.count({ where: whereClause });
+  async count(
+    where: QueryObjectI = {},
+    includeSoftDeleted = false,
+  ): Promise<number> {
+    return this.model.count({
+      where: this.activeWhere(where, includeSoftDeleted),
+    });
   }
 
-  /**
-   * Check if record exists (excludes soft-deleted by default)
-   */
-  async exists(where: any, includeSoftDeleted = false): Promise<boolean> {
-    const count = await this.count(where, includeSoftDeleted);
-    return count > 0;
+  async exists(
+    where: QueryObjectI,
+    includeSoftDeleted = false,
+  ): Promise<boolean> {
+    return (await this.count(where, includeSoftDeleted)) > 0;
   }
 
-  /**
-   * Upsert a record
-   */
   async upsert(
-    where: any,
-    create: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>,
+    where: QueryObjectI,
+    create: CreateDataI<T>,
     update: Partial<T>,
-    options?: { select?: any; include?: any },
+    options?: SelectOptionsI,
   ): Promise<T> {
     return this.model.upsert({
       where,
       create,
-      update: {
-        ...update,
-        updatedAt: new Date(),
-      },
+      update: { ...update, updatedAt: new Date() },
       ...options,
     });
   }
 
-  /**
-   * Find all soft-deleted records
-   */
   async findSoftDeleted(
-    options?: Omit<FindManyOptions, 'where'> & { where?: any },
+    options: Omit<FindManyOptionsI, 'where'> & {
+      where?: QueryObjectI;
+    } = {},
   ): Promise<T[]> {
-    if (!this.softDeleteEnabled) {
-      throw new Error(`findSoftDeleted is not supported on model '${this.modelName}' (no deletedAt column)`);
-    }
-    const { where = {}, ...restOptions } = options || {};
-
+    this.requireSoftDelete('Find soft deleted');
+    const { where = {}, ...rest } = options;
     return this.model.findMany({
       where: { ...where, deletedAt: { not: null } },
-      ...restOptions,
+      ...rest,
     });
   }
 
-  /**
-   * Get paginated results
-   */
   async paginate(
-    page: number = 1,
-    limit: number = 10,
-    options?: FindManyOptions & { includeSoftDeleted?: boolean },
-  ): Promise<{
-    data: T[];
-    meta: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-      hasNextPage: boolean;
-      hasPrevPage: boolean;
-    };
-  }> {
-    const {
-      includeSoftDeleted = false,
-      where = {},
-      ...restOptions
-    } = options || {};
-
-    const skip = (page - 1) * limit;
-    const whereClause =
-      !this.softDeleteEnabled || includeSoftDeleted
-        ? where
-        : { ...where, deletedAt: null };
-
+    page = 1,
+    limit = 10,
+    options: FindManyOptionsI = {},
+  ): Promise<PaginatedResultI<T>> {
+    const { includeSoftDeleted = false, where = {}, ...rest } = options;
+    const whereClause = this.activeWhere(where, includeSoftDeleted);
     const [data, total] = await Promise.all([
       this.model.findMany({
         where: whereClause,
-        skip,
+        skip: (page - 1) * limit,
         take: limit,
-        ...restOptions,
+        ...rest,
       }),
       this.model.count({ where: whereClause }),
     ]);
-
     const totalPages = Math.ceil(total / limit);
-
     return {
       data,
       meta: {
@@ -422,18 +247,4 @@ export abstract class BaseRepository<T extends BaseModel> {
       },
     };
   }
-
-  // /**
-  //  * Execute a transaction
-  //  */
-  // async transaction<R>(fn: (prisma: any) => Promise<R>): Promise<R> {
-  //   return this.prisma.$transaction(fn);
-  // }
-
-  // /**
-  //  * Execute raw query
-  //  */
-  // async raw<R = any>(query: string, ...values: any[]): Promise<R> {
-  //   return this.prisma.$queryRawUnsafe(query, ...values);
-  // }
 }

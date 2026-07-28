@@ -1,0 +1,4 @@
+
+> car-garage@0.0.1 build /Users/ananthu/Desktop/car-report/backend
+> tsc && tsc-alias
+

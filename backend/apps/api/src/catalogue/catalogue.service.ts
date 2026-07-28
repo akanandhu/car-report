@@ -69,6 +69,40 @@ export interface ConfigResponse {
   };
 }
 
+type CatalogueItemI = {
+  id: number;
+  display_name: string;
+};
+
+type VariantItemI = CatalogueItemI & {
+  fuel_type: string;
+  transmission_type: string;
+};
+
+type ListResponseI<T> = {
+  results?: T[];
+};
+
+type ConfigItemI = {
+  active?: boolean;
+  display_name: string | number;
+  name: string | number;
+};
+
+type ConfigFiltersI = {
+  make_year?: ConfigItemI[];
+  mileage?: ConfigItemI[];
+  no_of_owners?: ConfigItemI[];
+  sell_time?: ConfigItemI[];
+};
+
+type ConfigResponseI = ConfigFiltersI & {
+  filters?: ConfigFiltersI;
+  data?: {
+    filters?: ConfigFiltersI;
+  };
+};
+
 @Injectable()
 export class CatalogueService {
   private readonly SPINNY_BASE_URL = 'https://api.spinny.com/v3/api/catalogue';
@@ -115,7 +149,9 @@ export class CatalogueService {
   ): Promise<{ options: MakeOption[] }> {
     try {
       const url = `${this.SPINNY_BASE_URL}/model-list`;
-      const response = await this.httpService.axiosRef.get(url, {
+      const response = await this.httpService.axiosRef.get<
+        ListResponseI<CatalogueItemI>
+      >(url, {
         params: {
           make_id,
           make_year,
@@ -135,7 +171,7 @@ export class CatalogueService {
       }));
 
       return { options };
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Failed to fetch vehicle models from external API',
         HttpStatus.BAD_GATEWAY,
@@ -152,7 +188,9 @@ export class CatalogueService {
   ): Promise<{ options: MakeOption[] }> {
     try {
       const url = `${this.SPINNY_BASE_URL}/variant-list`;
-      const response = await this.httpService.axiosRef.get(url, {
+      const response = await this.httpService.axiosRef.get<
+        ListResponseI<VariantItemI>
+      >(url, {
         params: {
           model: model_id,
           make_year,
@@ -166,13 +204,13 @@ export class CatalogueService {
       });
 
       const results = response.data?.results || [];
-      const options: MakeOption[] = results.map((variant: any) => ({
+      const options: MakeOption[] = results.map((variant) => ({
         label: variant.display_name,
         value: String(variant.id),
       }));
 
       return { options };
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Failed to fetch vehicle variants from external API',
         HttpStatus.BAD_GATEWAY,
@@ -197,7 +235,9 @@ export class CatalogueService {
   }> {
     try {
       const url = `${this.SPINNY_BASE_URL}/variant-list`;
-      const response = await this.httpService.axiosRef.get(url, {
+      const response = await this.httpService.axiosRef.get<
+        ListResponseI<VariantItemI>
+      >(url, {
         params: {
           model: model_id,
           make_year,
@@ -211,15 +251,15 @@ export class CatalogueService {
       });
 
       const results = response.data?.results || [];
-      const variants = results.map((v: any) => ({
-        id: v.id,
-        display_name: v.display_name,
-        fuel_type: v.fuel_type,
-        transmission_type: v.transmission_type,
+      const variants = results.map((variant) => ({
+        id: variant.id,
+        display_name: variant.display_name,
+        fuel_type: variant.fuel_type,
+        transmission_type: variant.transmission_type,
       }));
 
       return { variants };
-    } catch (error) {
+    } catch {
       throw new HttpException(
         'Failed to fetch vehicle variants from external API',
         HttpStatus.BAD_GATEWAY,
@@ -227,11 +267,12 @@ export class CatalogueService {
     }
   }
 
-  async getConfig(city_name: string): Promise<any> {
+  async getConfig(city_name: string): Promise<ConfigResponseI> {
     try {
       const url = `${this.SPINNY_CONFIG_URL}/?city_name=${city_name}&v2`;
       console.log('Fetching:', url);
-      const response = await this.httpService.axiosRef.get(url);
+      const response =
+        await this.httpService.axiosRef.get<ConfigResponseI>(url);
       const result = response.data;
       return result;
     } catch (error) {
@@ -249,24 +290,21 @@ export class CatalogueService {
     sell_time: MakeOption[];
   }> {
     const config = await this.getConfig(city_name);
-    const data = config;
-    const filters = data?.filters || data?.data?.filters || data;
+    const filters = config.filters ?? config.data?.filters ?? config;
 
-    const mapField = (fieldData): MakeOption[] => {
-      if (!fieldData || !Array.isArray(fieldData)) return [];
-      return fieldData
+    const mapField = (items: ConfigItemI[] = []): MakeOption[] =>
+      items
         .filter((item) => item.active !== false)
         .map((item) => ({
           label: String(item.display_name),
           value: String(item.name),
         }));
-    };
 
     return {
-      make_year: mapField(filters?.make_year),
-      mileage: mapField(filters?.mileage),
-      no_of_owners: mapField(filters?.no_of_owners),
-      sell_time: mapField(filters?.sell_time),
+      make_year: mapField(filters.make_year),
+      mileage: mapField(filters.mileage),
+      no_of_owners: mapField(filters.no_of_owners),
+      sell_time: mapField(filters.sell_time),
     };
   }
 }

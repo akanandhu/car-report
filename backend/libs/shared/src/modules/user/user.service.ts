@@ -11,6 +11,7 @@ import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { SharedUserroleService } from '../userrole/userrole.service';
 import { SharedBranchService } from '../branch/branch.service';
 import * as bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SharedUserService {
@@ -63,9 +64,12 @@ export class SharedUserService {
       email: data.email,
       mobile: data.mobile,
       password: hashedPassword,
+      clientId: null,
+      otpSecret: null,
+      otpExpiresAt: null,
       mobileVerifiedAt: null,
       emailVerifiedAt: null,
-    } as any);
+    });
 
     // Assign role to user (defaults to 'client')
     const roleIdentifier = data.roleIdentifier || 'client';
@@ -162,7 +166,10 @@ export class SharedUserService {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
@@ -204,7 +211,7 @@ export class SharedUserService {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: any = {
+    const where: Prisma.UserWhereInput = {
       deletedAt: null, // Only non-deleted users
     };
 
@@ -246,4 +253,3 @@ export class SharedUserService {
     };
   }
 }
-
