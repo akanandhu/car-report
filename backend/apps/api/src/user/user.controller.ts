@@ -10,7 +10,13 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SharedUserService } from '@shared/modules/user/user.service';
 import {
   RegisterUserDto,
@@ -28,7 +34,7 @@ import {
 @Controller('users')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class UserController {
-  constructor(private readonly sharedUserService: SharedUserService) { }
+  constructor(private readonly sharedUserService: SharedUserService) {}
 
   /**
    * Register a new user
@@ -36,7 +42,8 @@ export class UserController {
   @Post('register')
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Create a new user account with email, password, and other details',
+    description:
+      'Create a new user account with email, password, and other details',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -51,7 +58,9 @@ export class UserController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid input data',
   })
-  async register(@Body() registerDto: RegisterUserDto): Promise<ResponseDto<UserResponseDto>> {
+  async register(
+    @Body() registerDto: RegisterUserDto,
+  ): Promise<ResponseDto<UserResponseDto>> {
     const user = await this.sharedUserService.register(registerDto);
 
     return {
@@ -169,7 +178,9 @@ export class UserController {
     status: HttpStatus.NOT_FOUND,
     description: 'User not found',
   })
-  async findById(@Param('id') id: string): Promise<ResponseDto<UserResponseDto>> {
+  async findById(
+    @Param('id') id: string,
+  ): Promise<ResponseDto<UserResponseDto>> {
     const user = await this.sharedUserService.findById(id);
 
     return {
@@ -211,4 +222,3 @@ export class UserController {
     };
   }
 }
-

@@ -1,11 +1,10 @@
-﻿import {
+import {
   Injectable,
   ConflictException,
   NotFoundException,
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserUtilsService } from './service/user.utils.service';
 import { UserRepository } from './repository/user.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { SharedUserroleService } from '../userrole/userrole.service';
@@ -18,7 +17,6 @@ export class SharedUserService {
   private readonly userRepository: UserRepository;
 
   constructor(
-    private readonly userUtilsService: UserUtilsService,
     private readonly prisma: PrismaService,
     private readonly userroleService: SharedUserroleService,
     private readonly branchService: SharedBranchService,

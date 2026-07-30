@@ -3,8 +3,8 @@ import { SeederService } from '@shared/database/seeder/seeder.service';
 import { PrismaModule } from '@shared/database/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [SeederService],
-    exports: [SeederService],
+  imports: [PrismaModule],
+  providers: [SeederService],
+  exports: [SeederService],
 })
-export class SeederModule { }
+export class SeederModule {}

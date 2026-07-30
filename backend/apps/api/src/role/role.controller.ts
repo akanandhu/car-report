@@ -3,7 +3,5 @@ import { SharedRoleService } from '@shared/modules/role/role.service';
 
 @Controller('roles')
 export class RoleController {
-  constructor(
-    private readonly sharedRoleService: SharedRoleService,
-  ) { }
+  constructor(private readonly sharedRoleService: SharedRoleService) {}
 }

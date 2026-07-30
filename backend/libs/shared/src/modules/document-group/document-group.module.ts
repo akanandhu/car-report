@@ -8,8 +8,8 @@ import { SharedDocumentGroupService } from './document-group.service';
 import { PrismaModule } from '@shared/database/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [DocumentGroupRepository, SharedDocumentGroupService],
-    exports: [SharedDocumentGroupService, DocumentGroupRepository],
+  imports: [PrismaModule],
+  providers: [DocumentGroupRepository, SharedDocumentGroupService],
+  exports: [SharedDocumentGroupService, DocumentGroupRepository],
 })
-export class SharedDocumentGroupModule { }
+export class SharedDocumentGroupModule {}

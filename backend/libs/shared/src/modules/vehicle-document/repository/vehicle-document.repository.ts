@@ -5,14 +5,14 @@ import { PrismaService } from '@shared/database/prisma/prisma.service';
 
 @Injectable()
 export class VehicleDocumentRepository extends BaseRepository<VehicleDocument> {
-    protected readonly modelName = 'vehicleDocument';
+  protected readonly modelName = 'vehicleDocument';
 
-    /**
-     * VehicleDocument has no `deletedAt` column — disable soft-delete filtering.
-     */
-    protected readonly softDeleteEnabled = false;
+  /**
+   * VehicleDocument has no `deletedAt` column — disable soft-delete filtering.
+   */
+  protected readonly softDeleteEnabled = false;
 
-    constructor(prisma: PrismaService) {
-        super(prisma);
-    }
+  constructor(prisma: PrismaService) {
+    super(prisma);
+  }
 }

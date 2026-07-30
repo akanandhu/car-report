@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { VehicleUtilsService } from './service/vehicle.utils.service';
 import { VehicleRepository } from './repository/vehicle.repository';
 import { PrismaService } from '@shared/database/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -12,10 +11,7 @@ import { Prisma } from '@prisma/client';
 export class SharedVehicleService {
   private readonly vehicleRepository: VehicleRepository;
 
-  constructor(
-    private readonly vehicleUtilsService: VehicleUtilsService,
-    private readonly prisma: PrismaService,
-  ) {
+  constructor(private readonly prisma: PrismaService) {
     this.vehicleRepository = new VehicleRepository(prisma);
   }
 

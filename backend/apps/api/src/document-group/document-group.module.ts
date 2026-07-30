@@ -3,7 +3,7 @@ import { DocumentGroupController } from './document-group.controller';
 import { SharedDocumentGroupModule } from '@shared/modules/document-group/document-group.module';
 
 @Module({
-    imports: [SharedDocumentGroupModule],
-    controllers: [DocumentGroupController],
+  imports: [SharedDocumentGroupModule],
+  controllers: [DocumentGroupController],
 })
-export class DocumentGroupModule { }
+export class DocumentGroupModule {}

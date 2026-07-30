@@ -3,7 +3,7 @@ import { SeederController } from './seeder.controller';
 import { SeederModule as SharedSeederModule } from '@shared/database/seeder/seeder.module';
 
 @Module({
-    imports: [SharedSeederModule],
-    controllers: [SeederController],
+  imports: [SharedSeederModule],
+  controllers: [SeederController],
 })
-export class SeederModule { }
+export class SeederModule {}

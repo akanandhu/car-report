@@ -7,27 +7,27 @@ const envDockerPath = path.resolve(process.cwd(), '.env.docker');
 const envPath = path.resolve(process.cwd(), '.env');
 
 if (fs.existsSync(envDockerPath)) {
-    console.log('📝 Loading environment from .env.docker');
-    dotenv.config({ path: envDockerPath });
+  console.log('📝 Loading environment from .env.docker');
+  dotenv.config({ path: envDockerPath });
 } else if (fs.existsSync(envPath)) {
-    console.log('📝 Loading environment from .env');
-    dotenv.config({ path: envPath });
+  console.log('📝 Loading environment from .env');
+  dotenv.config({ path: envPath });
 } else {
-    console.warn('⚠️ No .env or .env.docker file found');
+  console.warn('⚠️ No .env or .env.docker file found');
 }
 
 export const config = {
-    database: {
-        url: process.env.DATABASE_URL || '',
-    },
-    backend: {
-        port: parseInt(process.env.BACKEND_PORT || '3000', 10),
-        apiUrl: process.env.BACKEND_API_URL || 'http://localhost:3000',
-    },
-    supabase: {
-        url: process.env.SUPABASE_URL || '',
-        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-        storageBucket: process.env.SUPABASE_STORAGE_BUCKET || '',
-    },
-    environment: process.env.NODE_ENV || 'development',
+  database: {
+    url: process.env.DATABASE_URL || '',
+  },
+  backend: {
+    port: parseInt(process.env.BACKEND_PORT || '3000', 10),
+    apiUrl: process.env.BACKEND_API_URL || 'http://localhost:3000',
+  },
+  supabase: {
+    url: process.env.SUPABASE_URL || '',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    storageBucket: process.env.SUPABASE_STORAGE_BUCKET || '',
+  },
+  environment: process.env.NODE_ENV || 'development',
 };

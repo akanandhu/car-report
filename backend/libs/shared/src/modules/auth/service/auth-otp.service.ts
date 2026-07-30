@@ -4,81 +4,83 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class SharedAuthOtpService {
-    private readonly OTP_EXPIRY_MINUTES = 10;
+  private readonly OTP_EXPIRY_MINUTES = 10;
 
-    constructor(private readonly userRepository: UserRepository) { }
+  constructor(private readonly userRepository: UserRepository) {}
 
-    /**
-     * Generate and send OTP to user's email
-     */
-    async generateAndSendOtp(email: string): Promise<string> {
-        const otp = this.generateOtp();
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + this.OTP_EXPIRY_MINUTES);
+  /**
+   * Generate and send OTP to user's email
+   */
+  async generateAndSendOtp(email: string): Promise<string> {
+    const otp = this.generateOtp();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + this.OTP_EXPIRY_MINUTES);
 
-        // Store OTP in user record
-        const user = await this.userRepository.findFirst({ where: { email } });
-        if (user) {
-            await this.userRepository.update({
-                where: { id: user.id },
-                data: {
-                    otpSecret: otp,
-                    otpExpiresAt: expiresAt,
-                },
-            });
-        }
-
-        // TODO: Implement actual email sending (use nodemailer, SendGrid, etc.)
-        console.log(`[OTP] Generated OTP for ${email}: ${otp} (expires at ${expiresAt})`);
-
-        return otp;
+    // Store OTP in user record
+    const user = await this.userRepository.findFirst({ where: { email } });
+    if (user) {
+      await this.userRepository.update({
+        where: { id: user.id },
+        data: {
+          otpSecret: otp,
+          otpExpiresAt: expiresAt,
+        },
+      });
     }
 
-    /**
-     * Verify OTP for a user
-     */
-    async verifyOtp(email: string, otp: string): Promise<boolean> {
-        const user = await this.userRepository.findFirst({ where: { email } });
+    // TODO: Implement actual email sending (use nodemailer, SendGrid, etc.)
+    console.log(
+      `[OTP] Generated OTP for ${email}: ${otp} (expires at ${expiresAt})`,
+    );
 
-        if (!user || !user.otpSecret || !user.otpExpiresAt) {
-            return false;
-        }
+    return otp;
+  }
 
-        const now = new Date();
-        const isExpired = now > user.otpExpiresAt;
+  /**
+   * Verify OTP for a user
+   */
+  async verifyOtp(email: string, otp: string): Promise<boolean> {
+    const user = await this.userRepository.findFirst({ where: { email } });
 
-        if (isExpired) {
-            // Clear expired OTP
-            await this.userRepository.update({
-                where: { id: user.id },
-                data: {
-                    otpSecret: null,
-                    otpExpiresAt: null,
-                },
-            });
-            return false;
-        }
-
-        const isValid = user.otpSecret === otp;
-
-        if (isValid) {
-            // Clear OTP after successful verification
-            await this.userRepository.update({
-                where: { id: user.id },
-                data: {
-                    otpSecret: null,
-                    otpExpiresAt: null,
-                },
-            });
-        }
-
-        return isValid;
+    if (!user || !user.otpSecret || !user.otpExpiresAt) {
+      return false;
     }
 
-    /**
-     * Generate a 6-digit OTP
-     */
-    private generateOtp(): string {
-        return crypto.randomInt(100000, 999999).toString();
+    const now = new Date();
+    const isExpired = now > user.otpExpiresAt;
+
+    if (isExpired) {
+      // Clear expired OTP
+      await this.userRepository.update({
+        where: { id: user.id },
+        data: {
+          otpSecret: null,
+          otpExpiresAt: null,
+        },
+      });
+      return false;
     }
+
+    const isValid = user.otpSecret === otp;
+
+    if (isValid) {
+      // Clear OTP after successful verification
+      await this.userRepository.update({
+        where: { id: user.id },
+        data: {
+          otpSecret: null,
+          otpExpiresAt: null,
+        },
+      });
+    }
+
+    return isValid;
+  }
+
+  /**
+   * Generate a 6-digit OTP
+   */
+  private generateOtp(): string {
+    return crypto.randomInt(100000, 999999).toString();
+  }
 }

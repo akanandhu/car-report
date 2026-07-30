@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { UserroleUtilsService } from './service/userrole.utils.service';
 import { UserroleRepository } from './repository/userrole.repository';
 import { RoleRepository } from '../role/repository/role.repository';
 import { UserRepository } from '../user/repository/user.repository';
@@ -11,7 +10,6 @@ import { UserRepository } from '../user/repository/user.repository';
 @Injectable()
 export class SharedUserroleService {
   constructor(
-    private readonly userroleUtilsService: UserroleUtilsService,
     private readonly userroleRepository: UserroleRepository,
     private readonly roleRepository: RoleRepository,
     private readonly userRepository: UserRepository,
