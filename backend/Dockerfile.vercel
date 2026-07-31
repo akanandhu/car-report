@@ -1,0 +1,72 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client
+RUN pnpm prisma generate
+
+# Build the application
+RUN pnpm build
+
+# Production stage
+FROM node:20-alpine AS production
+
+# Install Chromium for puppeteer-core PDF generation
+RUN apk add --no-cache \
+    ca-certificates \
+    chromium \
+    freetype \
+    harfbuzz \
+    nss \
+    ttf-freefont
+
+ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies (including Prisma for migrations)
+RUN pnpm install --frozen-lockfile
+
+# Copy built application from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/libs ./libs
+COPY --from=builder /app/tsconfig*.json ./
+COPY --from=builder /app/nest-cli.json ./
+
+# Generate Prisma Client
+RUN pnpm prisma generate
+
+# Expose port
+EXPOSE 3000
+
+# Start the application
+COPY start.sh ./
+
+# 🔥 FIX for Windows line endings
+RUN sed -i 's/\r$//' start.sh
+
+RUN chmod +x start.sh
+CMD ["sh", "start.sh"]
